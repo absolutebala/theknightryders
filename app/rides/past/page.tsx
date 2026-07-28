@@ -11,7 +11,7 @@ export default async function PastRidesPage() {
   const { data: leaderboard } = await supabase
     .from("ride_leaderboard")
     .select("rider_key, rider_name, rides_count, total_km")
-    .limit(10);
+    .limit(15);
 
   return (
     <>
@@ -26,68 +26,56 @@ export default async function PastRidesPage() {
         </div>
       </section>
 
-      {leaderboard && leaderboard.length > 0 && (
-        <section style={{ background: "var(--mint)", paddingTop: 40, paddingBottom: 50 }}>
-          <div className="container">
-            <h2 className="section-title" style={{ fontSize: 22, marginBottom: 24 }}>
-              Leaderboard
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 560, margin: "0 auto" }}>
-              {leaderboard.map((entry, i) => (
-                <div
-                  key={entry.rider_key}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    background: "var(--white)",
-                    borderRadius: 10,
-                    padding: "12px 18px",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <span style={{ color: "var(--amber)", fontWeight: 800, width: 24 }}>
-                      #{i + 1}
-                    </span>
-                    <span style={{ color: "var(--navy)", fontWeight: 700 }}>{entry.rider_name}</span>
-                  </div>
-                  <div style={{ fontSize: 13.5, color: "var(--grey)" }}>
-                    {entry.rides_count} rides · {entry.total_km} km
-                  </div>
-                </div>
+      <section style={{ paddingTop: 20 }}>
+        <div className="container">
+          <div className="past-rides-layout">
+            <div className="past-rides-grid">
+              {rides?.map((ride) => (
+                <a key={ride.id} href={`/rides/${ride.slug}`}>
+                  <figure>
+                    {ride.hero_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={ride.hero_image_url} alt={ride.title} />
+                    ) : (
+                      <div className="no-image">{ride.title}</div>
+                    )}
+                    <figcaption>
+                      {ride.title}
+                      {ride.ride_date && (
+                        <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, fontWeight: 500 }}>
+                          {new Date(ride.ride_date).toLocaleDateString("en-IN", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </div>
+                      )}
+                    </figcaption>
+                  </figure>
+                </a>
               ))}
             </div>
-          </div>
-        </section>
-      )}
 
-      <section style={{ paddingTop: 40 }}>
-        <div className="container">
-          <div className="rides-grid">
-            {rides?.map((ride) => (
-              <a key={ride.id} href={`/rides/${ride.slug}`}>
-                <figure>
-                  {ride.hero_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ride.hero_image_url} alt={ride.title} />
-                  ) : (
-                    <div className="no-image">{ride.title}</div>
-                  )}
-                  <figcaption>
-                    {ride.title}
-                    {ride.ride_date && (
-                      <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, fontWeight: 500 }}>
-                        {new Date(ride.ride_date).toLocaleDateString("en-IN", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
+            {leaderboard && leaderboard.length > 0 && (
+              <aside className="rides-sidebar">
+                <h2>Leaderboard</h2>
+                <div className="rides-sidebar-list">
+                  {leaderboard.map((entry, i) => (
+                    <div key={entry.rider_key} className="rides-sidebar-row">
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                        <span className="rides-sidebar-rank">#{i + 1}</span>
+                        <span className="rides-sidebar-name">{entry.rider_name}</span>
                       </div>
-                    )}
-                  </figcaption>
-                </figure>
-              </a>
-            ))}
+                      <div className="rides-sidebar-stats">
+                        {entry.rides_count} rides
+                        <br />
+                        {entry.total_km} km
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            )}
           </div>
         </div>
       </section>
