@@ -28,12 +28,17 @@ export default async function RideDetailPage({
   return (
     <>
       {ride.hero_image_url && (
-        <div style={{ maxHeight: 480, overflow: "hidden" }}>
+        <div style={{ height: 480, overflow: "hidden" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={ride.hero_image_url}
             alt={ride.title}
-            style={{ width: "100%", objectFit: "cover" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center bottom",
+            }}
           />
         </div>
       )}
