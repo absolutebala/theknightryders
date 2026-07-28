@@ -129,8 +129,8 @@ export default function EditableField({
 
   const Tag = as;
   return (
-    <span style={{ display: "inline-flex", alignItems: "flex-start", gap: 8, width: "100%" }}>
-      <Tag className={className} style={{ ...style, margin: 0 }}>
+    <span style={{ display: "flex", alignItems: "flex-start", gap: 8, width: "100%" }}>
+      <Tag className={className} style={{ ...style, margin: 0, flex: 1, minWidth: 0 }}>
         {value || <span style={{ opacity: 0.5, fontStyle: "italic" }}>(empty -- click to add)</span>}
       </Tag>
       <button
@@ -147,6 +147,7 @@ export default function EditableField({
           fontSize: 10,
           cursor: "pointer",
           border: "none",
+          marginTop: 4,
         }}
       >
         &#9998;

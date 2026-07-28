@@ -80,6 +80,7 @@ export default async function HomePage() {
                 images={milestone.images.slice(0, 1)}
                 isAdmin={isAdmin}
                 gridClassName="gallery-grid"
+                singleImage
               />
             ) : (
               milestone.images[0] && (

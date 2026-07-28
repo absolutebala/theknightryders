@@ -17,6 +17,7 @@ type Props = {
   isAdmin: boolean;
   gridClassName: string;
   captionAlwaysVisible?: boolean;
+  singleImage?: boolean;
 };
 
 export default function EditableGallery({
@@ -25,6 +26,7 @@ export default function EditableGallery({
   isAdmin,
   gridClassName,
   captionAlwaysVisible,
+  singleImage,
 }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,11 +121,22 @@ export default function EditableGallery({
         </div>
       )}
 
-      <div className={gridClassName}>
+      <div className={singleImage ? "" : gridClassName}>
         {images.map((img, i) => (
-          <figure key={img.id} style={{ position: "relative" }}>
+          <figure
+            key={img.id}
+            style={
+              singleImage
+                ? { position: "relative", margin: 0 }
+                : { position: "relative" }
+            }
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img.image_url} alt={img.caption ?? ""} />
+            <img
+              src={img.image_url}
+              alt={img.caption ?? ""}
+              style={singleImage ? { borderRadius: 14, width: "100%" } : undefined}
+            />
             {(img.caption || captionAlwaysVisible) && <figcaption>{img.caption}</figcaption>}
 
             {isAdmin && managing && (
@@ -136,24 +149,28 @@ export default function EditableGallery({
                   gap: 4,
                 }}
               >
-                <button
-                  type="button"
-                  aria-label="Move left"
-                  onClick={() => handleMove(i, -1)}
-                  disabled={i === 0}
-                  style={smallBtnStyle}
-                >
-                  &#8592;
-                </button>
-                <button
-                  type="button"
-                  aria-label="Move right"
-                  onClick={() => handleMove(i, 1)}
-                  disabled={i === images.length - 1}
-                  style={smallBtnStyle}
-                >
-                  &#8594;
-                </button>
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Move left"
+                      onClick={() => handleMove(i, -1)}
+                      disabled={i === 0}
+                      style={smallBtnStyle}
+                    >
+                      &#8592;
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Move right"
+                      onClick={() => handleMove(i, 1)}
+                      disabled={i === images.length - 1}
+                      style={smallBtnStyle}
+                    >
+                      &#8594;
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   aria-label="Remove image"
