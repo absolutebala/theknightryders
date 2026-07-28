@@ -5,7 +5,7 @@ export default async function RidersPage() {
 
   const { data: members } = await supabase
     .from("members_public")
-    .select("id, full_name, bio, profile_photo_url");
+    .select("id, full_name, handle, bio, profile_photo_url");
 
   const { data: leaderboard } = await supabase
     .from("ride_leaderboard")
@@ -37,7 +37,11 @@ export default async function RidersPage() {
 
         <div className="riders-grid">
           {riders.map((rider) => (
-            <a key={rider.id} href={`/members/${rider.id}`} className="rider-card">
+            <a
+              key={rider.id}
+              href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
+              className="rider-card"
+            >
               {rider.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />

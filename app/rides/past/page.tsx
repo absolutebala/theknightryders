@@ -10,7 +10,7 @@ export default async function PastRidesPage() {
 
   const { data: leaderboard } = await supabase
     .from("ride_leaderboard")
-    .select("rider_key, rider_name, member_id, rides_count, total_km")
+    .select("rider_key, rider_name, member_id, handle, rides_count, total_km")
     .limit(5);
 
   return (
@@ -75,7 +75,10 @@ export default async function PastRidesPage() {
                       </div>
                     );
                     return entry.member_id ? (
-                      <a key={entry.rider_key} href={`/members/${entry.member_id}`}>
+                      <a
+                        key={entry.rider_key}
+                        href={entry.handle ? `/@${entry.handle}` : `/members/${entry.member_id}`}
+                      >
                         {row}
                       </a>
                     ) : (

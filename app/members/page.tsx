@@ -20,7 +20,7 @@ export default async function MembersPage() {
   const { data: member } = await supabase
     .from("members")
     .select(
-      "id, full_name, bio, date_of_birth, join_date, gender, blood_group, why_joining, vehicle_number, address, profile_photo_url, social_links, ride_count, ride_list"
+      "id, full_name, handle, bio, date_of_birth, join_date, gender, blood_group, why_joining, vehicle_number, address, profile_photo_url, social_links, ride_count, ride_list"
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -168,7 +168,7 @@ export default async function MembersPage() {
       <p style={{ color: "var(--dark)", marginBottom: 20 }}>{member.bio || "No bio yet."}</p>
 
       <div style={{ display: "flex", gap: 14 }}>
-        <a href={`/members/${member.id}`} className="btn btn-amber">
+        <a href={member.handle ? `/@${member.handle}` : `/members/${member.id}`} className="btn btn-amber">
           View Public Profile
         </a>
         <a href="/members/edit" className="btn btn-outline">

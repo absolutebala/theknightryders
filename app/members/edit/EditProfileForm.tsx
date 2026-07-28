@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 type Member = {
   id: string;
   full_name: string | null;
+  handle: string | null;
   bio: string | null;
   date_of_birth: string | null;
   gender: string | null;
@@ -22,6 +23,7 @@ export default function EditProfileForm({ member }: { member: Member }) {
   const router = useRouter();
   const [form, setForm] = useState({
     full_name: member.full_name ?? "",
+    handle: member.handle ?? "",
     bio: member.bio ?? "",
     date_of_birth: member.date_of_birth ?? "",
     gender: member.gender ?? "",
@@ -58,6 +60,7 @@ export default function EditProfileForm({ member }: { member: Member }) {
       .from("members")
       .update({
         full_name: form.full_name || null,
+        handle: form.handle || null,
         bio: form.bio || null,
         date_of_birth: form.date_of_birth || null,
         gender: form.gender || null,
@@ -110,6 +113,16 @@ export default function EditProfileForm({ member }: { member: Member }) {
           id="full_name"
           value={form.full_name}
           onChange={(e) => update("full_name", e.target.value)}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="handle">Handle (yourprofile.com/@handle)</label>
+        <input
+          id="handle"
+          value={form.handle}
+          onChange={(e) => update("handle", e.target.value.replace(/[^a-zA-Z0-9_.]/g, ""))}
+          placeholder="yourhandle"
         />
       </div>
 
