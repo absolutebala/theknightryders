@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import EditableField from "@/components/admin/EditableField";
 import EditableGallery from "@/components/admin/EditableGallery";
 
@@ -28,7 +29,9 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
   const { data: isAdminResult } = await supabase.rpc("is_admin");
-  const isAdmin = !!user && !!isAdminResult;
+  const cookieStore = await cookies();
+  const editModeOn = cookieStore.get("edit_mode")?.value === "true";
+  const isAdmin = !!user && !!isAdminResult && editModeOn;
 
   const { data: stats } = await supabase
     .from("homepage_stats")

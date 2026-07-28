@@ -8,11 +8,18 @@ type HeaderUser = {
   name: string;
   avatarUrl: string | null;
   profileHref: string;
+  isAdmin: boolean;
 } | null;
 
 const HEADER_HEIGHT = 80;
 
-export default function Header({ authUser }: { authUser: HeaderUser }) {
+export default function Header({
+  authUser,
+  initialEditMode = false,
+}: {
+  authUser: HeaderUser;
+  initialEditMode?: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === "/";
@@ -20,7 +27,15 @@ export default function Header({ authUser }: { authUser: HeaderUser }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [editMode, setEditMode] = useState(initialEditMode);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  function toggleEditMode() {
+    const next = !editMode;
+    document.cookie = `edit_mode=${next}; path=/; max-age=${60 * 60 * 24 * 30}`;
+    setEditMode(next);
+    router.refresh();
+  }
 
   useEffect(() => {
     function onScroll() {
@@ -99,6 +114,54 @@ export default function Header({ authUser }: { authUser: HeaderUser }) {
               </li>
             </ul>
           </nav>
+
+          {authUser?.isAdmin && (
+            <button
+              type="button"
+              onClick={toggleEditMode}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: "none",
+                border: "1px solid rgba(255,255,255,.3)",
+                borderRadius: 20,
+                padding: "5px 12px 5px 6px",
+                cursor: "pointer",
+                marginRight: 14,
+              }}
+              aria-pressed={editMode}
+              aria-label="Toggle edit mode"
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 30,
+                  height: 16,
+                  borderRadius: 10,
+                  background: editMode ? "var(--amber)" : "rgba(255,255,255,.25)",
+                  position: "relative",
+                  transition: "background-color .15s ease",
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    left: editMode ? 16 : 2,
+                    width: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    background: "var(--white)",
+                    transition: "left .15s ease",
+                  }}
+                />
+              </span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--white)", textTransform: "uppercase", letterSpacing: ".03em" }}>
+                Edit Mode
+              </span>
+            </button>
+          )}
 
           <div className="nav-cta" ref={userMenuRef} style={{ position: "relative" }}>
             {authUser ? (

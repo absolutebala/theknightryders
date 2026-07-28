@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "The Knight Ryders | Exclusive Honda CB350 Riding Club",
@@ -24,6 +25,7 @@ export default async function RootLayout({
     name: string;
     avatarUrl: string | null;
     profileHref: string;
+    isAdmin: boolean;
   } | null = null;
 
   if (user) {
@@ -32,6 +34,8 @@ export default async function RootLayout({
       .select("full_name, handle, profile_photo_url")
       .eq("user_id", user.id)
       .maybeSingle();
+
+    const { data: isAdminResult } = await supabase.rpc("is_admin");
 
     headerUser = {
       name:
@@ -45,8 +49,12 @@ export default async function RootLayout({
         user.user_metadata?.picture ??
         null,
       profileHref: member?.handle ? `/@${member.handle}` : "/members",
+      isAdmin: !!isAdminResult,
     };
   }
+
+  const cookieStore = await cookies();
+  const initialEditMode = cookieStore.get("edit_mode")?.value === "true";
 
   return (
     <html lang="en">
@@ -63,7 +71,7 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <Header authUser={headerUser} />
+        <Header authUser={headerUser} initialEditMode={initialEditMode} />
         {children}
         <Footer />
       </body>
