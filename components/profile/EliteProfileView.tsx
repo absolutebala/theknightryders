@@ -45,43 +45,113 @@ type Props = {
   latestRideImagePosition: number;
 };
 
-function StatCard({ value, label }: { value: string | number; label: string }) {
+function GearIcon() {
   return (
-    <div
-      style={{
-        background: GLASS_BG,
-        backdropFilter: "blur(8px)",
-        border: `1px solid ${GLASS_BORDER}`,
-        borderRadius: 12,
-        padding: "20px 18px",
-        textAlign: "center",
-        boxShadow: "0 8px 20px rgba(0,0,0,.4)",
-      }}
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.6">
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" />
+    </svg>
+  );
+}
+
+function TrophyIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.6">
+      <path d="M7 4h10v4a5 5 0 0 1-10 0V4z" />
+      <path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4" />
+      <path d="M12 13v3M9 20h6M10 17h4v3h-4z" />
+    </svg>
+  );
+}
+
+function MedalIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.6">
+      <path d="M8 3l4 6-4 3-4-3 4-6zM16 3l-4 6 4 3 4-3-4-6z" />
+      <circle cx="12" cy="15" r="6" />
+      <path d="M12 12.5l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2-1.5-1.4 2-.3z" />
+    </svg>
+  );
+}
+
+function HexStat({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: string | number;
+  label: string;
+}) {
+  return (
+    <div style={{ textAlign: "center", width: 148 }}>
       <div
         style={{
-          fontFamily: "'Oswald', sans-serif",
-          fontWeight: 600,
-          fontSize: value.toString().length > 6 ? 22 : 28,
-          color: GOLD,
-          background: "#000",
-          padding: "8px 14px",
-          borderRadius: 6,
-          display: "inline-block",
-          letterSpacing: "2px",
-          border: "1px solid rgba(212,175,55,.3)",
-          boxShadow: "inset 0 0 10px rgba(212,175,55,.2)",
+          position: "relative",
+          width: 138,
+          height: 120,
+          margin: "0 auto",
         }}
       >
-        {value}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
+            background: "linear-gradient(160deg, #1c2029, #05060a)",
+            border: `1.5px solid ${GOLD}`,
+            boxShadow: `0 0 18px rgba(212,175,55,.25), inset 0 0 12px rgba(0,0,0,.6)`,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: -12,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 26,
+            height: 26,
+            borderRadius: "50%",
+            background: "#0c0e12",
+            border: `1.5px solid ${GOLD}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {icon}
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontWeight: 600,
+              fontSize: value.toString().length > 6 ? 16 : 21,
+              color: GOLD,
+              letterSpacing: "1px",
+              textShadow: "0 0 8px rgba(212,175,55,.6)",
+            }}
+          >
+            {value}
+          </span>
+        </div>
       </div>
       <div
         style={{
           fontSize: 11.5,
-          color: "#a0aec0",
+          color: "#c9cdd3",
           textTransform: "uppercase",
-          letterSpacing: ".12em",
+          letterSpacing: ".08em",
           marginTop: 10,
+          fontWeight: 600,
         }}
       >
         {label}
@@ -169,12 +239,14 @@ export default function EliteProfileView({
           <div>
             <div
               style={{
-                background: GLASS_BG,
+                background: "linear-gradient(160deg, rgba(24,28,36,.85), rgba(10,12,16,.85))",
                 backdropFilter: "blur(12px)",
-                border: `1px solid ${GLASS_BORDER}`,
-                borderRadius: 16,
+                border: `1.5px solid ${GOLD}`,
+                outline: "1px solid rgba(212,175,55,.25)",
+                outlineOffset: 4,
+                borderRadius: 20,
                 padding: 32,
-                boxShadow: "0 15px 35px rgba(0,0,0,.6), inset 0 0 15px rgba(212,175,55,.1)",
+                boxShadow: "0 15px 35px rgba(0,0,0,.6), 0 0 30px rgba(212,175,55,.12), inset 0 0 20px rgba(212,175,55,.08)",
                 marginBottom: 30,
               }}
             >
@@ -305,10 +377,14 @@ export default function EliteProfileView({
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16, marginBottom: 36 }}>
-              <StatCard value={totalKm.toLocaleString("en-IN")} label="KMs Covered" />
-              <StatCard value={ridesCount} label="Rides Participated" />
-              <StatCard value={joinYear ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}` : "—"} label="Member Since" />
+            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 36 }}>
+              <HexStat icon={<GearIcon />} value={totalKm.toLocaleString("en-IN")} label="KMs Covered" />
+              <HexStat icon={<TrophyIcon />} value={ridesCount} label="Rides Participated" />
+              <HexStat
+                icon={<MedalIcon />}
+                value={joinYear ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}` : "—"}
+                label="Member Since"
+              />
             </div>
 
             {coRiders.length > 0 && (
