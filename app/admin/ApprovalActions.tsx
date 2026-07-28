@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function ApprovalActions({ requestId }: { requestId: string }) {
+export default function ApprovalActions({
+  requestId,
+  approveFn = "approve_pending_request",
+  rejectFn = "reject_pending_request",
+}: {
+  requestId: string;
+  approveFn?: string;
+  rejectFn?: string;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState<"approve" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -14,10 +22,9 @@ export default function ApprovalActions({ requestId }: { requestId: string }) {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.rpc(
-      action === "approve" ? "approve_pending_request" : "reject_pending_request",
-      { request_id: requestId }
-    );
+    const { error } = await supabase.rpc(action === "approve" ? approveFn : rejectFn, {
+      request_id: requestId,
+    });
 
     setLoading(null);
 

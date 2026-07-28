@@ -166,6 +166,8 @@ footer nav a:hover{color:var(--amber);}
   .gallery-grid.small{grid-template-columns:repeat(3,1fr);}
   .rides-grid{grid-template-columns:repeat(3,1fr);}
   .past-rides-layout{grid-template-columns:1fr;}
+  .elite-grid{grid-template-columns:1fr!important;}
+  .elite-rides-grid{grid-template-columns:repeat(2,1fr)!important;}
   .past-rides-grid{grid-template-columns:repeat(2,1fr);}
   .rides-sidebar{position:static;}
   .riders-grid{grid-template-columns:repeat(3,1fr);}

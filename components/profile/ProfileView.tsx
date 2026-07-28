@@ -2,13 +2,15 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileBio from "@/components/profile/ProfileBio";
+import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
+import EliteProfileView from "@/components/profile/EliteProfileView";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
 
   const { data: member } = await supabase
     .from("members_public")
-    .select("id, full_name, handle, bio, date_of_birth, join_date, profile_photo_url")
+    .select("id, full_name, handle, bio, date_of_birth, join_date, profile_photo_url, profile_template")
     .eq("id", memberId)
     .maybeSingle();
 
@@ -78,6 +80,39 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   const coRiders = (coRidersRaw ?? []) as unknown as CoRider[];
 
+  // --- Elite template ---
+  if (member.profile_template === "elite") {
+    return (
+      <EliteProfileView
+        isOwner={isOwner}
+        fullName={member.full_name}
+        handle={member.handle}
+        bio={member.bio}
+        dateOfBirth={member.date_of_birth}
+        joinDate={member.join_date}
+        profilePhotoUrl={member.profile_photo_url}
+        ridesCount={rides.length}
+        totalKm={totalKm}
+        rides={rides}
+        coRiders={coRiders}
+        backgroundImageUrl={rides[0]?.hero_image_url ?? null}
+      />
+    );
+  }
+
+  // --- Standard template ---
+  let templateRequestStatus: "pending" | "approved" | "rejected" | null = null;
+  if (isOwner) {
+    const { data: existingRequest } = await supabase
+      .from("template_requests")
+      .select("status")
+      .eq("member_id", member.id)
+      .order("requested_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    templateRequestStatus = existingRequest?.status ?? null;
+  }
+
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 900 }}>
       <ProfileHeader
@@ -90,6 +125,12 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       />
 
       <ProfileBio memberId={member.id} isOwner={isOwner} bio={member.bio} />
+
+      {isOwner && (
+        <div style={{ marginBottom: 30 }}>
+          <RequestEliteTemplate memberId={member.id} existingRequestStatus={templateRequestStatus} />
+        </div>
+      )}
 
       <div
         style={{

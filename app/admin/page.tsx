@@ -38,6 +38,12 @@ export default async function AdminPage() {
     .order("reviewed_at", { ascending: false })
     .limit(15);
 
+  const { data: templateRequests } = await supabase
+    .from("template_requests")
+    .select("id, requested_at, members(full_name, handle)")
+    .eq("status", "pending")
+    .order("requested_at", { ascending: true });
+
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 860 }}>
       <h1 style={{ color: "var(--navy)", marginBottom: 6 }}>Pending Access Requests</h1>
@@ -76,6 +82,54 @@ export default async function AdminPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {templateRequests && templateRequests.length > 0 && (
+        <>
+          <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14 }}>
+            Elite Template Requests
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 50 }}>
+            {templateRequests.map((req) => {
+              const memberInfo = (
+                Array.isArray(req.members) ? req.members[0] : req.members
+              ) as { full_name: string | null; handle: string | null } | null;
+
+              return (
+                <div
+                  key={req.id}
+                  style={{
+                    background: "var(--mint)",
+                    borderRadius: 12,
+                    padding: "16px 20px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 14,
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700, color: "var(--navy)" }}>
+                      {memberInfo?.full_name || "(unnamed member)"}
+                      {memberInfo?.handle && (
+                        <span style={{ color: "var(--grey)", fontWeight: 500 }}> @{memberInfo.handle}</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--grey)", marginTop: 2 }}>
+                      Requested {new Date(req.requested_at).toLocaleString("en-IN")}
+                    </div>
+                  </div>
+                  <ApprovalActions
+                    requestId={req.id}
+                    approveFn="approve_template_request"
+                    rejectFn="reject_template_request"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {recentlyReviewed && recentlyReviewed.length > 0 && (
