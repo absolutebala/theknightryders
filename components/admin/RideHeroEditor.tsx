@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import DragPositionEditor from "./DragPositionEditor";
 
 type Props = {
   rideId: string;
@@ -89,22 +90,16 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
             background: "var(--white)",
             borderRadius: 12,
             padding: 18,
-            width: 290,
+            width: 340,
             boxShadow: "0 10px 30px rgba(0,0,0,.3)",
           }}
         >
           {previewUrl && (
-            <div style={{ marginBottom: 10, borderRadius: 8, overflow: "hidden", height: 140 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewUrl}
-                alt="Ride photo preview"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  objectPosition: `center ${position}%`,
-                }}
+            <div style={{ marginBottom: 12 }}>
+              <DragPositionEditor
+                imageUrl={previewUrl}
+                position={position}
+                onChange={setPosition}
               />
             </div>
           )}
@@ -132,26 +127,6 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
           >
             {previewUrl ? "Replace Photo" : "Choose Photo"}
           </label>
-
-          {previewUrl && (
-            <div style={{ marginBottom: 4 }}>
-              <label style={{ fontSize: 11.5, color: "var(--grey)", display: "block", marginBottom: 4 }}>
-                Vertical position (drag to adjust)
-              </label>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={position}
-                onChange={(e) => setPosition(Number(e.target.value))}
-                style={{ width: "100%" }}
-              />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--grey)" }}>
-                <span>Top</span>
-                <span>Bottom</span>
-              </div>
-            </div>
-          )}
 
           {error && <div style={{ color: "#a3312a", fontSize: 12, marginTop: 8 }}>{error}</div>}
 
