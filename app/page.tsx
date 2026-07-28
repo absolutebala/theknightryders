@@ -38,6 +38,14 @@ export default async function HomePage() {
     .select("rides_count, total_km, riders_count")
     .maybeSingle();
 
+  const { data: latestRide } = await supabase
+    .from("rides")
+    .select("title, hero_image_url")
+    .not("hero_image_url", "is", null)
+    .order("ride_date", { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+
   const milestone = await getSection(supabase, "milestone");
   const rideForCause = await getSection(supabase, "ride_for_cause");
   const awards = await getSection(supabase, "awards");
@@ -45,7 +53,16 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="hero">
+      <section
+        className="hero"
+        style={
+          latestRide?.hero_image_url
+            ? {
+                backgroundImage: `linear-gradient(180deg, rgba(5,8,15,.35), rgba(5,8,15,.55)), url('${latestRide.hero_image_url}')`,
+              }
+            : undefined
+        }
+      >
         <div className="hero-inner">
           <h1>
             <span className="line1">Ride till the last mile.</span>
