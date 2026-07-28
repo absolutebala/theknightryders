@@ -97,12 +97,28 @@ export default async function PublicMemberProfile({
         </div>
       </div>
 
+      {member.bio && (
+        <p
+          style={{
+            fontStyle: "italic",
+            color: "var(--dark)",
+            fontSize: 17,
+            lineHeight: 1.6,
+            marginBottom: 30,
+            borderLeft: "3px solid var(--amber)",
+            paddingLeft: 18,
+          }}
+        >
+          &ldquo;{member.bio}&rdquo;
+        </p>
+      )}
+
       <div
         style={{
           background: "var(--mint)",
           borderRadius: 14,
           padding: 24,
-          marginBottom: 30,
+          marginBottom: 40,
           display: "flex",
           gap: 40,
           flexWrap: "wrap",
@@ -139,71 +155,68 @@ export default async function PublicMemberProfile({
         </div>
       </div>
 
-      {member.bio && (
-        <>
-          <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 10 }}>Bio</h2>
-          <p style={{ color: "var(--dark)", marginBottom: 40 }}>{member.bio}</p>
-        </>
-      )}
+      <div className="profile-two-col">
+        <div>
+          <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>Rides</h2>
+          {rides.length === 0 ? (
+            <p style={{ color: "var(--grey)" }}>No ride history linked yet.</p>
+          ) : (
+            <div className="past-rides-grid past-rides-grid-2col">
+              {rides.map((ride) => (
+                <a key={ride.id} href={`/rides/${ride.slug}`}>
+                  <figure>
+                    {ride.hero_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={ride.hero_image_url} alt={ride.title} />
+                    ) : (
+                      <div className="no-image">{ride.title}</div>
+                    )}
+                    <figcaption>
+                      {ride.title}
+                      {ride.ride_date && (
+                        <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, fontWeight: 500 }}>
+                          {new Date(ride.ride_date).toLocaleDateString("en-IN", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </div>
+                      )}
+                    </figcaption>
+                  </figure>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
 
-      <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>Rides</h2>
-      {rides.length === 0 ? (
-        <p style={{ color: "var(--grey)", marginBottom: 40 }}>No ride history linked yet.</p>
-      ) : (
-        <div className="past-rides-grid" style={{ marginBottom: 50 }}>
-          {rides.map((ride) => (
-            <a key={ride.id} href={`/rides/${ride.slug}`}>
-              <figure>
-                {ride.hero_image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={ride.hero_image_url} alt={ride.title} />
-                ) : (
-                  <div className="no-image">{ride.title}</div>
-                )}
-                <figcaption>
-                  {ride.title}
-                  {ride.ride_date && (
-                    <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, fontWeight: 500 }}>
-                      {new Date(ride.ride_date).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+        {coRiders && coRiders.length > 0 && (
+          <div>
+            <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>
+              Frequently Rides With
+            </h2>
+            <div className="riders-grid riders-grid-1col">
+              {coRiders.map((rider) => (
+                <a key={rider.id} href={`/members/${rider.id}`} className="rider-card">
+                  {rider.profile_photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
+                  ) : (
+                    <div className="rider-card-noimg">
+                      {(rider.full_name ?? "?").charAt(0).toUpperCase()}
                     </div>
                   )}
-                </figcaption>
-              </figure>
-            </a>
-          ))}
-        </div>
-      )}
-
-      {coRiders && coRiders.length > 0 && (
-        <>
-          <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>
-            Frequently Rides With
-          </h2>
-          <div className="riders-grid">
-            {coRiders.map((rider) => (
-              <a key={rider.id} href={`/members/${rider.id}`} className="rider-card">
-                {rider.profile_photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
-                ) : (
-                  <div className="rider-card-noimg">
-                    {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                  <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
+                  {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
+                  <div className="rider-card-stats">
+                    {rider.shared_rides} ride{rider.shared_rides === 1 ? "" : "s"} together
                   </div>
-                )}
-                <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
-                {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
-                <div className="rider-card-stats">
-                  {rider.shared_rides} ride{rider.shared_rides === 1 ? "" : "s"} together
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
