@@ -28,7 +28,10 @@ export default async function MembersPage() {
   // Fill in a profile photo from their Google account if they don't already
   // have one set (e.g. from the WordPress import, or a manual edit).
   // Never overwrites an existing photo.
-  if (member && !member.profile_photo_url) {
+  const hasValidPhoto =
+    member?.profile_photo_url && member.profile_photo_url.startsWith("http");
+
+  if (member && !hasValidPhoto) {
     const googleAvatar =
       user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
 
