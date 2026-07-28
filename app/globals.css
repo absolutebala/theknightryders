@@ -40,6 +40,8 @@ nav li.has-dropdown:hover .dropdown{display:block;}
 .dropdown a{display:block;padding:8px 18px;font-size:12.5px;letter-spacing:.03em;text-transform:none;font-weight:600;}
 .nav-cta a{color:var(--white);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
 .menu-toggle{display:none;background:none;border:none;color:var(--white);font-size:26px;cursor:pointer;}
+.mobile-nav{display:flex;flex-direction:column;background:var(--headerbg);border-top:1px solid rgba(255,255,255,.12);}
+.mobile-nav a{color:var(--white);font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
 
 /* HERO */
 .hero{position:relative;background:linear-gradient(180deg,rgba(5,8,15,.35),rgba(5,8,15,.55)),url('https://www.theknightryders.com/wp-content/uploads/2022/03/theknightryders-1-300x225.jpeg') center/cover no-repeat;color:var(--white);padding:80px 24px 90px;text-align:left;min-height:620px;display:flex;align-items:flex-end;}

@@ -1,4 +1,12 @@
-export default function HomePage() {
+import { createClient } from "@/lib/supabase/server";
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: stats } = await supabase
+    .from("homepage_stats")
+    .select("rides_count, total_km, riders_count")
+    .maybeSingle();
+
   return (
     <>
       <section className="hero">
@@ -14,20 +22,16 @@ export default function HomePage() {
           </a>
           <div className="stats">
             <div>
-              <div className="stat-num">88</div>
+              <div className="stat-num">{stats?.rides_count ?? 0}</div>
               <div className="stat-label">Rides</div>
             </div>
             <div>
-              <div className="stat-num">50,621</div>
+              <div className="stat-num">{(stats?.total_km ?? 0).toLocaleString("en-IN")}</div>
               <div className="stat-label">Kilometers Covered</div>
             </div>
             <div>
-              <div className="stat-num">169</div>
+              <div className="stat-num">{stats?.riders_count ?? 0}</div>
               <div className="stat-label">Riders</div>
-            </div>
-            <div>
-              <div className="stat-num">133</div>
-              <div className="stat-label">Saplings Planted</div>
             </div>
           </div>
         </div>
