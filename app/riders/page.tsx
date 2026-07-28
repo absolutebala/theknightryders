@@ -22,10 +22,8 @@ export default async function RidersPage() {
       ...m,
       total_km: kmByMember.get(m.id) ?? 0,
     }))
-    .sort((a, b) => {
-      if (b.ride_count !== a.ride_count) return b.ride_count - a.ride_count;
-      return (b.total_km ?? 0) - (a.total_km ?? 0);
-    });
+    .filter((m) => m.ride_count > 0)
+    .sort((a, b) => (b.total_km ?? 0) - (a.total_km ?? 0));
 
   return (
     <section style={{ paddingBottom: 70 }}>

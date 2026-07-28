@@ -10,8 +10,8 @@ export default async function PastRidesPage() {
 
   const { data: leaderboard } = await supabase
     .from("ride_leaderboard")
-    .select("rider_key, rider_name, rides_count, total_km")
-    .limit(10);
+    .select("rider_key, rider_name, member_id, rides_count, total_km")
+    .limit(5);
 
   return (
     <>
@@ -60,19 +60,28 @@ export default async function PastRidesPage() {
               <aside className="rides-sidebar">
                 <h2>Leaderboard</h2>
                 <div className="rides-sidebar-list">
-                  {leaderboard.map((entry, i) => (
-                    <div key={entry.rider_key} className="rides-sidebar-row">
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                        <span className="rides-sidebar-rank">#{i + 1}</span>
-                        <span className="rides-sidebar-name">{entry.rider_name}</span>
+                  {leaderboard.map((entry, i) => {
+                    const row = (
+                      <div className="rides-sidebar-row">
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                          <span className="rides-sidebar-rank">#{i + 1}</span>
+                          <span className="rides-sidebar-name">{entry.rider_name}</span>
+                        </div>
+                        <div className="rides-sidebar-stats">
+                          {entry.rides_count} rides
+                          <br />
+                          {entry.total_km} km
+                        </div>
                       </div>
-                      <div className="rides-sidebar-stats">
-                        {entry.rides_count} rides
-                        <br />
-                        {entry.total_km} km
-                      </div>
-                    </div>
-                  ))}
+                    );
+                    return entry.member_id ? (
+                      <a key={entry.rider_key} href={`/members/${entry.member_id}`}>
+                        {row}
+                      </a>
+                    ) : (
+                      <div key={entry.rider_key}>{row}</div>
+                    );
+                  })}
                 </div>
                 <a
                   href="/riders"

@@ -28,10 +28,7 @@ export default async function MembersPage() {
   // Fill in a profile photo from their Google account if they don't already
   // have one set (e.g. from the WordPress import, or a manual edit).
   // Never overwrites an existing photo.
-  const hasValidPhoto =
-    member?.profile_photo_url && member.profile_photo_url.startsWith("http");
-
-  if (member && !hasValidPhoto) {
+  if (member && !member.profile_photo_url) {
     const googleAvatar =
       user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
 
@@ -99,6 +96,13 @@ export default async function MembersPage() {
     );
   }
 
+  const { data: kmRow } = await supabase
+    .from("ride_leaderboard")
+    .select("total_km")
+    .eq("member_id", member.id)
+    .maybeSingle();
+  const totalKm = kmRow?.total_km ?? 0;
+
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 760 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 24 }}>
@@ -126,6 +130,7 @@ export default async function MembersPage() {
           marginBottom: 24,
           display: "flex",
           gap: 40,
+          flexWrap: "wrap",
         }}
       >
         <div>
@@ -134,6 +139,14 @@ export default async function MembersPage() {
           </div>
           <div style={{ fontSize: 13, color: "var(--grey)", textTransform: "uppercase" }}>
             Rides Participated
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "var(--navy)" }}>
+            {totalKm.toLocaleString("en-IN")}
+          </div>
+          <div style={{ fontSize: 13, color: "var(--grey)", textTransform: "uppercase" }}>
+            KMs Covered
           </div>
         </div>
         <div>
