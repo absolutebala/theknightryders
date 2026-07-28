@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "import:members": "node scripts/import-members.mjs",
-    "import:rides": "node scripts/import-rides.mjs"
+    "import:rides": "node scripts/import-rides.mjs",
+    "import:ride-participants": "node scripts/import-ride-participants.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
