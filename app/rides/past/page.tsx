@@ -11,7 +11,7 @@ export default async function PastRidesPage() {
   const { data: leaderboard } = await supabase
     .from("ride_leaderboard")
     .select("rider_key, rider_name, rides_count, total_km")
-    .limit(15);
+    .limit(10);
 
   return (
     <>
@@ -74,6 +74,19 @@ export default async function PastRidesPage() {
                     </div>
                   ))}
                 </div>
+                <a
+                  href="/riders"
+                  style={{
+                    display: "block",
+                    textAlign: "center",
+                    marginTop: 16,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--cta-blue)",
+                  }}
+                >
+                  View All Riders &rarr;
+                </a>
               </aside>
             )}
           </div>

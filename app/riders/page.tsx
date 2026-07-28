@@ -1,0 +1,62 @@
+import { createClient } from "@/lib/supabase/server";
+
+export default async function RidersPage() {
+  const supabase = await createClient();
+
+  const { data: members } = await supabase
+    .from("members_public")
+    .select("id, full_name, bio, profile_photo_url, ride_count");
+
+  const { data: leaderboard } = await supabase
+    .from("ride_leaderboard")
+    .select("member_id, total_km");
+
+  const kmByMember = new Map(
+    (leaderboard ?? [])
+      .filter((row) => row.member_id)
+      .map((row) => [row.member_id, row.total_km])
+  );
+
+  const riders = (members ?? [])
+    .map((m) => ({
+      ...m,
+      total_km: kmByMember.get(m.id) ?? 0,
+    }))
+    .sort((a, b) => {
+      if (b.ride_count !== a.ride_count) return b.ride_count - a.ride_count;
+      return (b.total_km ?? 0) - (a.total_km ?? 0);
+    });
+
+  return (
+    <section style={{ paddingBottom: 70 }}>
+      <div className="container">
+        <span className="eyebrow-sm">The Knight Ryders</span>
+        <h1 className="section-title">Riders</h1>
+        <p className="section-sub">
+          {riders.length} member{riders.length === 1 ? "" : "s"} strong.
+        </p>
+
+        <div className="riders-grid">
+          {riders.map((rider) => (
+            <a key={rider.id} href={`/members/${rider.id}`} className="rider-card">
+              {rider.profile_photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
+              ) : (
+                <div className="rider-card-noimg">
+                  {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
+              {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
+              <div className="rider-card-stats">
+                {rider.ride_count} ride{rider.ride_count === 1 ? "" : "s"}
+                {rider.total_km > 0 && <> &middot; {rider.total_km} km</>}
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
