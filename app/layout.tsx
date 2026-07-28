@@ -66,7 +66,7 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800|Montserrat:600,700,800&display=swap"
+          href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800|Montserrat:600,700,800|Oswald:500,600,700|Caveat:500,600,700&display=swap"
           rel="stylesheet"
         />
       </head>

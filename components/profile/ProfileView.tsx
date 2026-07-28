@@ -82,8 +82,15 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   // --- Elite template ---
   if (member.profile_template === "elite") {
+    const { data: photos } = await supabase
+      .from("member_photos")
+      .select("id, image_url, sort_order")
+      .eq("member_id", member.id)
+      .order("sort_order", { ascending: true });
+
     return (
       <EliteProfileView
+        memberId={member.id}
         isOwner={isOwner}
         fullName={member.full_name}
         handle={member.handle}
@@ -95,6 +102,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         totalKm={totalKm}
         rides={rides}
         coRiders={coRiders}
+        photos={photos ?? []}
         backgroundImageUrl={rides[0]?.hero_image_url ?? null}
       />
     );

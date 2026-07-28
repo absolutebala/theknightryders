@@ -1,3 +1,6 @@
+import EliteGallery, { type MemberPhoto } from "./EliteGallery";
+import EliteRidesCarousel from "./EliteRidesCarousel";
+
 type Ride = {
   id: string;
   slug: string;
@@ -16,6 +19,7 @@ type CoRider = {
 };
 
 type Props = {
+  memberId: string;
   isOwner: boolean;
   fullName: string | null;
   handle: string | null;
@@ -27,22 +31,17 @@ type Props = {
   totalKm: number;
   rides: Ride[];
   coRiders: CoRider[];
+  photos: MemberPhoto[];
   backgroundImageUrl: string | null;
 };
 
-function HexBadge({
-  value,
-  label,
-}: {
-  value: string | number;
-  label: string;
-}) {
+function HexBadge({ value, label }: { value: string | number; label: string }) {
   return (
-    <div style={{ textAlign: "center", width: 130 }}>
+    <div style={{ textAlign: "center", width: 120 }}>
       <div
         style={{
-          width: 118,
-          height: 102,
+          width: 108,
+          height: 94,
           margin: "0 auto",
           clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
           background: "linear-gradient(160deg, #1a1d24, #0c0e12)",
@@ -54,9 +53,9 @@ function HexBadge({
       >
         <span
           style={{
-            fontFamily: "'Montserrat', sans-serif",
-            fontWeight: 800,
-            fontSize: value.toString().length > 5 ? 17 : 21,
+            fontFamily: "'Oswald', sans-serif",
+            fontWeight: 600,
+            fontSize: value.toString().length > 5 ? 16 : 20,
             color: "#f0c24e",
             letterSpacing: ".01em",
           }}
@@ -66,7 +65,7 @@ function HexBadge({
       </div>
       <div
         style={{
-          fontSize: 11,
+          fontSize: 10.5,
           color: "#c9cdd3",
           textTransform: "uppercase",
           letterSpacing: ".06em",
@@ -81,6 +80,7 @@ function HexBadge({
 }
 
 export default function EliteProfileView({
+  memberId,
   isOwner,
   fullName,
   handle,
@@ -92,6 +92,7 @@ export default function EliteProfileView({
   totalKm,
   rides,
   coRiders,
+  photos,
   backgroundImageUrl,
 }: Props) {
   const joinYear = joinDate ? new Date(joinDate).getFullYear() : null;
@@ -127,7 +128,7 @@ export default function EliteProfileView({
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.4fr", gap: 40 }} className="elite-grid">
-          {/* LEFT: Dossier card */}
+          {/* LEFT: Dossier card + stats + co-riders */}
           <div>
             <div
               style={{
@@ -139,8 +140,10 @@ export default function EliteProfileView({
             >
               <div
                 style={{
-                  fontSize: 12,
-                  letterSpacing: ".12em",
+                  fontFamily: "'Oswald', sans-serif",
+                  fontWeight: 500,
+                  fontSize: 13,
+                  letterSpacing: ".14em",
                   textTransform: "uppercase",
                   color: "#e8e8e8",
                   marginBottom: 20,
@@ -191,12 +194,13 @@ export default function EliteProfileView({
                 <div style={{ paddingTop: 4 }}>
                   <div
                     style={{
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontWeight: 800,
-                      fontSize: 24,
+                      fontFamily: "'Oswald', sans-serif",
+                      fontWeight: 700,
+                      fontSize: 25,
                       color: "#f0c24e",
                       textTransform: "uppercase",
                       lineHeight: 1.15,
+                      letterSpacing: ".01em",
                     }}
                   >
                     {fullName ?? "Knight Ryder"}
@@ -216,6 +220,7 @@ export default function EliteProfileView({
                         fontSize: 10.5,
                         letterSpacing: ".08em",
                         textTransform: "uppercase",
+                        fontFamily: "'Oswald', sans-serif",
                       }}
                     >
                       Member &middot; Est. {joinYear}
@@ -229,11 +234,20 @@ export default function EliteProfileView({
                   style={{
                     border: "1px solid rgba(240,194,78,.25)",
                     borderRadius: 10,
-                    padding: "14px 16px",
+                    padding: "16px 18px",
                     marginBottom: 16,
                   }}
                 >
-                  <p style={{ color: "#dcdfe3", fontStyle: "italic", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
+                  <p
+                    style={{
+                      color: "#e8dfc8",
+                      fontFamily: "'Caveat', cursive",
+                      fontWeight: 600,
+                      fontSize: 22,
+                      lineHeight: 1.35,
+                      margin: 0,
+                    }}
+                  >
                     &ldquo;{bio}&rdquo;
                   </p>
                 </div>
@@ -247,147 +261,83 @@ export default function EliteProfileView({
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 30, flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 30, marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
               <HexBadge value={totalKm.toLocaleString("en-IN")} label="KMs Covered" />
               <HexBadge value={`${ridesCount} Rides`} label="Participated" />
               <HexBadge value={joinYear ?? "—"} label="Member Since" />
             </div>
-          </div>
 
-          {/* RIGHT: Rides */}
-          <div>
-            <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <div
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontWeight: 800,
-                  fontSize: 26,
-                  color: "#f5f5f5",
-                }}
-              >
-                Rides
-              </div>
-              <div style={{ fontSize: 11.5, letterSpacing: ".1em", color: "#f0c24e", textTransform: "uppercase" }}>
-                Expeditions &amp; Journeys
-              </div>
-            </div>
-
-            {rides.length === 0 ? (
-              <p style={{ color: "#8b929c", textAlign: "center" }}>No ride history linked yet.</p>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: 14,
-                }}
-                className="elite-rides-grid"
-              >
-                {rides.map((ride) => (
-                  <a
-                    key={ride.id}
-                    href={`/rides/${ride.slug}`}
-                    style={{
-                      display: "block",
-                      borderRadius: 10,
-                      overflow: "hidden",
-                      border: "1px solid rgba(240,194,78,.25)",
-                      background: "#0c0e12",
-                    }}
-                  >
-                    <div style={{ position: "relative", aspectRatio: "4/3", background: "#1a1d24" }}>
-                      {ride.hero_image_url && (
+            {coRiders.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'Oswald', sans-serif",
+                    fontWeight: 600,
+                    fontSize: 17,
+                    color: "#f5f5f5",
+                    marginBottom: 14,
+                  }}
+                >
+                  Frequently Rides With
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                  {coRiders.map((rider) => (
+                    <a
+                      key={rider.id}
+                      href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
+                      style={{
+                        width: 108,
+                        textAlign: "center",
+                        background: "rgba(20,24,30,.75)",
+                        border: "1px solid rgba(240,194,78,.25)",
+                        borderRadius: 10,
+                        padding: 12,
+                      }}
+                    >
+                      {rider.profile_photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={ride.hero_image_url}
-                          alt={ride.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          src={rider.profile_photo_url}
+                          alt={rider.full_name ?? "Rider"}
+                          style={{ width: 46, height: 46, borderRadius: "50%", objectFit: "cover", margin: "0 auto 8px" }}
                         />
-                      )}
-                    </div>
-                    <div style={{ padding: "10px 12px" }}>
-                      <div style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 700, lineHeight: 1.3 }}>
-                        {ride.title}
-                      </div>
-                      {ride.ride_date && (
-                        <div style={{ color: "#8b929c", fontSize: 11, marginTop: 3 }}>
-                          {new Date(ride.ride_date).toLocaleDateString("en-IN", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
+                      ) : (
+                        <div
+                          style={{
+                            width: 46,
+                            height: 46,
+                            borderRadius: "50%",
+                            background: "#0c0e12",
+                            color: "#f0c24e",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto 8px",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {(rider.full_name ?? "?").charAt(0).toUpperCase()}
                         </div>
                       )}
-                    </div>
-                  </a>
-                ))}
+                      <div style={{ color: "#f0f0f0", fontSize: 11.5, fontWeight: 700 }}>
+                        {rider.full_name}
+                      </div>
+                      <div style={{ color: "#8b929c", fontSize: 10, marginTop: 3 }}>
+                        {rider.shared_rides} together
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
-        </div>
 
-        {coRiders.length > 0 && (
-          <div style={{ marginTop: 50 }}>
-            <div
-              style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 800,
-                fontSize: 20,
-                color: "#f5f5f5",
-                marginBottom: 18,
-                textAlign: "center",
-              }}
-            >
-              Frequently Rides With
-            </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap" }}>
-              {coRiders.map((rider) => (
-                <a
-                  key={rider.id}
-                  href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
-                  style={{
-                    width: 140,
-                    textAlign: "center",
-                    background: "rgba(20,24,30,.75)",
-                    border: "1px solid rgba(240,194,78,.25)",
-                    borderRadius: 10,
-                    padding: 16,
-                  }}
-                >
-                  {rider.profile_photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={rider.profile_photo_url}
-                      alt={rider.full_name ?? "Rider"}
-                      style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", margin: "0 auto 10px" }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: "50%",
-                        background: "#0c0e12",
-                        color: "#f0c24e",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        margin: "0 auto 10px",
-                        fontWeight: 800,
-                      }}
-                    >
-                      {(rider.full_name ?? "?").charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div style={{ color: "#f0f0f0", fontSize: 12.5, fontWeight: 700 }}>{rider.full_name}</div>
-                  <div style={{ color: "#8b929c", fontSize: 11, marginTop: 4 }}>
-                    {rider.shared_rides} ride{rider.shared_rides === 1 ? "" : "s"} together
-                  </div>
-                </a>
-              ))}
-            </div>
+          {/* RIGHT: My Photos + Rides */}
+          <div>
+            <EliteGallery memberId={memberId} isOwner={isOwner} photos={photos} />
+            <EliteRidesCarousel rides={rides} />
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
