@@ -1,5 +1,11 @@
 import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
+import EliteBackgroundEditor from "./EliteBackgroundEditor";
+
+const GOLD = "#d4af37";
+const GOLD_GLOW = "rgba(212,175,55,0.4)";
+const GLASS_BG = "rgba(18,22,31,0.75)";
+const GLASS_BORDER = "rgba(212,175,55,0.3)";
 
 type Ride = {
   id: string;
@@ -32,51 +38,61 @@ type Props = {
   rides: Ride[];
   coRiders: CoRider[];
   photos: MemberPhoto[];
-  backgroundImageUrl: string | null;
+  backgroundSource: "auto" | "custom";
+  customBackgroundUrl: string | null;
+  customBackgroundPosition: number;
+  latestRideImageUrl: string | null;
+  latestRideImagePosition: number;
 };
 
-function HexBadge({ value, label }: { value: string | number; label: string }) {
+function StatCard({ value, label }: { value: string | number; label: string }) {
   return (
-    <div style={{ textAlign: "center", width: 120 }}>
+    <div
+      style={{
+        background: GLASS_BG,
+        backdropFilter: "blur(8px)",
+        border: `1px solid ${GLASS_BORDER}`,
+        borderRadius: 12,
+        padding: "20px 18px",
+        textAlign: "center",
+        boxShadow: "0 8px 20px rgba(0,0,0,.4)",
+      }}
+    >
       <div
         style={{
-          width: 108,
-          height: 94,
-          margin: "0 auto",
-          clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-          background: "linear-gradient(160deg, #1a1d24, #0c0e12)",
-          border: "1px solid rgba(240,194,78,.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          fontFamily: "'Oswald', sans-serif",
+          fontWeight: 600,
+          fontSize: value.toString().length > 6 ? 22 : 28,
+          color: GOLD,
+          background: "#000",
+          padding: "8px 14px",
+          borderRadius: 6,
+          display: "inline-block",
+          letterSpacing: "2px",
+          border: "1px solid rgba(212,175,55,.3)",
+          boxShadow: "inset 0 0 10px rgba(212,175,55,.2)",
         }}
       >
-        <span
-          style={{
-            fontFamily: "'Oswald', sans-serif",
-            fontWeight: 600,
-            fontSize: value.toString().length > 5 ? 16 : 20,
-            color: "#f0c24e",
-            letterSpacing: ".01em",
-          }}
-        >
-          {value}
-        </span>
+        {value}
       </div>
       <div
         style={{
-          fontSize: 10.5,
-          color: "#c9cdd3",
+          fontSize: 11.5,
+          color: "#a0aec0",
           textTransform: "uppercase",
-          letterSpacing: ".06em",
-          marginTop: 8,
-          fontWeight: 600,
+          letterSpacing: ".12em",
+          marginTop: 10,
         }}
       >
         {label}
       </div>
     </div>
   );
+}
+
+function parseRideNumber(title: string): string | null {
+  const match = title.match(/ride\s*#\s*(\d+)/i);
+  return match ? `#${match[1]}` : null;
 }
 
 export default function EliteProfileView({
@@ -93,33 +109,54 @@ export default function EliteProfileView({
   rides,
   coRiders,
   photos,
-  backgroundImageUrl,
+  backgroundSource,
+  customBackgroundUrl,
+  customBackgroundPosition,
+  latestRideImageUrl,
+  latestRideImagePosition,
 }: Props) {
   const joinYear = joinDate ? new Date(joinDate).getFullYear() : null;
+
+  const useCustomBg = backgroundSource === "custom" && !!customBackgroundUrl;
+  const bgUrl = useCustomBg ? customBackgroundUrl : latestRideImageUrl;
+  const bgPosition = useCustomBg ? customBackgroundPosition : latestRideImagePosition;
 
   return (
     <div
       style={{
         position: "relative",
-        background: backgroundImageUrl
-          ? `linear-gradient(180deg, rgba(8,10,14,.88), rgba(8,10,14,.94)), url('${backgroundImageUrl}') center/cover no-repeat fixed`
-          : "linear-gradient(160deg, #0c0e12, #17252a)",
+        background: bgUrl
+          ? `radial-gradient(circle at 50% 10%, rgba(212,175,55,.08) 0%, transparent 60%), linear-gradient(to bottom, rgba(8,10,15,.7), rgba(8,10,15,.95)), url('${bgUrl}') center ${bgPosition}%/cover no-repeat fixed`
+          : "radial-gradient(circle at 50% 10%, rgba(212,175,55,.08) 0%, transparent 60%), #080a0f",
         minHeight: "100vh",
         padding: "60px 24px 90px",
+        fontFamily: "'Inter', sans-serif",
       }}
     >
+      {isOwner && (
+        <EliteBackgroundEditor
+          memberId={memberId}
+          backgroundSource={backgroundSource}
+          customImageUrl={customBackgroundUrl}
+          customImagePosition={customBackgroundPosition}
+          latestRideImageUrl={latestRideImageUrl}
+        />
+      )}
+
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         {isOwner && (
           <div style={{ textAlign: "right", marginBottom: 20 }}>
             <a
               href="/members/edit"
-              className="btn"
               style={{
+                display: "inline-block",
                 background: "transparent",
-                color: "#f0c24e",
-                border: "1.5px solid #f0c24e",
-                padding: "8px 20px",
+                color: GOLD,
+                border: `1.5px solid ${GOLD}`,
+                padding: "8px 22px",
                 fontSize: 12.5,
+                borderRadius: 20,
+                textDecoration: "none",
               }}
             >
               Edit Profile
@@ -132,36 +169,40 @@ export default function EliteProfileView({
           <div>
             <div
               style={{
-                background: "rgba(20,24,30,.75)",
-                border: "1px solid rgba(240,194,78,.4)",
-                borderRadius: 14,
-                padding: 28,
+                background: GLASS_BG,
+                backdropFilter: "blur(12px)",
+                border: `1px solid ${GLASS_BORDER}`,
+                borderRadius: 16,
+                padding: 32,
+                boxShadow: "0 15px 35px rgba(0,0,0,.6), inset 0 0 15px rgba(212,175,55,.1)",
+                marginBottom: 30,
               }}
             >
               <div
                 style={{
                   fontFamily: "'Oswald', sans-serif",
                   fontWeight: 500,
-                  fontSize: 13,
-                  letterSpacing: ".14em",
+                  fontSize: 16,
+                  letterSpacing: "2px",
+                  color: "#8899a6",
+                  borderBottom: "1px solid rgba(255,255,255,.1)",
+                  paddingBottom: 12,
+                  marginBottom: 22,
                   textTransform: "uppercase",
-                  color: "#e8e8e8",
-                  marginBottom: 20,
-                  paddingBottom: 14,
-                  borderBottom: "1px solid rgba(240,194,78,.3)",
                 }}
               >
-                The Knight Ryders <span style={{ color: "#f0c24e" }}>|</span> Rider Dossier
+                The Knight Ryders <span style={{ color: GOLD }}>|</span> Rider Dossier
               </div>
 
-              <div style={{ display: "flex", gap: 18, alignItems: "flex-start", marginBottom: 18 }}>
+              <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
                 <div
                   style={{
-                    width: 90,
-                    height: 90,
+                    width: 120,
+                    height: 120,
                     borderRadius: "50%",
-                    padding: 3,
-                    background: "linear-gradient(145deg, #f0c24e, #a97c1f)",
+                    padding: 4,
+                    background: `linear-gradient(135deg, ${GOLD}, transparent, ${GOLD})`,
+                    boxShadow: `0 0 25px ${GOLD_GLOW}`,
                     flexShrink: 0,
                   }}
                 >
@@ -170,7 +211,13 @@ export default function EliteProfileView({
                     <img
                       src={profilePhotoUrl}
                       alt={fullName ?? "Rider"}
-                      style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "2px solid #080a0f",
+                      }}
                     />
                   ) : (
                     <div
@@ -178,93 +225,90 @@ export default function EliteProfileView({
                         width: "100%",
                         height: "100%",
                         borderRadius: "50%",
-                        background: "#0c0e12",
+                        background: "#080a0f",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#f0c24e",
-                        fontSize: 30,
+                        color: GOLD,
+                        fontSize: 36,
                         fontWeight: 800,
+                        border: "2px solid #080a0f",
                       }}
                     >
                       {(fullName ?? "?").charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
-                <div style={{ paddingTop: 4 }}>
+                <div>
                   <div
                     style={{
                       fontFamily: "'Oswald', sans-serif",
                       fontWeight: 700,
-                      fontSize: 25,
-                      color: "#f0c24e",
+                      fontSize: 30,
+                      letterSpacing: "1px",
+                      color: GOLD,
                       textTransform: "uppercase",
-                      lineHeight: 1.15,
-                      letterSpacing: ".01em",
+                      lineHeight: 1.1,
                     }}
                   >
                     {fullName ?? "Knight Ryder"}
                   </div>
-                  {handle && (
-                    <div style={{ color: "#9aa1ab", fontSize: 13.5, marginTop: 3 }}>@{handle}</div>
-                  )}
+                  <div style={{ color: "#a0aec0", fontSize: 14, marginTop: 4 }}>
+                    {handle && `@${handle}`}
+                    {handle && dateOfBirth && " • "}
+                    {dateOfBirth &&
+                      `Born ${new Date(dateOfBirth).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}`}
+                  </div>
                   {joinYear && (
                     <div
                       style={{
                         display: "inline-block",
                         marginTop: 10,
+                        background: "rgba(212,175,55,.15)",
+                        border: `1px solid ${GOLD}`,
+                        color: GOLD,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: "2px",
                         padding: "4px 12px",
-                        borderRadius: 20,
-                        border: "1px solid rgba(240,194,78,.5)",
-                        color: "#f0c24e",
-                        fontSize: 10.5,
-                        letterSpacing: ".08em",
+                        borderRadius: 4,
                         textTransform: "uppercase",
-                        fontFamily: "'Oswald', sans-serif",
                       }}
                     >
-                      Member &middot; Est. {joinYear}
+                      Member | Est. {joinYear}
                     </div>
                   )}
                 </div>
               </div>
 
               {bio && (
-                <div
+                <p
                   style={{
-                    border: "1px solid rgba(240,194,78,.25)",
-                    borderRadius: 10,
-                    padding: "16px 18px",
-                    marginBottom: 16,
+                    fontFamily: "'Caveat', cursive",
+                    fontWeight: 600,
+                    fontSize: 22,
+                    color: "#f0e6d2",
+                    lineHeight: 1.4,
+                    borderLeft: `3px solid ${GOLD}`,
+                    background: "rgba(0,0,0,.2)",
+                    padding: "12px 18px",
+                    borderRadius: "0 8px 8px 0",
+                    marginTop: 22,
                   }}
                 >
-                  <p
-                    style={{
-                      color: "#e8dfc8",
-                      fontFamily: "'Caveat', cursive",
-                      fontWeight: 600,
-                      fontSize: 22,
-                      lineHeight: 1.35,
-                      margin: 0,
-                    }}
-                  >
-                    &ldquo;{bio}&rdquo;
-                  </p>
-                </div>
-              )}
-
-              {dateOfBirth && (
-                <div style={{ fontSize: 12, color: "#8b929c" }}>
-                  Birthday{" "}
-                  {new Date(dateOfBirth).toLocaleDateString("en-IN", { month: "long", day: "numeric" })}
-                </div>
+                  &ldquo;{bio}&rdquo;
+                </p>
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 30, marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
-              <HexBadge value={totalKm.toLocaleString("en-IN")} label="KMs Covered" />
-              <HexBadge value={`${ridesCount} Rides`} label="Participated" />
-              <HexBadge value={joinYear ?? "—"} label="Member Since" />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16, marginBottom: 36 }}>
+              <StatCard value={totalKm.toLocaleString("en-IN")} label="KMs Covered" />
+              <StatCard value={ridesCount} label="Rides Participated" />
+              <StatCard value={joinYear ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}` : "—"} label="Member Since" />
             </div>
 
             {coRiders.length > 0 && (
@@ -288,8 +332,9 @@ export default function EliteProfileView({
                       style={{
                         width: 108,
                         textAlign: "center",
-                        background: "rgba(20,24,30,.75)",
-                        border: "1px solid rgba(240,194,78,.25)",
+                        background: GLASS_BG,
+                        backdropFilter: "blur(8px)",
+                        border: `1px solid ${GLASS_BORDER}`,
                         borderRadius: 10,
                         padding: 12,
                       }}
@@ -307,8 +352,8 @@ export default function EliteProfileView({
                             width: 46,
                             height: 46,
                             borderRadius: "50%",
-                            background: "#0c0e12",
-                            color: "#f0c24e",
+                            background: "#080a0f",
+                            color: GOLD,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",

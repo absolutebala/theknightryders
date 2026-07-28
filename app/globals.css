@@ -120,6 +120,12 @@ section{padding:70px 0;}
 .rider-card-bio{font-size:13px;color:#3a4a4f;line-height:1.5;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .rider-card-stats{font-size:12.5px;color:var(--grey);font-weight:600;margin-top:auto;}
 
+/* ELITE PROFILE TEMPLATE */
+.elite-ride-card{display:block;border-radius:10px;overflow:hidden;border:1px solid rgba(212,175,55,.25);background:#0c0e12;transition:border-color .3s ease,box-shadow .3s ease;}
+.elite-ride-card:hover{border-color:#d4af37;box-shadow:0 0 20px rgba(212,175,55,.4);}
+.elite-ride-img{transition:transform .5s ease;}
+.elite-ride-card:hover .elite-ride-img{transform:scale(1.08);}
+
 /* PUBLIC PROFILE: two-column layout for rides + frequently-rides-with */
 .profile-two-col{display:grid;grid-template-columns:1.6fr 1fr;gap:44px;align-items:start;}
 .past-rides-grid-2col{grid-template-columns:repeat(2,1fr);}

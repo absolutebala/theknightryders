@@ -10,7 +10,9 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   const { data: member } = await supabase
     .from("members_public")
-    .select("id, full_name, handle, bio, date_of_birth, join_date, profile_photo_url, profile_template")
+    .select(
+      "id, full_name, handle, bio, date_of_birth, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position"
+    )
     .eq("id", memberId)
     .maybeSingle();
 
@@ -35,7 +37,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   const { data: participation } = await supabase
     .from("ride_participants")
-    .select("km_covered, rides(id, slug, title, ride_date, hero_image_url)")
+    .select("km_covered, rides(id, slug, title, ride_date, hero_image_url, hero_image_position)")
     .eq("member_id", memberId);
 
   type ParticipationRow = {
@@ -46,6 +48,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       title: string;
       ride_date: string | null;
       hero_image_url: string | null;
+      hero_image_position: number | null;
     } | null;
   };
 
@@ -103,7 +106,11 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         rides={rides}
         coRiders={coRiders}
         photos={photos ?? []}
-        backgroundImageUrl={rides[0]?.hero_image_url ?? null}
+        backgroundSource={member.background_source ?? "auto"}
+        customBackgroundUrl={member.background_image_url}
+        customBackgroundPosition={member.background_image_position ?? 50}
+        latestRideImageUrl={rides[0]?.hero_image_url ?? null}
+        latestRideImagePosition={rides[0]?.hero_image_position ?? 50}
       />
     );
   }

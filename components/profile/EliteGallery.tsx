@@ -123,8 +123,8 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
               htmlFor="elite-gallery-upload"
               style={{
                 fontSize: 11.5,
-                color: "#f0c24e",
-                border: "1px solid rgba(240,194,78,.5)",
+                color: "#d4af37",
+                border: "1px solid rgba(212,175,55,.5)",
                 borderRadius: 6,
                 padding: "5px 12px",
                 cursor: "pointer",
@@ -150,7 +150,7 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
                 aspectRatio: "1/1",
                 borderRadius: 8,
                 overflow: "hidden",
-                border: "1px solid rgba(240,194,78,.25)",
+                border: "1px solid rgba(212,175,55,.25)",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
