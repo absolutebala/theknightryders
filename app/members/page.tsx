@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { notifyAdminOfPendingRequest } from "@/lib/notifyAdmin";
 
 export default async function MembersPage() {
   const supabase = await createClient();
@@ -25,16 +26,55 @@ export default async function MembersPage() {
     .maybeSingle();
 
   if (!member) {
+    // Check for an existing pending request first, so we don't spam the
+    // admin inbox on every page reload.
+    const { data: existingRequest } = await supabase
+      .from("pending_requests")
+      .select("id, status")
+      .eq("user_id", user.id)
+      .order("requested_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!existingRequest) {
+      const { error: insertError } = await supabase
+        .from("pending_requests")
+        .insert({
+          user_id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name ?? null,
+        });
+
+      if (!insertError) {
+        await notifyAdminOfPendingRequest({
+          requesterEmail: user.email!,
+          requesterName: user.user_metadata?.full_name ?? null,
+        });
+      }
+    }
+
+    const status = existingRequest?.status ?? "pending";
+
     return (
       <div className="container" style={{ padding: "70px 24px", maxWidth: 640 }}>
         <h1 style={{ color: "var(--navy)", marginBottom: 12 }}>
-          We don&apos;t recognize this account
+          {status === "rejected" ? "Access request declined" : "Request pending approval"}
         </h1>
         <p style={{ color: "var(--grey)" }}>
           You&apos;re signed in as <strong>{user.email}</strong>, but this
-          email isn&apos;t on our members list yet. If you&apos;re a Knight
-          Ryders member, reach out on WhatsApp (+91 6381 890 182) and
-          we&apos;ll get your profile linked up.
+          email isn&apos;t on our members list yet.
+          {status === "rejected" ? (
+            <>
+              {" "}Your access request was declined. If you think this is a
+              mistake, reach out on WhatsApp (+91 6381 890 182).
+            </>
+          ) : (
+            <>
+              {" "}We&apos;ve let a club admin know -- once approved,
+              refresh this page to see your profile. You can also reach out
+              on WhatsApp (+91 6381 890 182) to speed things along.
+            </>
+          )}
         </p>
       </div>
     );
