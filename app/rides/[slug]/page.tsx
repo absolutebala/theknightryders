@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import RideHeroEditor from "@/components/admin/RideHeroEditor";
 
 export default async function RideDetailPage({
   params,
@@ -11,13 +13,21 @@ export default async function RideDetailPage({
 
   const { data: ride } = await supabase
     .from("rides")
-    .select("id, title, ride_date, hero_image_url, description")
+    .select("id, title, ride_date, hero_image_url, hero_image_position, description")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!ride) {
     notFound();
   }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: isAdminResult } = await supabase.rpc("is_admin");
+  const cookieStore = await cookies();
+  const editModeOn = cookieStore.get("edit_mode")?.value === "true";
+  const isAdmin = !!user && !!isAdminResult && editModeOn;
 
   const { data: participants } = await supabase
     .from("ride_participants")
@@ -27,9 +37,9 @@ export default async function RideDetailPage({
 
   return (
     <>
-      {ride.hero_image_url && (
-        <div style={{ height: 480, overflow: "hidden" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      <div style={{ height: 480, overflow: "hidden", position: "relative" }}>
+        {ride.hero_image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={ride.hero_image_url}
             alt={ride.title}
@@ -37,11 +47,17 @@ export default async function RideDetailPage({
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              objectPosition: "center bottom",
+              objectPosition: `center ${ride.hero_image_position ?? 50}%`,
             }}
           />
-        </div>
-      )}
+        )}
+        <RideHeroEditor
+          rideId={ride.id}
+          isAdmin={isAdmin}
+          imageUrl={ride.hero_image_url}
+          imagePosition={ride.hero_image_position ?? 50}
+        />
+      </div>
 
       <section style={{ paddingBottom: 30 }}>
         <div className="container" style={{ maxWidth: 780 }}>

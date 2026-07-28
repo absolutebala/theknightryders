@@ -44,7 +44,7 @@ nav li.has-dropdown:hover .dropdown{display:block;}
 .mobile-nav a{color:var(--white);font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
 
 /* HERO */
-.hero{position:relative;background:linear-gradient(180deg,rgba(5,8,15,.35),rgba(5,8,15,.55)),url('https://www.theknightryders.com/wp-content/uploads/2022/03/theknightryders-1-300x225.jpeg') center/cover no-repeat;color:var(--white);padding:80px 24px 90px;text-align:left;min-height:620px;display:flex;align-items:flex-end;}
+.hero{position:relative;background:linear-gradient(180deg,rgba(5,8,15,.35),rgba(5,8,15,.55)),url('https://www.theknightryders.com/wp-content/uploads/2022/03/theknightryders-1-300x225.jpeg') center/cover no-repeat;color:var(--white);padding:80px 24px 90px;text-align:left;min-height:100vh;min-height:100dvh;display:flex;align-items:flex-end;}
 .hero-inner{max-width:1300px;margin:0 auto;width:100%;}
 .hero h1{font-size:56px;line-height:1.15;max-width:900px;margin:0 0 6px;font-weight:800;}
 .hero h1 .line1{color:var(--mint-text);display:block;}

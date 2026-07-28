@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import EditableField from "@/components/admin/EditableField";
 import EditableGallery from "@/components/admin/EditableGallery";
+import HeroBannerEditor from "@/components/admin/HeroBannerEditor";
 
 async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -40,11 +41,30 @@ export default async function HomePage() {
 
   const { data: latestRide } = await supabase
     .from("rides")
-    .select("title, hero_image_url")
+    .select("title, hero_image_url, hero_image_position")
     .not("hero_image_url", "is", null)
     .order("ride_date", { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle();
+
+  const { data: heroContent } = await supabase
+    .from("homepage_content")
+    .select("hero_source")
+    .eq("section_key", "hero")
+    .maybeSingle();
+
+  const { data: heroImage } = await supabase
+    .from("homepage_images")
+    .select("image_url, image_position")
+    .eq("section_key", "hero")
+    .maybeSingle();
+
+  const heroSource = (heroContent?.hero_source ?? "auto") as "auto" | "custom";
+  const useCustomHero = heroSource === "custom" && !!heroImage?.image_url;
+  const heroImageUrl = useCustomHero ? heroImage!.image_url : latestRide?.hero_image_url;
+  const heroImagePosition = useCustomHero
+    ? heroImage!.image_position
+    : latestRide?.hero_image_position ?? 50;
 
   const milestone = await getSection(supabase, "milestone");
   const rideForCause = await getSection(supabase, "ride_for_cause");
@@ -56,13 +76,21 @@ export default async function HomePage() {
       <section
         className="hero"
         style={
-          latestRide?.hero_image_url
+          heroImageUrl
             ? {
-                backgroundImage: `linear-gradient(180deg, rgba(5,8,15,.35), rgba(5,8,15,.55)), url('${latestRide.hero_image_url}')`,
+                backgroundImage: `linear-gradient(180deg, rgba(5,8,15,.35), rgba(5,8,15,.55)), url('${heroImageUrl}')`,
+                backgroundPosition: `center ${heroImagePosition}%`,
               }
             : undefined
         }
       >
+        <HeroBannerEditor
+          isAdmin={isAdmin}
+          heroSource={heroSource}
+          customImageUrl={heroImage?.image_url ?? null}
+          customImagePosition={heroImage?.image_position ?? 50}
+          latestRideImageUrl={latestRide?.hero_image_url ?? null}
+        />
         <div className="hero-inner">
           <h1>
             <span className="line1">Ride till the last mile.</span>
