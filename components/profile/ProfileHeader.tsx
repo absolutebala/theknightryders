@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -43,11 +43,12 @@ export default function ProfileHeader({
   const [editing, setEditing] = useState<EditField>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nameInput, setNameInput] = useState(fullName ?? "");
   const [handleInput, setHandleInput] = useState(handle ?? "");
   const [dobInput, setDobInput] = useState(dateOfBirth ?? "");
-  const [photoInput, setPhotoInput] = useState(profilePhotoUrl ?? "");
 
   async function save(column: string, value: string) {
     setSaving(true);
@@ -63,6 +64,56 @@ export default function ProfileHeader({
       setError(error.message);
       return;
     }
+    setEditing(null);
+    router.refresh();
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+    const supabase = createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setUploading(false);
+      setError("You need to be signed in to upload a photo.");
+      return;
+    }
+
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const path = `${user.id}/${Date.now()}-${cleanName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      setUploading(false);
+      setError(uploadError.message);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
+
+    const { error: updateError } = await supabase
+      .from("members")
+      .update({ profile_photo_url: publicUrlData.publicUrl })
+      .eq("id", memberId);
+
+    setUploading(false);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setEditing(null);
     router.refresh();
   }
@@ -138,38 +189,36 @@ export default function ProfileHeader({
                 background: "var(--white)",
                 border: "1px solid #d6dedb",
                 borderRadius: 10,
-                padding: 12,
-                width: 260,
+                padding: 14,
+                width: 240,
                 boxShadow: "0 6px 20px rgba(0,0,0,.12)",
               }}
             >
-              <label style={{ fontSize: 12, fontWeight: 700, color: "var(--navy)" }}>
-                Photo URL
+              <label style={{ fontSize: 12, fontWeight: 700, color: "var(--navy)", display: "block", marginBottom: 8 }}>
+                Upload a photo
               </label>
               <input
-                type="text"
-                value={photoInput}
-                onChange={(e) => setPhotoInput(e.target.value)}
-                placeholder="https://..."
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  margin: "6px 0 10px",
-                  border: "1.5px solid #c7d3cf",
-                  borderRadius: 6,
-                  fontSize: 13,
-                }}
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                style={{ display: "none" }}
+                id="avatar-upload"
               />
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  className="btn btn-amber"
-                  style={{ padding: "6px 14px", fontSize: 12 }}
-                  disabled={saving}
-                  onClick={() => save("profile_photo_url", photoInput)}
-                >
-                  Save
-                </button>
+              <label
+                htmlFor="avatar-upload"
+                className="btn btn-amber"
+                style={{
+                  padding: "7px 16px",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  display: "inline-block",
+                }}
+              >
+                {uploading ? "Uploading…" : "Choose Photo"}
+              </label>
+              {error && <div style={{ color: "#a3312a", fontSize: 12, marginTop: 8 }}>{error}</div>}
+              <div style={{ marginTop: 10 }}>
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
