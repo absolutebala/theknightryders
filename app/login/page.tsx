@@ -40,18 +40,36 @@ function LoginForm() {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
 
+    await supabase.rpc("link_member_account");
+
+    if (data.user) {
+      const { data: member } = await supabase
+        .from("members")
+        .select("id, handle")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      setLoading(false);
+
+      if (member) {
+        router.push(member.handle ? `/@${member.handle}` : `/members/${member.id}`);
+        router.refresh();
+        return;
+      }
+    }
+
+    setLoading(false);
     router.push("/members");
     router.refresh();
   }

@@ -76,22 +76,26 @@ export default function Header({ authUser }: { authUser: HeaderUser }) {
           </a>
           <nav>
             <ul>
-              <li className={`has-dropdown ${isActive("/rides") ? "current" : ""}`}>
-                <a href="/rides/past">Rides</a>
-                <div className="dropdown">
-                  <a href="/blog">Riders Blog</a>
-                  <a href="/safety">Safety</a>
-                  <a href="/user-photos">User Photos</a>
-                </div>
+              <li className={isActive("/rides/past") ? "current" : ""}>
+                <a href="/rides/past">Past Rides</a>
               </li>
-              <li className={isActive("/newsletter") ? "current" : ""}>
-                <a href="/newsletter">Newsletter</a>
+              <li className={isActive("/rides/upcoming") ? "current" : ""}>
+                <a href="/rides/upcoming">Upcoming Rides</a>
               </li>
-              <li className={isActive("/csr") ? "current" : ""}>
-                <a href="/csr">CSR</a>
+              <li>
+                <a
+                  href="https://www.youtube.com/@TheKnightRyders1"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Videos
+                </a>
               </li>
-              <li className={isActive("/members") ? "current" : ""}>
-                <a href="/members">Members</a>
+              <li className={isActive("/media") ? "current" : ""}>
+                <a href="/media">Media</a>
+              </li>
+              <li className={isActive("/riders") ? "current" : ""}>
+                <a href="/riders">Members</a>
               </li>
             </ul>
           </nav>
@@ -217,10 +221,13 @@ export default function Header({ authUser }: { authUser: HeaderUser }) {
 
         {mobileOpen && (
           <nav className="mobile-nav">
-            <a href="/rides/past">Rides</a>
-            <a href="/newsletter">Newsletter</a>
-            <a href="/csr">CSR</a>
-            <a href="/members">Members</a>
+            <a href="/rides/past">Past Rides</a>
+            <a href="/rides/upcoming">Upcoming Rides</a>
+            <a href="https://www.youtube.com/@TheKnightRyders1" target="_blank" rel="noopener">
+              Videos
+            </a>
+            <a href="/media">Media</a>
+            <a href="/riders">Members</a>
             {!authUser && <a href="/login">Login</a>}
           </nav>
         )}
