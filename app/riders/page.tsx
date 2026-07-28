@@ -5,22 +5,23 @@ export default async function RidersPage() {
 
   const { data: members } = await supabase
     .from("members_public")
-    .select("id, full_name, bio, profile_photo_url, ride_count");
+    .select("id, full_name, bio, profile_photo_url");
 
   const { data: leaderboard } = await supabase
     .from("ride_leaderboard")
-    .select("member_id, total_km");
+    .select("member_id, total_km, rides_count");
 
-  const kmByMember = new Map(
+  const statsByMember = new Map(
     (leaderboard ?? [])
       .filter((row) => row.member_id)
-      .map((row) => [row.member_id, row.total_km])
+      .map((row) => [row.member_id, { total_km: row.total_km, ride_count: row.rides_count }])
   );
 
   const riders = (members ?? [])
     .map((m) => ({
       ...m,
-      total_km: kmByMember.get(m.id) ?? 0,
+      total_km: statsByMember.get(m.id)?.total_km ?? 0,
+      ride_count: statsByMember.get(m.id)?.ride_count ?? 0,
     }))
     .filter((m) => m.ride_count > 0)
     .sort((a, b) => (b.total_km ?? 0) - (a.total_km ?? 0));

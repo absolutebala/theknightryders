@@ -173,15 +173,37 @@ for (let i = 0; i < participantRows.length; i += BATCH_SIZE) {
 // --- Recalculate ride_count + ride_list on the members table
 console.log("Recalculating member ride stats...");
 
-const { data: allParticipation, error: fetchAllError } = await supabase
-  .from("ride_participants")
-  .select("member_id, ride_id, rides(title, ride_date)")
-  .not("member_id", "is", null);
+// Supabase caps unpaginated selects at 1000 rows by default -- with well
+// over 1000 participant rows total, an unpaginated fetch here would
+// silently truncate and undercount everyone's stats. Page through in
+// batches of 1000 to get everything.
+async function fetchAllParticipation() {
+  const pageSize = 1000;
+  let allRows = [];
+  let from = 0;
 
-if (fetchAllError) {
-  console.error("Failed to fetch participation for stats:", fetchAllError.message);
-  process.exit(1);
+  while (true) {
+    const { data, error } = await supabase
+      .from("ride_participants")
+      .select("member_id, ride_id, rides(title, ride_date)")
+      .not("member_id", "is", null)
+      .range(from, from + pageSize - 1);
+
+    if (error) {
+      console.error("Failed to fetch participation for stats:", error.message);
+      process.exit(1);
+    }
+
+    allRows = allRows.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return allRows;
 }
+
+const allParticipation = await fetchAllParticipation();
+console.log(`Fetched ${allParticipation.length} total participation rows for stats.`);
 
 const statsByMember = new Map();
 for (const row of allParticipation) {

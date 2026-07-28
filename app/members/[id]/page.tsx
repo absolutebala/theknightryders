@@ -126,7 +126,7 @@ export default async function PublicMemberProfile({
       >
         <div>
           <div style={{ fontSize: 28, fontWeight: 800, color: "var(--navy)" }}>
-            {member.ride_count}
+            {rides.length}
           </div>
           <div style={{ fontSize: 13, color: "var(--grey)", textTransform: "uppercase" }}>
             Rides Participated

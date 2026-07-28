@@ -98,10 +98,11 @@ export default async function MembersPage() {
 
   const { data: kmRow } = await supabase
     .from("ride_leaderboard")
-    .select("total_km")
+    .select("total_km, rides_count")
     .eq("member_id", member.id)
     .maybeSingle();
   const totalKm = kmRow?.total_km ?? 0;
+  const ridesParticipated = kmRow?.rides_count ?? 0;
 
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 760 }}>
@@ -135,7 +136,7 @@ export default async function MembersPage() {
       >
         <div>
           <div style={{ fontSize: 28, fontWeight: 800, color: "var(--navy)" }}>
-            {member.ride_count}
+            {ridesParticipated}
           </div>
           <div style={{ fontSize: 13, color: "var(--grey)", textTransform: "uppercase" }}>
             Rides Participated
