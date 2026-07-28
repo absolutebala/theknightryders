@@ -25,6 +25,22 @@ export default async function MembersPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
+  // Fill in a profile photo from their Google account if they don't already
+  // have one set (e.g. from the WordPress import, or a manual edit).
+  // Never overwrites an existing photo.
+  if (member && !member.profile_photo_url) {
+    const googleAvatar =
+      user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
+
+    if (googleAvatar) {
+      await supabase
+        .from("members")
+        .update({ profile_photo_url: googleAvatar })
+        .eq("id", member.id);
+      member.profile_photo_url = googleAvatar;
+    }
+  }
+
   if (!member) {
     // Check for an existing pending request first, so we don't spam the
     // admin inbox on every page reload.
