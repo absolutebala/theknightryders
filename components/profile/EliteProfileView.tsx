@@ -76,6 +76,8 @@ export default function EliteProfileView({
       className="elite-page"
       style={{
         position: "relative",
+        marginTop: -80,
+        paddingTop: 80,
         backgroundImage: bgUrl
           ? `radial-gradient(circle at 50% 20%, rgba(212,175,55,.12) 0%, transparent 50%), linear-gradient(to bottom, rgba(7,9,14,.7), rgba(7,9,14,.95)), url('${bgUrl}')`
           : "radial-gradient(circle at 50% 20%, rgba(212,175,55,.12) 0%, transparent 50%)",

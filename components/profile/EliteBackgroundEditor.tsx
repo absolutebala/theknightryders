@@ -87,7 +87,7 @@ export default function EliteBackgroundEditor({
   }
 
   return (
-    <div style={{ position: "absolute", top: 20, left: 24, zIndex: 20 }}>
+    <div style={{ position: "absolute", top: 100, left: 24, zIndex: 20 }}>
       <button
         type="button"
         onClick={() => setEditing((e) => !e)}
