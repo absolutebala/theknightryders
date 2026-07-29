@@ -133,13 +133,13 @@ section{padding:70px 0;}
 .elite-wrapper{max-width:1280px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:1fr;gap:40px;}
 
 .elite-dossier-card{background:var(--elite-glass-panel);backdrop-filter:blur(16px);border:1.5px solid var(--elite-glass-border);border-radius:20px;padding:35px 40px;box-shadow:0 20px 40px rgba(0,0,0,.8),inset 0 0 20px rgba(212,175,55,.1);position:relative;}
-.elite-dossier-header-title{font-family:'Oswald',sans-serif;font-size:22px;letter-spacing:3px;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:30px;}
+.elite-dossier-header-title{font-family:'Poppins',sans-serif;font-size:22px;letter-spacing:3px;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:30px;}
 .elite-dossier-body{display:grid;grid-template-columns:180px 1fr;gap:35px;align-items:center;}
 
 .elite-avatar-container{position:relative;width:170px;height:170px;border-radius:50%;padding:6px;background:linear-gradient(135deg,var(--elite-gold-main),transparent,var(--elite-gold-main));box-shadow:0 0 30px var(--elite-gold-glow);}
 .elite-avatar-container img{width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid var(--elite-bg-dark);}
 
-.elite-profile-details h1{font-family:'Oswald',sans-serif;font-size:42px;color:var(--elite-gold-main);letter-spacing:1px;text-transform:uppercase;line-height:1;margin-bottom:5px;}
+.elite-profile-details h1{font-family:'Poppins',sans-serif;font-size:42px;color:var(--elite-gold-main);letter-spacing:1px;text-transform:uppercase;line-height:1;margin-bottom:5px;}
 .elite-handle{color:#64748b;font-size:15px;margin-bottom:12px;}
 .elite-badge-capsule{display:inline-block;background:rgba(212,175,55,.12);border:1px solid var(--elite-gold-main);color:var(--elite-gold-main);font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 14px;border-radius:6px;text-transform:uppercase;margin-bottom:20px;}
 .elite-quote-block{font-family:'Caveat',cursive;font-size:24px;color:#f1f5f9;line-height:1.35;background:rgba(0,0,0,.3);border-left:3px solid var(--elite-gold-main);padding:14px 20px;border-radius:0 10px 10px 0;}
@@ -151,7 +151,7 @@ section{padding:70px 0;}
 .elite-hex-label{font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:2px;}
 
 .elite-section-header{margin-top:20px;}
-.elite-section-header h2{font-family:'Oswald',sans-serif;font-size:32px;letter-spacing:2px;text-transform:uppercase;color:#fff;}
+.elite-section-header h2{font-family:'Poppins',sans-serif;font-size:32px;letter-spacing:2px;text-transform:uppercase;color:#fff;}
 .elite-section-header p{color:#64748b;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-bottom:25px;}
 
 .elite-rides-grid-v2{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;}
@@ -162,19 +162,43 @@ section{padding:70px 0;}
 .elite-ride-card-v2:hover .elite-ride-thumb img{transform:scale(1.06);}
 .elite-ride-badge-hex{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.85);border:1px solid var(--elite-gold-main);color:var(--elite-gold-main);font-family:'Oswald',sans-serif;font-size:12px;padding:4px 10px;border-radius:4px;}
 .elite-ride-info{padding:18px 20px;}
-.elite-ride-info h3{font-family:'Oswald',sans-serif;font-size:22px;letter-spacing:1px;color:#fff;margin-bottom:4px;}
+.elite-ride-info h3{font-family:'Poppins',sans-serif;font-size:22px;letter-spacing:1px;color:#fff;margin-bottom:4px;}
 .elite-ride-info span{font-size:12px;color:#64748b;}
 
-.elite-subsection-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;color:#fff;margin-bottom:16px;}
+.elite-subsection-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:20px;color:#fff;margin-bottom:16px;}
 .elite-gallery-grid-v2{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
 .elite-co-riders-row{display:flex;flex-wrap:wrap;gap:14px;}
 .elite-co-rider-card{width:120px;text-align:center;background:var(--elite-glass-panel);backdrop-filter:blur(8px);border:1px solid var(--elite-glass-border);border-radius:10px;padding:14px;display:block;}
+
+.elite-two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+
+.elite-slider{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--elite-glass-border);background:var(--elite-glass-panel);}
+.elite-slider-frame{position:relative;width:100%;aspect-ratio:4/3;background:#05060a;}
+.elite-slider-frame img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;}
+.elite-slider-nav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid rgba(212,175,55,.5);color:var(--elite-gold-main);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
+.elite-slider-nav:disabled{opacity:.3;cursor:default;}
+.elite-slider-nav.elite-prev{left:10px;}
+.elite-slider-nav.elite-next{right:10px;}
+.elite-slider-remove{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#fff;font-size:12px;cursor:pointer;}
+.elite-slider-dots{display:flex;justify-content:center;gap:6px;padding:12px;}
+.elite-slider-dot{width:7px;height:7px;border-radius:50%;background:rgba(212,175,55,.3);border:none;cursor:pointer;padding:0;}
+.elite-slider-dot.elite-active{background:var(--elite-gold-main);}
+
+.elite-lightbox-backdrop{position:fixed;inset:0;background:rgba(4,5,8,.94);z-index:300;display:flex;align-items:center;justify-content:center;padding:40px;}
+.elite-lightbox-img{max-width:90vw;max-height:82vh;object-fit:contain;border-radius:6px;}
+.elite-lightbox-close{position:absolute;top:24px;right:28px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:18px;cursor:pointer;}
+.elite-lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(212,175,55,.4);color:var(--elite-gold-main);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.elite-lightbox-nav.elite-prev{left:24px;}
+.elite-lightbox-nav.elite-next{right:24px;}
+
+.elite-instagram-link{display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:var(--elite-gold-main);font-size:12.5px;text-decoration:none;border:1px solid rgba(212,175,55,.4);border-radius:20px;padding:4px 12px;}
 
 @media (max-width:900px){
   .elite-dossier-body{grid-template-columns:1fr;text-align:center;}
   .elite-avatar-container{margin:0 auto;}
   .elite-telemetry-row,.elite-rides-grid-v2{grid-template-columns:1fr;}
   .elite-gallery-grid-v2{grid-template-columns:repeat(3,1fr);}
+  .elite-two-col{grid-template-columns:1fr;}
 }
 
 /* PUBLIC PROFILE: two-column layout for rides + frequently-rides-with */

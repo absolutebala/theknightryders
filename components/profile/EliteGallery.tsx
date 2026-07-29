@@ -21,10 +21,21 @@ const MAX_PHOTOS = 5;
 export default function EliteGallery({ memberId, isOwner, photos }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [index, setIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOwner && photos.length === 0) return null;
+
+  const current = photos[index];
+
+  function goPrev() {
+    setIndex((i) => (i > 0 ? i - 1 : i));
+  }
+  function goNext() {
+    setIndex((i) => (i < photos.length - 1 ? i + 1 : i));
+  }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -85,11 +96,12 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
       setError(error.message);
       return;
     }
+    setIndex((i) => Math.max(0, i - 1));
     router.refresh();
   }
 
   return (
-    <div style={{ marginBottom: 32 }}>
+    <div>
       <div
         style={{
           display: "flex",
@@ -133,48 +145,108 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
       {photos.length === 0 ? (
         <p style={{ color: "#8b929c", fontSize: 13 }}>No photos added yet.</p>
       ) : (
-        <div className="elite-gallery-grid-v2">
-          {photos.map((photo) => (
-            <div
-              key={photo.id}
-              style={{
-                position: "relative",
-                aspectRatio: "1/1",
-                borderRadius: 8,
-                overflow: "hidden",
-                border: "1px solid rgba(212,175,55,.25)",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo.image_url}
-                alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              {isOwner && (
+        <div className="elite-slider">
+          <div className="elite-slider-frame">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={current.image_url}
+              alt=""
+              onClick={() => setLightboxOpen(true)}
+            />
+            {photos.length > 1 && (
+              <>
                 <button
                   type="button"
-                  aria-label="Remove photo"
-                  onClick={() => handleRemove(photo.id)}
-                  style={{
-                    position: "absolute",
-                    top: 4,
-                    right: 4,
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
-                    border: "none",
-                    background: "rgba(0,0,0,.7)",
-                    color: "#fff",
-                    fontSize: 10,
-                    cursor: "pointer",
-                  }}
+                  aria-label="Previous photo"
+                  className="elite-slider-nav elite-prev"
+                  onClick={goPrev}
+                  disabled={index === 0}
                 >
-                  &#10005;
+                  &#8249;
                 </button>
-              )}
+                <button
+                  type="button"
+                  aria-label="Next photo"
+                  className="elite-slider-nav elite-next"
+                  onClick={goNext}
+                  disabled={index === photos.length - 1}
+                >
+                  &#8250;
+                </button>
+              </>
+            )}
+            {isOwner && (
+              <button
+                type="button"
+                aria-label="Remove photo"
+                className="elite-slider-remove"
+                onClick={() => handleRemove(current.id)}
+              >
+                &#10005;
+              </button>
+            )}
+          </div>
+          {photos.length > 1 && (
+            <div className="elite-slider-dots">
+              {photos.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-label={`Show photo ${i + 1}`}
+                  className={`elite-slider-dot ${i === index ? "elite-active" : ""}`}
+                  onClick={() => setIndex(i)}
+                />
+              ))}
             </div>
-          ))}
+          )}
+        </div>
+      )}
+
+      {lightboxOpen && current && (
+        <div className="elite-lightbox-backdrop" onClick={() => setLightboxOpen(false)}>
+          <button
+            type="button"
+            aria-label="Close"
+            className="elite-lightbox-close"
+            onClick={() => setLightboxOpen(false)}
+          >
+            &#10005;
+          </button>
+          {photos.length > 1 && (
+            <>
+              <button
+                type="button"
+                aria-label="Previous photo"
+                className="elite-lightbox-nav elite-prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goPrev();
+                }}
+                disabled={index === 0}
+              >
+                &#8249;
+              </button>
+              <button
+                type="button"
+                aria-label="Next photo"
+                className="elite-lightbox-nav elite-next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goNext();
+                }}
+                disabled={index === photos.length - 1}
+              >
+                &#8250;
+              </button>
+            </>
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={current.image_url}
+            alt=""
+            className="elite-lightbox-img"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

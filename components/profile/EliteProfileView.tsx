@@ -28,6 +28,7 @@ type Props = {
   dateOfBirth: string | null;
   joinDate: string | null;
   profilePhotoUrl: string | null;
+  socialLinks: Record<string, string> | null;
   ridesCount: number;
   totalKm: number;
   rides: Ride[];
@@ -49,6 +50,7 @@ export default function EliteProfileView({
   dateOfBirth,
   joinDate,
   profilePhotoUrl,
+  socialLinks,
   ridesCount,
   totalKm,
   rides,
@@ -61,6 +63,7 @@ export default function EliteProfileView({
   latestRideImagePosition,
 }: Props) {
   const joinYear = joinDate ? new Date(joinDate).getFullYear() : null;
+  const instagram = socialLinks?.instagram;
 
   const useCustomBg = backgroundSource === "custom" && !!customBackgroundUrl;
   const bgUrl = useCustomBg ? customBackgroundUrl : latestRideImageUrl;
@@ -113,31 +116,52 @@ export default function EliteProfileView({
             </a>
           )}
           <div className="elite-dossier-header-title">
-            The Knight Ryders | Rider Dossier
+            The proud member of The Knight Ryders club
           </div>
           <div className="elite-dossier-body">
-            <div className="elite-avatar-container">
-              {profilePhotoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profilePhotoUrl} alt={fullName ?? "Rider"} />
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: "50%",
-                    background: "#07090e",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#d4af37",
-                    fontSize: 40,
-                    fontWeight: 800,
-                    border: "2px solid #07090e",
-                  }}
+            <div>
+              <div className="elite-avatar-container">
+                {profilePhotoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profilePhotoUrl} alt={fullName ?? "Rider"} />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      background: "#07090e",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#d4af37",
+                      fontSize: 40,
+                      fontWeight: 800,
+                      border: "2px solid #07090e",
+                    }}
+                  >
+                    {(fullName ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              {instagram && (
+                <a
+                  href={
+                    instagram.startsWith("http")
+                      ? instagram
+                      : `https://instagram.com/${instagram.replace(/^@/, "")}`
+                  }
+                  target="_blank"
+                  rel="noopener"
+                  className="elite-instagram-link"
                 >
-                  {(fullName ?? "?").charAt(0).toUpperCase()}
-                </div>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="2" width="20" height="20" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                  </svg>
+                  Instagram
+                </a>
               )}
             </div>
             <div className="elite-profile-details">
@@ -153,83 +177,87 @@ export default function EliteProfileView({
                   })}`}
               </div>
               {joinYear && (
-                <div className="elite-badge-capsule">Member | Est. {joinYear}</div>
+                <div className="elite-badge-capsule">Member | Since {joinYear}</div>
               )}
               {bio && <div className="elite-quote-block">&ldquo;{bio}&rdquo;</div>}
             </div>
           </div>
         </div>
 
-        {/* TELEMETRY STATS */}
-        <div className="elite-telemetry-row">
-          <div className="elite-hex-card">
-            <div className="elite-digital-readout">{totalKm.toLocaleString("en-IN")}</div>
-            <div className="elite-hex-label">KMs Covered</div>
-          </div>
-          <div className="elite-hex-card">
-            <div className="elite-digital-readout">{ridesCount}</div>
-            <div className="elite-hex-label">Rides Participated</div>
-          </div>
-          <div className="elite-hex-card">
-            <div className="elite-digital-readout">
-              {joinYear
-                ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}`
-                : "—"}
+        {/* TWO COLUMN: stats+co-riders | photos */}
+        <div className="elite-two-col">
+          <div>
+            <div className="elite-telemetry-row" style={{ marginBottom: 36 }}>
+              <div className="elite-hex-card">
+                <div className="elite-digital-readout">{totalKm.toLocaleString("en-IN")}</div>
+                <div className="elite-hex-label">KMs Covered</div>
+              </div>
+              <div className="elite-hex-card">
+                <div className="elite-digital-readout">{ridesCount}</div>
+                <div className="elite-hex-label">Rides Participated</div>
+              </div>
+              <div className="elite-hex-card">
+                <div className="elite-digital-readout">
+                  {joinYear
+                    ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}`
+                    : "—"}
+                </div>
+                <div className="elite-hex-label">Member Since</div>
+              </div>
             </div>
-            <div className="elite-hex-label">Member Since</div>
+
+            {coRiders.length > 0 && (
+              <div>
+                <div className="elite-subsection-title">Frequently Rides With</div>
+                <div className="elite-co-riders-row">
+                  {coRiders.map((rider) => (
+                    <a
+                      key={rider.id}
+                      href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
+                      className="elite-co-rider-card"
+                    >
+                      {rider.profile_photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={rider.profile_photo_url}
+                          alt={rider.full_name ?? "Rider"}
+                          style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", margin: "0 auto 8px" }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 50,
+                            height: 50,
+                            borderRadius: "50%",
+                            background: "#07090e",
+                            color: "#d4af37",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto 8px",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
+                      <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
+                        {rider.shared_rides} together
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <EliteGallery memberId={memberId} isOwner={isOwner} photos={photos} />
           </div>
         </div>
 
-        {/* FREQUENTLY RIDES WITH */}
-        {coRiders.length > 0 && (
-          <div>
-            <div className="elite-subsection-title">Frequently Rides With</div>
-            <div className="elite-co-riders-row">
-              {coRiders.map((rider) => (
-                <a
-                  key={rider.id}
-                  href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
-                  className="elite-co-rider-card"
-                >
-                  {rider.profile_photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={rider.profile_photo_url}
-                      alt={rider.full_name ?? "Rider"}
-                      style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", margin: "0 auto 8px" }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: "50%",
-                        background: "#07090e",
-                        color: "#d4af37",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        margin: "0 auto 8px",
-                        fontWeight: 800,
-                      }}
-                    >
-                      {(rider.full_name ?? "?").charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
-                  <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
-                    {rider.shared_rides} together
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* MY PHOTOS */}
-        <EliteGallery memberId={memberId} isOwner={isOwner} photos={photos} />
-
-        {/* RIDES */}
+        {/* MY RIDES */}
         <EliteRidesCarousel rides={rides} />
       </div>
     </div>

@@ -25,7 +25,7 @@ export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
   return (
     <div>
       <div className="elite-section-header" style={{ position: "relative" }}>
-        <h2>Rides</h2>
+        <h2>My Rides</h2>
         <p>Expeditions &amp; Journeys</p>
         {totalPages > 1 && (
           <div style={{ position: "absolute", top: 4, right: 0, display: "flex", gap: 6 }}>
