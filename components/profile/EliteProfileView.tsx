@@ -78,7 +78,7 @@ export default function EliteProfileView({
     totalKm,
     ridesCount,
     joinYear,
-    mostRecentRide: rides[0] ?? null,
+    rides,
     topCoRider: coRiders[0] ?? null,
   });
   const instagram = socialLinks?.instagram;

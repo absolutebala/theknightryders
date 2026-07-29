@@ -14,7 +14,7 @@ type JourneyInput = {
   totalKm: number;
   ridesCount: number;
   joinYear: number | null;
-  mostRecentRide: Ride | null;
+  rides: Ride[]; // sorted most-recent-first
   topCoRider: CoRider | null;
 };
 
@@ -34,13 +34,56 @@ function pick<T>(options: T[], seed: number, salt: number): T {
   return options[(seed + salt) % options.length];
 }
 
+// Strips a leading "Ride #83 :" / "Ride #83:" style prefix, leaving just
+// the destination/description part of the title.
+function cleanRideTitle(title: string): string {
+  return title.replace(/^ride\s*#\s*\d+\s*[:\-]\s*/i, "").trim() || title;
+}
+
+const TERRAIN_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
+  { pattern: /\bhills?\b/i, label: "hills" },
+  { pattern: /\bghats?\b/i, label: "ghats" },
+  { pattern: /\bcoast(al)?\b/i, label: "coastal roads" },
+  { pattern: /\bbeach(es)?\b/i, label: "beaches" },
+  { pattern: /\bforest(s)?\b/i, label: "forests" },
+  { pattern: /\bvalley(s)?\b/i, label: "valleys" },
+  { pattern: /\bwaterfalls?\b/i, label: "waterfalls" },
+  { pattern: /\bdams?\b/i, label: "dams" },
+  { pattern: /\blakes?\b/i, label: "lakes" },
+  { pattern: /\bbackwaters?\b/i, label: "backwaters" },
+  { pattern: /\bdeserts?\b/i, label: "desert stretches" },
+  { pattern: /\bmountains?\b/i, label: "mountains" },
+  { pattern: /\bforts?\b/i, label: "forts" },
+  { pattern: /\btemples?\b/i, label: "temples" },
+  { pattern: /\bislands?\b/i, label: "islands" },
+];
+
+function findTerrainMentions(rides: Ride[]): string[] {
+  const found = new Set<string>();
+  for (const ride of rides) {
+    for (const { pattern, label } of TERRAIN_PATTERNS) {
+      if (pattern.test(ride.title)) {
+        found.add(label);
+      }
+    }
+  }
+  return Array.from(found);
+}
+
+function formatList(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
 export function generateJourneyNarrative({
   memberId,
   fullName,
   totalKm,
   ridesCount,
   joinYear,
-  mostRecentRide,
+  rides,
   topCoRider,
 }: JourneyInput): string {
   const firstName = (fullName ?? "This rider").split(" ")[0];
@@ -64,25 +107,61 @@ export function generateJourneyNarrative({
     )} kilometers over ${ridesCount} ride${ridesCount === 1 ? "" : "s"} with The Knight Ryders -- proof that the road always calls back.`,
   ];
 
-  const sentences = [pick(openings, seed, 0)];
+  const paragraphs: string[] = [pick(openings, seed, 0)];
 
-  if (topCoRider?.full_name && topCoRider.shared_rides > 1) {
-    sentences.push(
-      `Along the way, ${topCoRider.full_name} has been a familiar face on ${topCoRider.shared_rides} of those rides -- some journeys are always better shared.`
+  // --- Highlight a handful of distinctive rides (earliest, a couple in the
+  // middle, and the most recent) rather than just one. ---
+  const sortedOldestFirst = [...rides].reverse();
+  const highlightCandidates: Ride[] = [];
+  if (sortedOldestFirst.length > 0) highlightCandidates.push(sortedOldestFirst[0]); // earliest
+  if (rides.length > 1) {
+    const midIndex = Math.floor(rides.length / 2);
+    if (rides[midIndex] && rides[midIndex] !== highlightCandidates[0]) {
+      highlightCandidates.push(rides[midIndex]);
+    }
+  }
+  if (rides.length > 2 && rides[0] !== highlightCandidates[0] && rides[0] !== highlightCandidates[1]) {
+    highlightCandidates.push(rides[0]); // most recent
+  } else if (highlightCandidates.length < 2 && rides[0]) {
+    highlightCandidates.push(rides[0]);
+  }
+
+  const highlightNames = highlightCandidates
+    .map((r) => cleanRideTitle(r.title))
+    .filter((name, i, arr) => arr.indexOf(name) === i); // de-dupe
+
+  if (highlightNames.length >= 2) {
+    const highlightTemplates = [
+      `The road has taken ${firstName} everywhere from ${formatList(highlightNames)} -- each ride adding a new destination to the list.`,
+      `Highlights along the way include ${formatList(highlightNames)}, a spread of rides that says as much about the destinations as the distance covered.`,
+      `From ${highlightNames[0]} early on to ${highlightNames[highlightNames.length - 1]} more recently, ${firstName}'s rides read like a travelogue of their own.`,
+    ];
+    paragraphs.push(pick(highlightTemplates, seed, 2));
+  } else if (highlightNames.length === 1) {
+    paragraphs.push(
+      `One ride stands out in particular -- ${highlightNames[0]}, a trip ${firstName} won't easily forget.`
     );
   }
 
-  if (mostRecentRide) {
-    const dateStr = mostRecentRide.ride_date
-      ? new Date(mostRecentRide.ride_date).toLocaleDateString("en-IN", {
-          month: "long",
-          year: "numeric",
-        })
-      : null;
-    sentences.push(
-      `Most recently, ${firstName} rode ${mostRecentRide.title}${
-        dateStr ? ` in ${dateStr}` : ""
-      }, adding yet another destination to an ever-growing list.`
+  // --- Terrain variety, if we can infer it from ride titles. ---
+  const terrain = findTerrainMentions(rides);
+  if (terrain.length > 0) {
+    const terrainPhrase = formatList(terrain.slice(0, 3));
+    const terrainTemplates = [
+      `The routes haven't stuck to one kind of road either -- ${terrainPhrase} have all featured along the way, each demanding a different kind of riding.`,
+      `Variety has been part of the appeal: rides through ${terrainPhrase} mean no two outings have felt quite the same.`,
+    ];
+    paragraphs.push(pick(terrainTemplates, seed, 3));
+  } else if (ridesCount >= 3) {
+    paragraphs.push(
+      `Every ride has brought its own mix of roads and terrain -- part of what keeps the miles from ever feeling routine.`
+    );
+  }
+
+  // --- Co-rider mention. ---
+  if (topCoRider?.full_name && topCoRider.shared_rides > 1) {
+    paragraphs.push(
+      `Along the way, ${topCoRider.full_name} has been a familiar face on ${topCoRider.shared_rides} of those rides -- some journeys are always better shared.`
     );
   }
 
@@ -91,7 +170,7 @@ export function generateJourneyNarrative({
     "The road ahead promises even more adventures.",
     "And the journey is far from over.",
   ];
-  sentences.push(pick(closings, seed, 1));
+  paragraphs.push(pick(closings, seed, 1));
 
-  return sentences.join(" ");
+  return paragraphs.join(" ");
 }
