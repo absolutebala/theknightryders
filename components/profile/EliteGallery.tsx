@@ -98,15 +98,7 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
           marginBottom: 14,
         }}
       >
-        <div
-          style={{
-            fontFamily: "'Oswald', sans-serif",
-            fontWeight: 600,
-            fontSize: 20,
-            color: "#f5f5f5",
-            letterSpacing: ".02em",
-          }}
-        >
+        <div className="elite-subsection-title" style={{ marginBottom: 0 }}>
           My Photos
         </div>
         {isOwner && photos.length < MAX_PHOTOS && (
@@ -141,7 +133,7 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
       {photos.length === 0 ? (
         <p style={{ color: "#8b929c", fontSize: 13 }}>No photos added yet.</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }} className="elite-gallery-grid">
+        <div className="elite-gallery-grid-v2">
           {photos.map((photo) => (
             <div
               key={photo.id}
