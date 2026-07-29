@@ -1,6 +1,9 @@
 import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
+import EliteAvatarEditor from "./EliteAvatarEditor";
+import EliteNameEditor from "./EliteNameEditor";
+import EliteBioEditor from "./EliteBioEditor";
 
 type Ride = {
   id: string;
@@ -124,30 +127,12 @@ export default function EliteProfileView({
           </div>
           <div className="elite-dossier-body">
             <div>
-              <div className="elite-avatar-container">
-                {profilePhotoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={profilePhotoUrl} alt={fullName ?? "Rider"} />
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "50%",
-                      background: "#07090e",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#d4af37",
-                      fontSize: 40,
-                      fontWeight: 800,
-                      border: "2px solid #07090e",
-                    }}
-                  >
-                    {(fullName ?? "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
+              <EliteAvatarEditor
+                memberId={memberId}
+                isOwner={isOwner}
+                fullName={fullName}
+                profilePhotoUrl={profilePhotoUrl}
+              />
               {instagram && (
                 <a
                   href={
@@ -169,7 +154,7 @@ export default function EliteProfileView({
               )}
             </div>
             <div className="elite-profile-details">
-              <h1>{fullName ?? "Knight Ryder"}</h1>
+              <EliteNameEditor memberId={memberId} isOwner={isOwner} fullName={fullName} />
               <div className="elite-handle">
                 {handle && `@${handle}`}
                 {handle && dateOfBirth && " • "}
@@ -185,7 +170,7 @@ export default function EliteProfileView({
               {joinYear && (
                 <div className="elite-badge-capsule">Member | Since {joinYear}</div>
               )}
-              {bio && <div className="elite-quote-block">&ldquo;{bio}&rdquo;</div>}
+              <EliteBioEditor memberId={memberId} isOwner={isOwner} bio={bio} />
             </div>
           </div>
         </div>
