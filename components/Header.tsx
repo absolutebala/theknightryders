@@ -118,6 +118,7 @@ export default function Header({
           {authUser?.isAdmin && (
             <button
               type="button"
+              className="header-editmode-toggle"
               onClick={toggleEditMode}
               style={{
                 display: "flex",
@@ -157,7 +158,10 @@ export default function Header({
                   }}
                 />
               </span>
-              <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--white)", textTransform: "uppercase", letterSpacing: ".03em" }}>
+              <span
+                className="header-editmode-label"
+                style={{ fontSize: 11.5, fontWeight: 700, color: "var(--white)", textTransform: "uppercase", letterSpacing: ".03em" }}
+              >
                 Edit Mode
               </span>
             </button>
@@ -203,7 +207,7 @@ export default function Header({
                     {authUser.name.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span style={{ fontSize: 13, fontWeight: 700 }}>{authUser.name}</span>
+                <span className="header-username" style={{ fontSize: 13, fontWeight: 700 }}>{authUser.name}</span>
                 <span style={{ fontSize: 10, color: "var(--red)" }}>&#9662;</span>
               </button>
             ) : (
