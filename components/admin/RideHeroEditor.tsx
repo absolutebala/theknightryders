@@ -60,7 +60,13 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
       setPendingFile(null);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Something went wrong.";
+      setError(message);
     } finally {
       setSaving(false);
     }
