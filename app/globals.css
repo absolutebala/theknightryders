@@ -202,6 +202,8 @@ section{padding:70px 0;}
   .elite-two-col{grid-template-columns:1fr;}
   .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
   .elite-dossier-card{padding:26px 20px;}
+  .elite-profile-details{text-align:center;}
+  .elite-profile-details h1{justify-content:center;}
   .elite-wrapper{margin:24px auto;padding:0 16px;gap:28px;}
   .elite-section-header h2{font-size:24px;}
   .elite-lightbox-backdrop{padding:16px;}
