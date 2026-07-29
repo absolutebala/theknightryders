@@ -3,15 +3,16 @@ import { createClient } from "@/lib/supabase/server";
 export default async function PastRidesPage() {
   const supabase = await createClient();
 
-  const { data: rides } = await supabase
-    .from("rides")
-    .select("id, slug, title, ride_date, hero_image_url")
-    .order("ride_date", { ascending: false, nullsFirst: false });
-
-  const { data: leaderboard } = await supabase
-    .from("ride_leaderboard")
-    .select("rider_key, rider_name, member_id, handle, rides_count, total_km")
-    .limit(5);
+  const [{ data: rides }, { data: leaderboard }] = await Promise.all([
+    supabase
+      .from("rides")
+      .select("id, slug, title, ride_date, hero_image_url")
+      .order("ride_date", { ascending: false, nullsFirst: false }),
+    supabase
+      .from("ride_leaderboard")
+      .select("rider_key, rider_name, member_id, handle, rides_count, total_km")
+      .limit(5),
+  ]);
 
   return (
     <>

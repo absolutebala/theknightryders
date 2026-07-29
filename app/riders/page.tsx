@@ -3,13 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 export default async function RidersPage() {
   const supabase = await createClient();
 
-  const { data: members } = await supabase
-    .from("members_public")
-    .select("id, full_name, handle, bio, profile_photo_url");
-
-  const { data: leaderboard } = await supabase
-    .from("ride_leaderboard")
-    .select("member_id, total_km, rides_count");
+  const [{ data: members }, { data: leaderboard }] = await Promise.all([
+    supabase.from("members_public").select("id, full_name, handle, bio, profile_photo_url"),
+    supabase.from("ride_leaderboard").select("member_id, total_km, rides_count"),
+  ]);
 
   const statsByMember = new Map(
     (leaderboard ?? [])

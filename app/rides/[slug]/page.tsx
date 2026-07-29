@@ -11,23 +11,27 @@ export default async function RideDetailPage({
   const { slug } = await params;
   const supabase = await createClient();
 
-  const { data: ride } = await supabase
-    .from("rides")
-    .select("id, title, ride_date, hero_image_url, hero_image_position, description")
-    .eq("slug", slug)
-    .maybeSingle();
+  const [rideResult, authResult, isAdminResult] = await Promise.all([
+    supabase
+      .from("rides")
+      .select("id, title, ride_date, hero_image_url, hero_image_position, description")
+      .eq("slug", slug)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+    supabase.rpc("is_admin"),
+  ]);
 
+  const ride = rideResult.data;
   if (!ride) {
     notFound();
   }
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
-  const { data: isAdminResult } = await supabase.rpc("is_admin");
+  } = authResult;
   const cookieStore = await cookies();
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
-  const isAdmin = !!user && !!isAdminResult && editModeOn;
+  const isAdmin = !!user && !!isAdminResult.data && editModeOn;
 
   const { data: participants } = await supabase
     .from("ride_participants")

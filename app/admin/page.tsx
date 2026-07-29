@@ -25,24 +25,24 @@ export default async function AdminPage() {
     );
   }
 
-  const { data: pending } = await supabase
-    .from("pending_requests")
-    .select("id, email, full_name, status, requested_at")
-    .eq("status", "pending")
-    .order("requested_at", { ascending: true });
-
-  const { data: recentlyReviewed } = await supabase
-    .from("pending_requests")
-    .select("id, email, full_name, status, requested_at, reviewed_at, reviewed_by")
-    .neq("status", "pending")
-    .order("reviewed_at", { ascending: false })
-    .limit(15);
-
-  const { data: templateRequests } = await supabase
-    .from("template_requests")
-    .select("id, requested_at, members(full_name, handle)")
-    .eq("status", "pending")
-    .order("requested_at", { ascending: true });
+  const [{ data: pending }, { data: recentlyReviewed }, { data: templateRequests }] = await Promise.all([
+    supabase
+      .from("pending_requests")
+      .select("id, email, full_name, status, requested_at")
+      .eq("status", "pending")
+      .order("requested_at", { ascending: true }),
+    supabase
+      .from("pending_requests")
+      .select("id, email, full_name, status, requested_at, reviewed_at, reviewed_by")
+      .neq("status", "pending")
+      .order("reviewed_at", { ascending: false })
+      .limit(15),
+    supabase
+      .from("template_requests")
+      .select("id, requested_at, members(full_name, handle)")
+      .eq("status", "pending")
+      .order("requested_at", { ascending: true }),
+  ]);
 
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 860 }}>

@@ -8,56 +8,70 @@ async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
   key: string
 ) {
-  const { data: content } = await supabase
-    .from("homepage_content")
-    .select("section_key, title, subtitle, body")
-    .eq("section_key", key)
-    .maybeSingle();
-
-  const { data: images } = await supabase
-    .from("homepage_images")
-    .select("id, image_url, caption, sort_order")
-    .eq("section_key", key)
-    .order("sort_order", { ascending: true });
+  const [{ data: content }, { data: images }] = await Promise.all([
+    supabase
+      .from("homepage_content")
+      .select("section_key, title, subtitle, body")
+      .eq("section_key", key)
+      .maybeSingle(),
+    supabase
+      .from("homepage_images")
+      .select("id, image_url, caption, sort_order")
+      .eq("section_key", key)
+      .order("sort_order", { ascending: true }),
+  ]);
 
   return { content, images: images ?? [] };
 }
 
 export default async function HomePage() {
   const supabase = await createClient();
+  const cookieStore = await cookies();
+  const editModeOn = cookieStore.get("edit_mode")?.value === "true";
+
+  // All of these are independent of one another -- run them concurrently
+  // instead of waiting on each one in turn. This is the single biggest
+  // lever for homepage load time, since it was previously ~14 sequential
+  // database round-trips.
+  const [
+    authResult,
+    isAdminResult,
+    statsResult,
+    latestRideResult,
+    heroContentResult,
+    heroImageResult,
+    milestone,
+    rideForCause,
+    awards,
+    gallery,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.rpc("is_admin"),
+    supabase.from("homepage_stats").select("rides_count, total_km, riders_count").maybeSingle(),
+    supabase
+      .from("rides")
+      .select("title, hero_image_url, hero_image_position")
+      .not("hero_image_url", "is", null)
+      .order("ride_date", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("homepage_content").select("hero_source").eq("section_key", "hero").maybeSingle(),
+    supabase.from("homepage_images").select("image_url, image_position").eq("section_key", "hero").maybeSingle(),
+    getSection(supabase, "milestone"),
+    getSection(supabase, "ride_for_cause"),
+    getSection(supabase, "awards"),
+    getSection(supabase, "gallery"),
+  ]);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
-  const { data: isAdminResult } = await supabase.rpc("is_admin");
-  const cookieStore = await cookies();
-  const editModeOn = cookieStore.get("edit_mode")?.value === "true";
-  const isAdmin = !!user && !!isAdminResult && editModeOn;
+  } = authResult;
+  const isAdmin = !!user && !!isAdminResult.data && editModeOn;
 
-  const { data: stats } = await supabase
-    .from("homepage_stats")
-    .select("rides_count, total_km, riders_count")
-    .maybeSingle();
-
-  const { data: latestRide } = await supabase
-    .from("rides")
-    .select("title, hero_image_url, hero_image_position")
-    .not("hero_image_url", "is", null)
-    .order("ride_date", { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle();
-
-  const { data: heroContent } = await supabase
-    .from("homepage_content")
-    .select("hero_source")
-    .eq("section_key", "hero")
-    .maybeSingle();
-
-  const { data: heroImage } = await supabase
-    .from("homepage_images")
-    .select("image_url, image_position")
-    .eq("section_key", "hero")
-    .maybeSingle();
+  const stats = statsResult.data;
+  const latestRide = latestRideResult.data;
+  const heroContent = heroContentResult.data;
+  const heroImage = heroImageResult.data;
 
   const heroSource = (heroContent?.hero_source ?? "auto") as "auto" | "custom";
   const useCustomHero = heroSource === "custom" && !!heroImage?.image_url;
@@ -65,11 +79,6 @@ export default async function HomePage() {
   const heroImagePosition = useCustomHero
     ? heroImage!.image_position
     : latestRide?.hero_image_position ?? 50;
-
-  const milestone = await getSection(supabase, "milestone");
-  const rideForCause = await getSection(supabase, "ride_for_cause");
-  const awards = await getSection(supabase, "awards");
-  const gallery = await getSection(supabase, "gallery");
 
   return (
     <>

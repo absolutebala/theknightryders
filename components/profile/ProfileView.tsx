@@ -8,22 +8,27 @@ import EliteProfileView from "@/components/profile/EliteProfileView";
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
 
-  const { data: member } = await supabase
-    .from("members_public")
-    .select(
-      "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links, journey_text"
-    )
-    .eq("id", memberId)
-    .maybeSingle();
+  // member (public data) and the current auth session are independent --
+  // fetch both at once instead of one after the other.
+  const [memberResult, authResult] = await Promise.all([
+    supabase
+      .from("members_public")
+      .select(
+        "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links, journey_text"
+      )
+      .eq("id", memberId)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
 
+  const member = memberResult.data;
   if (!member) {
     notFound();
   }
 
-  // Determine ownership: is the currently logged-in user this profile?
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = authResult;
 
   let isOwner = false;
   if (user) {
@@ -35,10 +40,38 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
     isOwner = ownRow?.id === member.id;
   }
 
-  const { data: participation } = await supabase
-    .from("ride_participants")
-    .select("km_covered, rides(id, slug, title, ride_date, hero_image_url, hero_image_position)")
-    .eq("member_id", memberId);
+  const isElite = member.profile_template === "elite";
+
+  // These three are all independent of one another (each only needs
+  // memberId / isOwner, which we already have) -- run them concurrently.
+  const [participationResult, coRidersRawResult, extraResult] = await Promise.all([
+    supabase
+      .from("ride_participants")
+      .select("km_covered, rides(id, slug, title, ride_date, hero_image_url, hero_image_position)")
+      .eq("member_id", memberId),
+    supabase.rpc("get_frequent_co_riders", {
+      target_member_id: memberId,
+      result_limit: 6,
+    }),
+    isElite
+      ? supabase
+          .from("member_photos")
+          .select("id, image_url, sort_order")
+          .eq("member_id", member.id)
+          .order("sort_order", { ascending: true })
+      : isOwner
+      ? supabase
+          .from("template_requests")
+          .select("status")
+          .eq("member_id", member.id)
+          .order("requested_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const participation = participationResult.data;
+  const coRidersRaw = coRidersRawResult.data;
 
   type ParticipationRow = {
     km_covered: number;
@@ -65,11 +98,6 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   const totalKm = participationRows.reduce((sum, p) => sum + (p.km_covered ?? 0), 0);
 
-  const { data: coRidersRaw } = await supabase.rpc("get_frequent_co_riders", {
-    target_member_id: memberId,
-    result_limit: 6,
-  });
-
   type CoRider = {
     id: string;
     full_name: string | null;
@@ -84,12 +112,8 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   const coRiders = (coRidersRaw ?? []) as unknown as CoRider[];
 
   // --- Elite template ---
-  if (member.profile_template === "elite") {
-    const { data: photos } = await supabase
-      .from("member_photos")
-      .select("id, image_url, sort_order")
-      .eq("member_id", member.id)
-      .order("sort_order", { ascending: true });
+  if (isElite) {
+    const photos = (extraResult as { data: { id: string; image_url: string; sort_order: number }[] | null }).data;
 
     return (
       <EliteProfileView
@@ -119,17 +143,8 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   }
 
   // --- Standard template ---
-  let templateRequestStatus: "pending" | "approved" | "rejected" | null = null;
-  if (isOwner) {
-    const { data: existingRequest } = await supabase
-      .from("template_requests")
-      .select("status")
-      .eq("member_id", member.id)
-      .order("requested_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    templateRequestStatus = existingRequest?.status ?? null;
-  }
+  const templateRequestStatus =
+    (extraResult as { data: { status: "pending" | "approved" | "rejected" } | null }).data?.status ?? null;
 
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 900 }}>

@@ -17,9 +17,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
+  const [authResult, cookieStore] = await Promise.all([supabase.auth.getUser(), cookies()]);
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = authResult;
 
   let headerUser: {
     name: string;
@@ -29,13 +30,14 @@ export default async function RootLayout({
   } | null = null;
 
   if (user) {
-    const { data: member } = await supabase
-      .from("members")
-      .select("full_name, handle, profile_photo_url")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const { data: isAdminResult } = await supabase.rpc("is_admin");
+    const [{ data: member }, { data: isAdminResult }] = await Promise.all([
+      supabase
+        .from("members")
+        .select("full_name, handle, profile_photo_url")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase.rpc("is_admin"),
+    ]);
 
     headerUser = {
       name:
@@ -53,7 +55,6 @@ export default async function RootLayout({
     };
   }
 
-  const cookieStore = await cookies();
   const initialEditMode = cookieStore.get("edit_mode")?.value === "true";
 
   return (
