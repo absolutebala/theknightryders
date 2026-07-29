@@ -194,21 +194,21 @@ export default function EliteProfileView({
         <div className="elite-two-col">
           <div>
             <div className="elite-telemetry-row" style={{ marginBottom: 36 }}>
-              <div className="elite-hex-card">
+              <div className="elite-stat-card">
                 <div className="elite-digital-readout">{totalKm.toLocaleString("en-IN")}</div>
-                <div className="elite-hex-label">KMs Covered</div>
+                <div className="elite-stat-label">KMs Covered</div>
               </div>
-              <div className="elite-hex-card">
+              <div className="elite-stat-card">
                 <div className="elite-digital-readout">{ridesCount}</div>
-                <div className="elite-hex-label">Rides Participated</div>
+                <div className="elite-stat-label">Rides Participated</div>
               </div>
-              <div className="elite-hex-card">
+              <div className="elite-stat-card">
                 <div className="elite-digital-readout">
                   {joinYear
                     ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}`
                     : "—"}
                 </div>
-                <div className="elite-hex-label">Member Since</div>
+                <div className="elite-stat-label">Member Since</div>
               </div>
             </div>
 

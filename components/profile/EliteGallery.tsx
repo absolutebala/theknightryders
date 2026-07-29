@@ -105,14 +105,12 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           alignItems: "center",
           marginBottom: 14,
+          minHeight: 24,
         }}
       >
-        <div className="elite-subsection-title" style={{ marginBottom: 0 }}>
-          My Photos
-        </div>
         {isOwner && photos.length < MAX_PHOTOS && (
           <>
             <input

@@ -67,7 +67,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   const { data: coRidersRaw } = await supabase.rpc("get_frequent_co_riders", {
     target_member_id: memberId,
-    result_limit: 5,
+    result_limit: 6,
   });
 
   type CoRider = {
