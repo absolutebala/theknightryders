@@ -4,6 +4,7 @@ import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteBioEditor from "./EliteBioEditor";
+import EliteJourneyEditor from "./EliteJourneyEditor";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
@@ -34,6 +35,7 @@ type Props = {
   joinDate: string | null;
   profilePhotoUrl: string | null;
   socialLinks: Record<string, string> | null;
+  journeyText: string | null;
   ridesCount: number;
   totalKm: number;
   rides: Ride[];
@@ -57,6 +59,7 @@ export default function EliteProfileView({
   joinDate,
   profilePhotoUrl,
   socialLinks,
+  journeyText,
   ridesCount,
   totalKm,
   rides,
@@ -259,24 +262,12 @@ export default function EliteProfileView({
         </div>
 
         {/* MY JOURNEY */}
-        <div>
-          <div className="elite-section-header">
-            <h2>My Journey</h2>
-          </div>
-          <div
-            style={{
-              background: "var(--elite-glass-panel)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid var(--elite-glass-border)",
-              borderRadius: 14,
-              padding: "24px 28px",
-            }}
-          >
-            <p style={{ color: "#e2e5ea", fontSize: 15, lineHeight: 1.8, margin: 0 }}>
-              {journeyNarrative}
-            </p>
-          </div>
-        </div>
+        <EliteJourneyEditor
+          memberId={memberId}
+          isOwner={isOwner}
+          journeyText={journeyText}
+          generatedNarrative={journeyNarrative}
+        />
 
         {/* MY RIDES */}
         <EliteRidesCarousel rides={rides} />
