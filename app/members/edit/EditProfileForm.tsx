@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,8 +19,15 @@ type Member = {
   social_links: Record<string, string> | null;
 };
 
-export default function EditProfileForm({ member }: { member: Member }) {
+export default function EditProfileForm({
+  member,
+  isElite,
+}: {
+  member: Member;
+  isElite: boolean;
+}) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     full_name: member.full_name ?? "",
     handle: member.handle ?? "",
@@ -38,11 +45,49 @@ export default function EditProfileForm({ member }: { member: Member }) {
     youtube: member.social_links?.youtube ?? "",
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+    const supabase = createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setUploading(false);
+      setError("You need to be signed in to upload a photo.");
+      return;
+    }
+
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const path = `${user.id}/${Date.now()}-${cleanName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      setUploading(false);
+      setError(uploadError.message);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    update("profile_photo_url", publicUrlData.publicUrl);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -60,7 +105,7 @@ export default function EditProfileForm({ member }: { member: Member }) {
       .from("members")
       .update({
         full_name: form.full_name || null,
-        handle: form.handle || null,
+        ...(isElite && { handle: form.handle || null }),
         bio: form.bio || null,
         date_of_birth: form.date_of_birth || null,
         gender: form.gender || null,
@@ -86,7 +131,7 @@ export default function EditProfileForm({ member }: { member: Member }) {
     }
 
     setSaved(true);
-    router.push(member.handle ? `/@${member.handle}` : `/members/${member.id}`);
+    router.push(isElite && form.handle ? `/@${form.handle}` : `/members/${member.id}`);
     router.refresh();
   }
 
@@ -109,6 +154,52 @@ export default function EditProfileForm({ member }: { member: Member }) {
       )}
 
       <div className="field">
+        <label>Profile Photo</label>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 6 }}>
+          {form.profile_photo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={form.profile_photo_url}
+              alt="Profile"
+              style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                background: "var(--mint)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--navy)",
+                fontWeight: 800,
+                fontSize: 22,
+              }}
+            >
+              {(form.full_name || "?").charAt(0).toUpperCase()}
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            style={{ display: "none" }}
+            id="edit-photo-upload"
+          />
+          <label
+            htmlFor="edit-photo-upload"
+            className="btn btn-outline"
+            style={{ padding: "8px 16px", fontSize: 13, cursor: "pointer" }}
+          >
+            {uploading ? "Uploading…" : "Choose Photo"}
+          </label>
+        </div>
+      </div>
+
+      <div className="field">
         <label htmlFor="full_name">Full Name</label>
         <input
           id="full_name"
@@ -117,15 +208,17 @@ export default function EditProfileForm({ member }: { member: Member }) {
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="handle">Handle (yourprofile.com/@handle)</label>
-        <input
-          id="handle"
-          value={form.handle}
-          onChange={(e) => update("handle", e.target.value.replace(/[^a-zA-Z0-9_.]/g, ""))}
-          placeholder="yourhandle"
-        />
-      </div>
+      {isElite && (
+        <div className="field">
+          <label htmlFor="handle">Handle (yourprofile.com/@handle)</label>
+          <input
+            id="handle"
+            value={form.handle}
+            onChange={(e) => update("handle", e.target.value.replace(/[^a-zA-Z0-9_.]/g, ""))}
+            placeholder="yourhandle"
+          />
+        </div>
+      )}
 
       <div className="field">
         <label htmlFor="bio">Bio</label>
@@ -188,15 +281,6 @@ export default function EditProfileForm({ member }: { member: Member }) {
           id="address"
           value={form.address}
           onChange={(e) => update("address", e.target.value)}
-        />
-      </div>
-
-      <div className="field">
-        <label htmlFor="profile_photo_url">Profile Photo URL</label>
-        <input
-          id="profile_photo_url"
-          value={form.profile_photo_url}
-          onChange={(e) => update("profile_photo_url", e.target.value)}
         />
       </div>
 

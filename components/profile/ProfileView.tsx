@@ -137,6 +137,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         isOwner={isOwner}
         fullName={member.full_name}
         handle={member.handle}
+        canEditHandle={member.profile_template === "elite"}
         dateOfBirth={member.date_of_birth}
         bloodGroup={member.blood_group}
         profilePhotoUrl={member.profile_photo_url}

@@ -15,7 +15,7 @@ export default async function EditProfilePage() {
   const { data: member } = await supabase
     .from("members")
     .select(
-      "id, full_name, handle, bio, date_of_birth, gender, blood_group, why_joining, vehicle_number, address, profile_photo_url, social_links"
+      "id, full_name, handle, bio, date_of_birth, gender, blood_group, why_joining, vehicle_number, address, profile_photo_url, social_links, profile_template"
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -31,7 +31,7 @@ export default async function EditProfilePage() {
         Ride count and ride history aren&apos;t editable here -- they&apos;re
         maintained by club admins.
       </p>
-      <EditProfileForm member={member} />
+      <EditProfileForm member={member} isElite={member.profile_template === "elite"} />
     </div>
   );
 }

@@ -9,6 +9,7 @@ type Props = {
   isOwner: boolean;
   fullName: string | null;
   handle: string | null;
+  canEditHandle: boolean;
   dateOfBirth: string | null;
   bloodGroup: string | null;
   profilePhotoUrl: string | null;
@@ -37,6 +38,7 @@ export default function ProfileHeader({
   isOwner,
   fullName,
   handle,
+  canEditHandle,
   dateOfBirth,
   bloodGroup,
   profilePhotoUrl,
@@ -341,10 +343,10 @@ export default function ProfileHeader({
               </button>
             </div>
           ) : (
-            (handle || isOwner) && (
+            (handle || (isOwner && canEditHandle)) && (
               <p style={{ color: "var(--grey)", fontSize: 14, marginTop: 6, display: "flex", alignItems: "center" }}>
                 {handle ? `@${handle}` : <span style={{ fontStyle: "italic" }}>@ add your handle</span>}
-                {isOwner && (
+                {isOwner && canEditHandle && (
                   <button
                     type="button"
                     aria-label="Edit handle"
