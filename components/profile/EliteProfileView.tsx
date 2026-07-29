@@ -4,6 +4,7 @@ import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteBioEditor from "./EliteBioEditor";
+import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
   id: string;
@@ -68,6 +69,15 @@ export default function EliteProfileView({
   latestRideImagePosition,
 }: Props) {
   const joinYear = joinDate ? new Date(joinDate).getFullYear() : null;
+  const journeyNarrative = generateJourneyNarrative({
+    memberId,
+    fullName,
+    totalKm,
+    ridesCount,
+    joinYear,
+    mostRecentRide: rides[0] ?? null,
+    topCoRider: coRiders[0] ?? null,
+  });
   const instagram = socialLinks?.instagram;
 
   const useCustomBg = backgroundSource === "custom" && !!customBackgroundUrl;
@@ -245,6 +255,26 @@ export default function EliteProfileView({
 
           <div>
             <EliteGallery memberId={memberId} isOwner={isOwner} photos={photos} />
+          </div>
+        </div>
+
+        {/* MY JOURNEY */}
+        <div>
+          <div className="elite-section-header">
+            <h2>My Journey</h2>
+          </div>
+          <div
+            style={{
+              background: "var(--elite-glass-panel)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid var(--elite-glass-border)",
+              borderRadius: 14,
+              padding: "24px 28px",
+            }}
+          >
+            <p style={{ color: "#e2e5ea", fontSize: 15, lineHeight: 1.8, margin: 0 }}>
+              {journeyNarrative}
+            </p>
           </div>
         </div>
 
