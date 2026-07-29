@@ -11,7 +11,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   const { data: member } = await supabase
     .from("members_public")
     .select(
-      "id, full_name, handle, bio, date_of_birth, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links"
+      "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links"
     )
     .eq("id", memberId)
     .maybeSingle();
@@ -99,6 +99,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         handle={member.handle}
         bio={member.bio}
         dateOfBirth={member.date_of_birth}
+        bloodGroup={member.blood_group}
         joinDate={member.join_date}
         profilePhotoUrl={member.profile_photo_url}
         socialLinks={member.social_links}
@@ -137,6 +138,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         fullName={member.full_name}
         handle={member.handle}
         dateOfBirth={member.date_of_birth}
+        bloodGroup={member.blood_group}
         profilePhotoUrl={member.profile_photo_url}
       />
 

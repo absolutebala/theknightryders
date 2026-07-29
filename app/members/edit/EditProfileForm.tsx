@@ -86,6 +86,7 @@ export default function EditProfileForm({ member }: { member: Member }) {
     }
 
     setSaved(true);
+    router.push(member.handle ? `/@${member.handle}` : `/members/${member.id}`);
     router.refresh();
   }
 

@@ -26,6 +26,7 @@ type Props = {
   handle: string | null;
   bio: string | null;
   dateOfBirth: string | null;
+  bloodGroup: string | null;
   joinDate: string | null;
   profilePhotoUrl: string | null;
   socialLinks: Record<string, string> | null;
@@ -48,6 +49,7 @@ export default function EliteProfileView({
   handle,
   bio,
   dateOfBirth,
+  bloodGroup,
   joinDate,
   profilePhotoUrl,
   socialLinks,
@@ -175,6 +177,8 @@ export default function EliteProfileView({
                     month: "long",
                     year: "numeric",
                   })}`}
+                {dateOfBirth && bloodGroup && " • "}
+                {bloodGroup && `Blood Group: ${bloodGroup}`}
               </div>
               {joinYear && (
                 <div className="elite-badge-capsule">Member | Since {joinYear}</div>

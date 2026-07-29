@@ -10,6 +10,7 @@ type Props = {
   fullName: string | null;
   handle: string | null;
   dateOfBirth: string | null;
+  bloodGroup: string | null;
   profilePhotoUrl: string | null;
 };
 
@@ -37,6 +38,7 @@ export default function ProfileHeader({
   fullName,
   handle,
   dateOfBirth,
+  bloodGroup,
   profilePhotoUrl,
 }: Props) {
   const router = useRouter();
@@ -419,6 +421,12 @@ export default function ProfileHeader({
                 )}
               </p>
             )
+          )}
+
+          {bloodGroup && (
+            <p style={{ color: "var(--grey)", fontSize: 14, marginTop: 4 }}>
+              Blood Group: {bloodGroup}
+            </p>
           )}
 
           {error && <div style={{ color: "#a3312a", fontSize: 12.5, marginTop: 8 }}>{error}</div>}
