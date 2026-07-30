@@ -31,13 +31,33 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   } = authResult;
 
   let isOwner = false;
+  let viewerMemberId: string | null = null;
+  let viewerHasElite = false;
+  let viewerRequestPending = false;
+
   if (user) {
     const { data: ownRow } = await supabase
       .from("members")
-      .select("id")
+      .select("id, profile_template")
       .eq("user_id", user.id)
       .maybeSingle();
     isOwner = ownRow?.id === member.id;
+
+    if (!isOwner && ownRow) {
+      viewerMemberId = ownRow.id;
+      viewerHasElite = ownRow.profile_template === "elite";
+
+      if (!viewerHasElite) {
+        const { data: existingViewerRequest } = await supabase
+          .from("template_requests")
+          .select("status")
+          .eq("member_id", ownRow.id)
+          .order("requested_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        viewerRequestPending = existingViewerRequest?.status === "pending";
+      }
+    }
   }
 
   const isElite = member.profile_template === "elite";
@@ -138,6 +158,9 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         customBackgroundPosition={member.background_image_position ?? 50}
         latestRideImageUrl={rides[0]?.hero_image_url ?? null}
         latestRideImagePosition={rides[0]?.hero_image_position ?? 50}
+        viewerMemberId={viewerMemberId}
+        viewerHasElite={viewerHasElite}
+        viewerRequestPending={viewerRequestPending}
       />
     );
   }

@@ -5,6 +5,7 @@ import EliteAvatarEditor from "./EliteAvatarEditor";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteBioEditor from "./EliteBioEditor";
 import EliteJourneyEditor from "./EliteJourneyEditor";
+import RequestEliteBanner from "./RequestEliteBanner";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
@@ -46,6 +47,9 @@ type Props = {
   customBackgroundPosition: number;
   latestRideImageUrl: string | null;
   latestRideImagePosition: number;
+  viewerMemberId: string | null;
+  viewerHasElite: boolean;
+  viewerRequestPending: boolean;
 };
 
 export default function EliteProfileView({
@@ -70,6 +74,9 @@ export default function EliteProfileView({
   customBackgroundPosition,
   latestRideImageUrl,
   latestRideImagePosition,
+  viewerMemberId,
+  viewerHasElite,
+  viewerRequestPending,
 }: Props) {
   const joinYear = joinDate ? new Date(joinDate).getFullYear() : null;
   const journeyNarrative = generateJourneyNarrative({
@@ -272,6 +279,12 @@ export default function EliteProfileView({
         {/* MY RIDES */}
         <EliteRidesCarousel rides={rides} />
       </div>
+
+      <RequestEliteBanner
+        viewerMemberId={viewerMemberId}
+        viewerHasElite={viewerHasElite}
+        viewerRequestPending={viewerRequestPending}
+      />
     </div>
   );
 }

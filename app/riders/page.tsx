@@ -4,7 +4,7 @@ export default async function RidersPage() {
   const supabase = await createClient();
 
   const [{ data: members }, { data: leaderboard }] = await Promise.all([
-    supabase.from("members_public").select("id, full_name, handle, bio, profile_photo_url"),
+    supabase.from("members_public").select("id, full_name, handle, bio, profile_photo_url, profile_template"),
     supabase.from("ride_leaderboard").select("member_id, total_km, rides_count"),
   ]);
 
@@ -47,7 +47,12 @@ export default async function RidersPage() {
                   {(rider.full_name ?? "?").charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
+              <div className="rider-card-name" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                {rider.full_name ?? "Knight Ryder"}
+                {rider.profile_template === "elite" && (
+                  <span title="Elite member" style={{ fontSize: 13 }}>&#128081;</span>
+                )}
+              </div>
               {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
               <div className="rider-card-stats">
                 {rider.ride_count} ride{rider.ride_count === 1 ? "" : "s"}
