@@ -255,6 +255,22 @@ export default function Header({
                 >
                   Edit Profile
                 </a>
+                {authUser.isAdmin && (
+                  <a
+                    href="/admin"
+                    style={{
+                      display: "block",
+                      padding: "9px 18px",
+                      color: "var(--amber)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textTransform: "none",
+                      borderTop: "1px solid rgba(255,255,255,.1)",
+                    }}
+                  >
+                    Member Requests
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={handleLogout}
