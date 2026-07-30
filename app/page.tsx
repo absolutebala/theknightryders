@@ -109,6 +109,7 @@ export default async function HomePage() {
           customImagePosition={heroImage?.image_position ?? 50}
           latestRideImageUrl={latestRide?.hero_image_url ?? null}
         />
+        <div className="hero-content-row">
         <div className="hero-inner">
           <h1>
             <span className="hero-lines-desktop">
@@ -141,9 +142,11 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+        <div className="hero-promo-zone">
+          <HeroPromoSlider images={heroPromoImages} isAdmin={isAdmin} />
+        </div>
+        </div>
       </section>
-
-      <HeroPromoSlider images={heroPromoImages} isAdmin={isAdmin} />
       </div>
 
       {/* MILESTONE */}
