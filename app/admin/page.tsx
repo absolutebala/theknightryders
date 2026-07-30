@@ -39,7 +39,7 @@ export default async function AdminPage() {
       .limit(15),
     supabase
       .from("template_requests")
-      .select("id, requested_at, members(full_name, handle)")
+      .select("id, requested_at, member_id, members(full_name, handle)")
       .eq("status", "pending")
       .order("requested_at", { ascending: true }),
   ]);
@@ -110,12 +110,17 @@ export default async function AdminPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 700, color: "var(--navy)" }}>
+                    <a
+                      href={memberInfo?.handle ? `/@${memberInfo.handle}` : `/members/${req.member_id}`}
+                      target="_blank"
+                      rel="noopener"
+                      style={{ fontWeight: 700, color: "var(--navy)", textDecoration: "underline" }}
+                    >
                       {memberInfo?.full_name || "(unnamed member)"}
                       {memberInfo?.handle && (
                         <span style={{ color: "var(--grey)", fontWeight: 500 }}> @{memberInfo.handle}</span>
                       )}
-                    </div>
+                    </a>
                     <div style={{ fontSize: 12, color: "var(--grey)", marginTop: 2 }}>
                       Requested {new Date(req.requested_at).toLocaleString("en-IN")}
                     </div>
