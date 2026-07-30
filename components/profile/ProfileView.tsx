@@ -4,6 +4,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileBio from "@/components/profile/ProfileBio";
 import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
 import EliteProfileView from "@/components/profile/EliteProfileView";
+import CrownBadge from "@/components/CrownBadge";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
@@ -127,6 +128,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
     ride_count: number;
     total_km: number;
     shared_rides: number;
+    profile_template: string | null;
   };
 
   const coRiders = (coRidersRaw ?? []) as unknown as CoRider[];
@@ -280,11 +282,17 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
                   className="rider-card"
                 >
                   {rider.profile_photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
+                    <div style={{ position: "relative", display: "inline-block" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
+                      {rider.profile_template === "elite" && <CrownBadge size={22} />}
+                    </div>
                   ) : (
-                    <div className="rider-card-noimg">
-                      {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                    <div style={{ position: "relative", display: "inline-block" }}>
+                      <div className="rider-card-noimg">
+                        {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                      {rider.profile_template === "elite" && <CrownBadge size={22} />}
                     </div>
                   )}
                   <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>

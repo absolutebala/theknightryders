@@ -10,7 +10,7 @@ export default async function PastRidesPage() {
       .order("ride_date", { ascending: false, nullsFirst: false }),
     supabase
       .from("ride_leaderboard")
-      .select("rider_key, rider_name, member_id, handle, rides_count, total_km")
+      .select("rider_key, rider_name, member_id, handle, rides_count, total_km, profile_template")
       .limit(5),
   ]);
 
@@ -66,7 +66,14 @@ export default async function PastRidesPage() {
                       <div className="rides-sidebar-row">
                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <span className="rides-sidebar-rank">#{i + 1}</span>
-                          <span className="rides-sidebar-name">{entry.rider_name}</span>
+                          <span className="rides-sidebar-name">
+                            {entry.rider_name}
+                            {entry.profile_template === "elite" && (
+                              <span title="Elite member" style={{ fontSize: 12, marginLeft: 4 }}>
+                                &#128081;
+                              </span>
+                            )}
+                          </span>
                         </div>
                         <div className="rides-sidebar-stats">
                           {entry.rides_count} rides

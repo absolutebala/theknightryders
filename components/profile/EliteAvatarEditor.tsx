@@ -3,17 +3,25 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import CrownBadge from "@/components/CrownBadge";
 
 type Props = {
   memberId: string;
   isOwner: boolean;
   fullName: string | null;
   profilePhotoUrl: string | null;
+  showCrown?: boolean;
 };
 
 const GOLD = "#d4af37";
 
-export default function EliteAvatarEditor({ memberId, isOwner, fullName, profilePhotoUrl }: Props) {
+export default function EliteAvatarEditor({
+  memberId,
+  isOwner,
+  fullName,
+  profilePhotoUrl,
+  showCrown = false,
+}: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -125,6 +133,7 @@ export default function EliteAvatarEditor({ memberId, isOwner, fullName, profile
             </label>
           </>
         )}
+        {showCrown && <CrownBadge size={34} />}
       </div>
       {error && <div style={{ color: "#e08a7d", fontSize: 11, marginTop: 6 }}>{error}</div>}
     </div>

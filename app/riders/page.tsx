@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import CrownBadge from "@/components/CrownBadge";
 
 export default async function RidersPage() {
   const supabase = await createClient();
@@ -39,20 +40,18 @@ export default async function RidersPage() {
               href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
               className="rider-card"
             >
-              {rider.profile_photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
-              ) : (
-                <div className="rider-card-noimg">
-                  {(rider.full_name ?? "?").charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className="rider-card-name" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                {rider.full_name ?? "Knight Ryder"}
-                {rider.profile_template === "elite" && (
-                  <span title="Elite member" style={{ fontSize: 13 }}>&#128081;</span>
+              <div style={{ position: "relative", display: "inline-block" }}>
+                {rider.profile_photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
+                ) : (
+                  <div className="rider-card-noimg">
+                    {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
                 )}
+                {rider.profile_template === "elite" && <CrownBadge size={26} />}
               </div>
+              <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
               {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
               <div className="rider-card-stats">
                 {rider.ride_count} ride{rider.ride_count === 1 ? "" : "s"}

@@ -2,6 +2,7 @@ import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
+import CrownBadge from "@/components/CrownBadge";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteBioEditor from "./EliteBioEditor";
 import EliteJourneyEditor from "./EliteJourneyEditor";
@@ -23,6 +24,7 @@ type CoRider = {
   bio: string | null;
   profile_photo_url: string | null;
   shared_rides: number;
+  profile_template: string | null;
 };
 
 type Props = {
@@ -152,6 +154,7 @@ export default function EliteProfileView({
                 isOwner={isOwner}
                 fullName={fullName}
                 profilePhotoUrl={profilePhotoUrl}
+                showCrown
               />
               {instagram && (
                 <a
@@ -228,28 +231,33 @@ export default function EliteProfileView({
                       className="elite-co-rider-card"
                     >
                       {rider.profile_photo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={rider.profile_photo_url}
-                          alt={rider.full_name ?? "Rider"}
-                          style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", margin: "0 auto 8px" }}
-                        />
+                        <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={rider.profile_photo_url}
+                            alt={rider.full_name ?? "Rider"}
+                            style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
+                          />
+                          {rider.profile_template === "elite" && <CrownBadge size={20} />}
+                        </div>
                       ) : (
-                        <div
-                          style={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: "50%",
-                            background: "#07090e",
-                            color: "#d4af37",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            margin: "0 auto 8px",
-                            fontWeight: 800,
-                          }}
-                        >
-                          {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                        <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
+                          <div
+                            style={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: "50%",
+                              background: "#07090e",
+                              color: "#d4af37",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {(rider.full_name ?? "?").charAt(0).toUpperCase()}
+                          </div>
+                          {rider.profile_template === "elite" && <CrownBadge size={20} />}
                         </div>
                       )}
                       <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
