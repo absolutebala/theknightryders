@@ -69,7 +69,7 @@ export default function RequestEliteBanner({
           boxShadow: "0 8px 24px rgba(212,175,55,.4)",
         }}
       >
-        <span style={{ fontSize: 15 }}>&#128081;</span> Request for Elite
+        <span style={{ fontSize: 15 }}>&#128081;</span> Request for this Template
       </button>
 
       {open && (

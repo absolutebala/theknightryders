@@ -61,7 +61,7 @@ export default function RequestEliteTemplate({ memberId, existingRequestStatus }
         className="btn btn-outline"
         style={{ padding: "8px 18px", fontSize: 12.5 }}
       >
-        Request Elite Template
+        Request for Elite
       </button>
       {status === "rejected" && (
         <div style={{ color: "var(--grey)", fontSize: 12, marginTop: 6 }}>
