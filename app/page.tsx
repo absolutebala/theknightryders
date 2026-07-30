@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import EditableField from "@/components/admin/EditableField";
 import EditableGallery from "@/components/admin/EditableGallery";
 import HeroBannerEditor from "@/components/admin/HeroBannerEditor";
+import HeroPromoSlider from "@/components/admin/HeroPromoSlider";
 
 async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -40,6 +41,7 @@ export default async function HomePage() {
     latestRideResult,
     heroContentResult,
     heroImageResult,
+    heroPromoResult,
     milestone,
     rideForCause,
     awards,
@@ -57,6 +59,11 @@ export default async function HomePage() {
       .maybeSingle(),
     supabase.from("homepage_content").select("hero_source").eq("section_key", "hero").maybeSingle(),
     supabase.from("homepage_images").select("image_url, image_position").eq("section_key", "hero").maybeSingle(),
+    supabase
+      .from("homepage_images")
+      .select("id, image_url, sort_order")
+      .eq("section_key", "hero_promo")
+      .order("sort_order", { ascending: true }),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -72,6 +79,7 @@ export default async function HomePage() {
   const latestRide = latestRideResult.data;
   const heroContent = heroContentResult.data;
   const heroImage = heroImageResult.data;
+  const heroPromoImages = heroPromoResult.data ?? [];
 
   const heroSource = (heroContent?.hero_source ?? "auto") as "auto" | "custom";
   const useCustomHero = heroSource === "custom" && !!heroImage?.image_url;
@@ -82,6 +90,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <div className="hero-section-wrapper">
       <section
         className="hero"
         style={
@@ -102,9 +111,16 @@ export default async function HomePage() {
         />
         <div className="hero-inner">
           <h1>
-            <span className="line1">Ride till the last mile.</span>
-            <span className="line2">
-              An exclusive club for <span className="highlight">Honda CB350!</span>
+            <span className="hero-lines-desktop">
+              <span className="hero-line">Ride till the last mile.</span>
+              <span className="hero-line">An exclusive club for</span>
+              <span className="hero-line highlight">Honda CB350!</span>
+            </span>
+            <span className="hero-lines-mobile">
+              <span className="hero-line">Ride till</span>
+              <span className="hero-line">last mile.</span>
+              <span className="hero-line">an exclusive club</span>
+              <span className="hero-line highlight">for Honda CB350!</span>
             </span>
           </h1>
           <a href="/about" className="btn btn-outline">
@@ -126,6 +142,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <HeroPromoSlider images={heroPromoImages} isAdmin={isAdmin} />
+      </div>
 
       {/* MILESTONE */}
       <section className="about" id="about">
