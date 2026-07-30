@@ -4,6 +4,7 @@ import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
 import CrownBadge from "@/components/CrownBadge";
 import EliteNameEditor from "./EliteNameEditor";
+import EliteHandleEditor from "./EliteHandleEditor";
 import EliteBioEditor from "./EliteBioEditor";
 import EliteJourneyEditor from "./EliteJourneyEditor";
 import RequestEliteBanner from "./RequestEliteBanner";
@@ -179,8 +180,8 @@ export default function EliteProfileView({
             <div className="elite-profile-details">
               <EliteNameEditor memberId={memberId} isOwner={isOwner} fullName={fullName} />
               <div className="elite-handle">
-                {handle && `@${handle}`}
-                {handle && dateOfBirth && " • "}
+                <EliteHandleEditor memberId={memberId} isOwner={isOwner} handle={handle} />
+                {(handle || isOwner) && dateOfBirth && " • "}
                 {dateOfBirth &&
                   `Born ${new Date(dateOfBirth).toLocaleDateString("en-IN", {
                     day: "numeric",

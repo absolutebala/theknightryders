@@ -25,7 +25,12 @@ export default async function AdminPage() {
     );
   }
 
-  const [{ data: pending }, { data: recentlyReviewed }, { data: templateRequests }] = await Promise.all([
+  const [
+    { data: pending },
+    { data: recentlyReviewed },
+    { data: templateRequests },
+    { data: recentlyReviewedTemplates },
+  ] = await Promise.all([
     supabase
       .from("pending_requests")
       .select("id, email, full_name, status, requested_at")
@@ -42,6 +47,12 @@ export default async function AdminPage() {
       .select("id, requested_at, member_id, members(full_name, handle)")
       .eq("status", "pending")
       .order("requested_at", { ascending: true }),
+    supabase
+      .from("template_requests")
+      .select("id, requested_at, reviewed_at, reviewed_by, status, member_id, members(full_name, handle)")
+      .neq("status", "pending")
+      .order("reviewed_at", { ascending: false })
+      .limit(15),
   ]);
 
   return (
@@ -137,10 +148,62 @@ export default async function AdminPage() {
         </>
       )}
 
+      {recentlyReviewedTemplates && recentlyReviewedTemplates.length > 0 && (
+        <>
+          <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14 }}>
+            Recently Reviewed &mdash; Elite Requests
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 50 }}>
+            {recentlyReviewedTemplates.map((req) => {
+              const memberInfo = (
+                Array.isArray(req.members) ? req.members[0] : req.members
+              ) as { full_name: string | null; handle: string | null } | null;
+
+              return (
+                <div
+                  key={req.id}
+                  style={{
+                    fontSize: 13.5,
+                    color: "var(--grey)",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #e4e4e4",
+                  }}
+                >
+                  <a
+                    href={memberInfo?.handle ? `/@${memberInfo.handle}` : `/members/${req.member_id}`}
+                    target="_blank"
+                    rel="noopener"
+                    style={{ color: "var(--dark)", fontWeight: 700, textDecoration: "underline" }}
+                  >
+                    {memberInfo?.full_name || "(unnamed member)"}
+                  </a>{" "}
+                  &mdash;{" "}
+                  <span
+                    style={{
+                      color: req.status === "approved" ? "#1e6b3a" : "#a3312a",
+                      fontWeight: 600,
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {req.status}
+                  </span>{" "}
+                  by {req.reviewed_by ?? "—"}
+                  <br />
+                  Requested {new Date(req.requested_at).toLocaleString("en-IN")}
+                  {req.reviewed_at && (
+                    <> &middot; Reviewed {new Date(req.reviewed_at).toLocaleString("en-IN")}</>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
       {recentlyReviewed && recentlyReviewed.length > 0 && (
         <>
           <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14 }}>
-            Recently Reviewed
+            Recently Reviewed &mdash; Member Access
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {recentlyReviewed.map((req) => (
@@ -163,8 +226,12 @@ export default async function AdminPage() {
                 >
                   {req.status}
                 </span>{" "}
-                by {req.reviewed_by} on{" "}
-                {req.reviewed_at ? new Date(req.reviewed_at).toLocaleDateString("en-IN") : ""}
+                by {req.reviewed_by}
+                <br />
+                Requested {new Date(req.requested_at).toLocaleString("en-IN")}
+                {req.reviewed_at && (
+                  <> &middot; Reviewed {new Date(req.reviewed_at).toLocaleString("en-IN")}</>
+                )}
               </div>
             ))}
           </div>
