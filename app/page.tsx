@@ -42,6 +42,7 @@ export default async function HomePage() {
     heroContentResult,
     heroImageResult,
     heroPromoResult,
+    promoTitleResult,
     birthdayMembersResult,
     milestone,
     rideForCause,
@@ -62,9 +63,10 @@ export default async function HomePage() {
     supabase.from("homepage_images").select("image_url, image_position").eq("section_key", "hero").maybeSingle(),
     supabase
       .from("homepage_images")
-      .select("id, image_url, caption, sort_order")
+      .select("id, image_url, sort_order")
       .eq("section_key", "hero_promo")
       .order("sort_order", { ascending: true }),
+    supabase.from("homepage_content").select("title").eq("section_key", "hero_promo").maybeSingle(),
     supabase.rpc("get_members_with_birthday_offset"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
@@ -82,6 +84,7 @@ export default async function HomePage() {
   const heroContent = heroContentResult.data;
   const heroImage = heroImageResult.data;
   const heroPromoImages = heroPromoResult.data ?? [];
+  const promoTitle = promoTitleResult.data?.title ?? "Promo Code : TKRPride";
   type BirthdayOffset = {
     id: string;
     full_name: string | null;
@@ -175,6 +178,7 @@ export default async function HomePage() {
             images={heroPromoImages}
             isAdmin={isAdmin}
             promoMode={promoMode}
+            promoTitle={promoTitle}
             birthdayMembers={birthdayMembers}
           />
         </div>

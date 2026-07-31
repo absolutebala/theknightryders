@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 export type PromoImage = {
   id: string;
   image_url: string;
-  caption: string | null;
   sort_order: number;
 };
 
@@ -24,6 +23,7 @@ type Props = {
   images: PromoImage[];
   isAdmin: boolean;
   promoMode: PromoMode; // decided automatically upstream, this component just renders it
+  promoTitle: string; // shared across all promo images, not per-image
   birthdayMembers: BirthdayMember[]; // already filtered to whichever set qualifies
 };
 
@@ -35,14 +35,16 @@ function displayDate(daysDiff: number): string {
   return d.toLocaleDateString("en-IN", { month: "long", day: "numeric" });
 }
 
-export default function HeroPromoSlider({ images, isAdmin, promoMode, birthdayMembers }: Props) {
+export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle, birthdayMembers }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imgIndex, setImgIndex] = useState(0);
   const [bdayIndex, setBdayIndex] = useState(0);
   const [managing, setManaging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [captionDrafts, setCaptionDrafts] = useState<Record<string, string>>({});
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(promoTitle);
+  const [savingTitle, setSavingTitle] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentImage = images[imgIndex];
@@ -112,17 +114,20 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, birthdayMe
     router.refresh();
   }
 
-  async function handleSaveCaption(imageId: string) {
+  async function handleSaveTitle() {
+    setSavingTitle(true);
+    setError(null);
     const supabase = createClient();
-    const caption = captionDrafts[imageId] ?? "";
     const { error } = await supabase
-      .from("homepage_images")
-      .update({ caption: caption.trim() || null })
-      .eq("id", imageId);
+      .from("homepage_content")
+      .update({ title: titleDraft.trim() || "Promo Code : TKRPride" })
+      .eq("section_key", SECTION_KEY);
+    setSavingTitle(false);
     if (error) {
       setError(error.message);
       return;
     }
+    setEditingTitle(false);
     router.refresh();
   }
 
@@ -164,9 +169,7 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, birthdayMe
             )}
           </div>
 
-          {currentImage?.caption && (
-            <div className="hero-promo-caption-row">{currentImage.caption}</div>
-          )}
+          {promoTitle && <div className="hero-promo-caption-row">{promoTitle}</div>}
         </div>
       )}
 
@@ -215,7 +218,9 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, birthdayMe
             )}
           </div>
 
-          <div className="hero-promo-caption-row">Members celebrating their bday this month</div>
+          <div className="hero-promo-birthday-message">
+            Wish you all the success and happiest life as we have on the road ;)
+          </div>
         </div>
       )}
 
@@ -250,21 +255,38 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, birthdayMe
             )}
           </div>
 
-          {managing && currentImage && (
+          {managing && (
             <div className="hero-promo-caption-editor">
-              <input
-                type="text"
-                placeholder="Caption, e.g. Promo Code : TKRPride"
-                value={captionDrafts[currentImage.id] ?? currentImage.caption ?? ""}
-                onChange={(e) => setCaptionDrafts((d) => ({ ...d, [currentImage.id]: e.target.value }))}
-              />
-              <button
-                type="button"
-                className="hero-promo-manage-btn"
-                onClick={() => handleSaveCaption(currentImage.id)}
-              >
-                Save
-              </button>
+              {editingTitle ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Promo Code : TKRPride"
+                    value={titleDraft}
+                    onChange={(e) => setTitleDraft(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="hero-promo-manage-btn"
+                    disabled={savingTitle}
+                    onClick={handleSaveTitle}
+                  >
+                    {savingTitle ? "Saving…" : "Save"}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="hero-promo-manage-btn"
+                  onClick={() => {
+                    setTitleDraft(promoTitle);
+                    setEditingTitle(true);
+                  }}
+                >
+                  Edit Title (shown on all images)
+                </button>
+              )}
             </div>
           )}
         </div>
