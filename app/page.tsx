@@ -42,6 +42,8 @@ export default async function HomePage() {
     heroContentResult,
     heroImageResult,
     heroPromoResult,
+    heroPromoContentResult,
+    birthdayMembersResult,
     milestone,
     rideForCause,
     awards,
@@ -61,9 +63,11 @@ export default async function HomePage() {
     supabase.from("homepage_images").select("image_url, image_position").eq("section_key", "hero").maybeSingle(),
     supabase
       .from("homepage_images")
-      .select("id, image_url, sort_order")
+      .select("id, image_url, caption, sort_order")
       .eq("section_key", "hero_promo")
       .order("sort_order", { ascending: true }),
+    supabase.from("homepage_content").select("show_birthdays").eq("section_key", "hero_promo").maybeSingle(),
+    supabase.rpc("get_birthday_members"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -80,6 +84,8 @@ export default async function HomePage() {
   const heroContent = heroContentResult.data;
   const heroImage = heroImageResult.data;
   const heroPromoImages = heroPromoResult.data ?? [];
+  const showBirthdays = heroPromoContentResult.data?.show_birthdays ?? false;
+  const birthdayMembers = birthdayMembersResult.data ?? [];
 
   const heroSource = (heroContent?.hero_source ?? "auto") as "auto" | "custom";
   const useCustomHero = heroSource === "custom" && !!heroImage?.image_url;
@@ -143,7 +149,12 @@ export default async function HomePage() {
           </div>
         </div>
         <div className="hero-promo-zone">
-          <HeroPromoSlider images={heroPromoImages} isAdmin={isAdmin} />
+          <HeroPromoSlider
+            images={heroPromoImages}
+            isAdmin={isAdmin}
+            showBirthdays={showBirthdays}
+            birthdayMembers={birthdayMembers}
+          />
         </div>
         </div>
       </section>
