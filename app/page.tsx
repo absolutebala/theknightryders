@@ -42,7 +42,6 @@ export default async function HomePage() {
     heroContentResult,
     heroImageResult,
     heroPromoResult,
-    heroPromoContentResult,
     birthdayMembersResult,
     milestone,
     rideForCause,
@@ -66,8 +65,7 @@ export default async function HomePage() {
       .select("id, image_url, caption, sort_order")
       .eq("section_key", "hero_promo")
       .order("sort_order", { ascending: true }),
-    supabase.from("homepage_content").select("promo_mode").eq("section_key", "hero_promo").maybeSingle(),
-    supabase.rpc("get_birthday_members"),
+    supabase.rpc("get_members_with_birthday_offset"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -84,8 +82,32 @@ export default async function HomePage() {
   const heroContent = heroContentResult.data;
   const heroImage = heroImageResult.data;
   const heroPromoImages = heroPromoResult.data ?? [];
-  const promoMode = (heroPromoContentResult.data?.promo_mode ?? "promo") as "promo" | "birthday";
-  const birthdayMembers = birthdayMembersResult.data ?? [];
+  type BirthdayOffset = {
+    id: string;
+    full_name: string | null;
+    profile_photo_url: string | null;
+    days_diff: number;
+  };
+  const allBirthdayOffsets: BirthdayOffset[] = birthdayMembersResult.data ?? [];
+
+  const todaysBirthdays = allBirthdayOffsets.filter((m) => m.days_diff === 0);
+  const upcoming = allBirthdayOffsets
+    .filter((m) => m.days_diff > 0)
+    .sort((a, b) => a.days_diff - b.days_diff);
+  const passed = allBirthdayOffsets
+    .filter((m) => m.days_diff < 0)
+    .sort((a, b) => b.days_diff - a.days_diff); // closest to today first
+
+  let birthdayMembers: BirthdayOffset[] = [];
+  if (todaysBirthdays.length > 0) {
+    birthdayMembers = todaysBirthdays;
+  } else if (upcoming.length > 0 && upcoming[0].days_diff <= 2) {
+    birthdayMembers = upcoming.filter((m) => m.days_diff === upcoming[0].days_diff);
+  } else if (passed.length > 0 && Math.abs(passed[0].days_diff) <= 2) {
+    birthdayMembers = passed.filter((m) => m.days_diff === passed[0].days_diff);
+  }
+
+  const promoMode: "promo" | "birthday" = birthdayMembers.length > 0 ? "birthday" : "promo";
 
   const heroSource = (heroContent?.hero_source ?? "auto") as "auto" | "custom";
   const useCustomHero = heroSource === "custom" && !!heroImage?.image_url;
