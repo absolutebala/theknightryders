@@ -15,47 +15,63 @@ export type BirthdayMember = {
   id: string;
   full_name: string | null;
   profile_photo_url: string | null;
+  birth_day: number;
 };
+
+type PromoMode = "promo" | "birthday";
 
 type Props = {
   images: PromoImage[];
   isAdmin: boolean;
-  showBirthdays: boolean;
+  promoMode: PromoMode;
   birthdayMembers: BirthdayMember[];
 };
 
 const SECTION_KEY = "hero_promo";
 
-type Slide = { type: "image"; data: PromoImage } | { type: "birthday" };
+// Upcoming birthdays first (soonest), then already-passed ones this month
+// (most recent first). See the day math below.
+function sortBirthdayMembers(members: BirthdayMember[]): BirthdayMember[] {
+  const today = new Date().getDate();
+  const upcoming = members
+    .filter((m) => m.birth_day >= today)
+    .sort((a, b) => a.birth_day - today - (b.birth_day - today));
+  const passed = members
+    .filter((m) => m.birth_day < today)
+    .sort((a, b) => b.birth_day - a.birth_day);
+  return [...upcoming, ...passed];
+}
 
-export default function HeroPromoSlider({ images, isAdmin, showBirthdays, birthdayMembers }: Props) {
+export default function HeroPromoSlider({ images, isAdmin, promoMode, birthdayMembers }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [index, setIndex] = useState(0);
+  const [imgIndex, setImgIndex] = useState(0);
+  const [bdayIndex, setBdayIndex] = useState(0);
   const [managing, setManaging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [captionDrafts, setCaptionDrafts] = useState<Record<string, string>>({});
-  const [savingBirthdayToggle, setSavingBirthdayToggle] = useState(false);
+  const [savingMode, setSavingMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const includeBirthdaySlide = showBirthdays && birthdayMembers.length > 0;
-  const slides: Slide[] = [
-    ...images.map((img): Slide => ({ type: "image", data: img })),
-    ...(includeBirthdaySlide ? [{ type: "birthday" } as Slide] : []),
-  ];
+  const sortedBirthdays = sortBirthdayMembers(birthdayMembers);
+  const currentImage = images[imgIndex];
+  const currentBirthday = sortedBirthdays[bdayIndex];
 
-  // Auto-advance every 4.5s, pausing while the admin is managing photos.
+  // Auto-advance whichever mode is active, pausing while managing.
   useEffect(() => {
-    if (slides.length <= 1 || managing) return;
-    const timer = setInterval(() => {
-      setIndex((i) => (i + 1) % slides.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [slides.length, managing]);
+    if (managing) return;
+    if (promoMode === "promo" && images.length > 1) {
+      const timer = setInterval(() => setImgIndex((i) => (i + 1) % images.length), 4500);
+      return () => clearInterval(timer);
+    }
+    if (promoMode === "birthday" && sortedBirthdays.length > 1) {
+      const timer = setInterval(() => setBdayIndex((i) => (i + 1) % sortedBirthdays.length), 4500);
+      return () => clearInterval(timer);
+    }
+  }, [managing, promoMode, images.length, sortedBirthdays.length]);
 
-  if (slides.length === 0 && !isAdmin) return null;
-
-  const current = slides[index] as Slide | undefined;
+  if (promoMode === "promo" && images.length === 0 && !isAdmin) return null;
+  if (promoMode === "birthday" && sortedBirthdays.length === 0 && !isAdmin) return null;
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -101,7 +117,7 @@ export default function HeroPromoSlider({ images, isAdmin, showBirthdays, birthd
       setError(error.message);
       return;
     }
-    setIndex(0);
+    setImgIndex(0);
     router.refresh();
   }
 
@@ -119,15 +135,16 @@ export default function HeroPromoSlider({ images, isAdmin, showBirthdays, birthd
     router.refresh();
   }
 
-  async function toggleBirthdaySlide() {
-    setSavingBirthdayToggle(true);
+  async function setMode(mode: PromoMode) {
+    if (mode === promoMode) return;
+    setSavingMode(true);
     setError(null);
     const supabase = createClient();
     const { error } = await supabase
       .from("homepage_content")
-      .update({ show_birthdays: !showBirthdays })
+      .update({ promo_mode: mode })
       .eq("section_key", SECTION_KEY);
-    setSavingBirthdayToggle(false);
+    setSavingMode(false);
     if (error) {
       setError(error.message);
       return;
@@ -137,132 +154,167 @@ export default function HeroPromoSlider({ images, isAdmin, showBirthdays, birthd
 
   return (
     <div className="hero-promo-slider">
-      <div className="hero-promo-frame">
-        {current?.type === "image" && (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={current.data.image_url} alt="" />
-            {current.data.caption && (
-              <div className="hero-promo-caption">{current.data.caption}</div>
+      {promoMode === "promo" && (
+        <div className="hero-promo-frame">
+          <div className="hero-promo-image-area">
+            {currentImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={currentImage.image_url} alt="" />
+            ) : (
+              isAdmin && <div className="hero-promo-empty">Upload a promo image</div>
             )}
-          </>
-        )}
 
-        {current?.type === "birthday" && (
-          <div className="hero-promo-birthday">
-            <div className="hero-promo-birthday-title">&#127881; Happy Birthday</div>
-            <div className="hero-promo-birthday-subtitle">
-              Members celebrating their bday this month
-            </div>
-            <div className="hero-promo-birthday-list">
-              {birthdayMembers.map((m) => (
-                <div key={m.id} className="hero-promo-birthday-member">
-                  {m.profile_photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={m.profile_photo_url} alt="" />
-                  ) : (
-                    <div className="hero-promo-birthday-noimg">
-                      {(m.full_name ?? "?").charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <span>{m.full_name ?? "Knight Ryder"}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+            {images.length > 1 && (
+              <div className="hero-promo-dots">
+                {images.map((img, i) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    aria-label={`Show image ${i + 1}`}
+                    className={`hero-promo-dot ${i === imgIndex ? "hero-promo-dot-active" : ""}`}
+                    onClick={() => setImgIndex(i)}
+                  />
+                ))}
+              </div>
+            )}
 
-        {!current && isAdmin && <div className="hero-promo-empty">Upload a promo image</div>}
-
-        {slides.length > 1 && (
-          <div className="hero-promo-dots">
-            {slides.map((s, i) => (
+            {isAdmin && managing && currentImage && (
               <button
-                key={s.type === "image" ? s.data.id : "birthday"}
                 type="button"
-                aria-label={`Show slide ${i + 1}`}
-                className={`hero-promo-dot ${i === index ? "hero-promo-dot-active" : ""}`}
-                onClick={() => setIndex(i)}
-              />
-            ))}
+                aria-label="Remove image"
+                className="hero-promo-remove"
+                onClick={() => handleRemove(currentImage.id)}
+              >
+                &#10005;
+              </button>
+            )}
           </div>
-        )}
 
-        {isAdmin && managing && current?.type === "image" && (
-          <button
-            type="button"
-            aria-label="Remove image"
-            className="hero-promo-remove"
-            onClick={() => handleRemove(current.data.id)}
-          >
-            &#10005;
-          </button>
-        )}
-      </div>
+          {currentImage?.caption && (
+            <div className="hero-promo-caption-row">{currentImage.caption}</div>
+          )}
+        </div>
+      )}
+
+      {promoMode === "birthday" && (
+        <div className="hero-promo-frame hero-promo-birthday-frame">
+          <div className="hero-promo-birthday-title-row">&#127881; Happy Birthday</div>
+
+          <div className="hero-promo-birthday-profile-row">
+            {sortedBirthdays.length > 1 && (
+              <button
+                type="button"
+                aria-label="Previous member"
+                className="hero-promo-birthday-nav hero-promo-birthday-prev"
+                onClick={() => setBdayIndex((i) => (i - 1 + sortedBirthdays.length) % sortedBirthdays.length)}
+              >
+                &#8249;
+              </button>
+            )}
+
+            {currentBirthday ? (
+              <div className="hero-promo-birthday-profile">
+                {currentBirthday.profile_photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={currentBirthday.profile_photo_url} alt="" />
+                ) : (
+                  <div className="hero-promo-birthday-noimg">
+                    {(currentBirthday.full_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="hero-promo-birthday-name">{currentBirthday.full_name ?? "Knight Ryder"}</span>
+                <span className="hero-promo-birthday-date">
+                  {new Date().toLocaleDateString("en-IN", { month: "long" })} {currentBirthday.birth_day}
+                </span>
+              </div>
+            ) : (
+              isAdmin && <div className="hero-promo-empty">No birthdays this month yet</div>
+            )}
+
+            {sortedBirthdays.length > 1 && (
+              <button
+                type="button"
+                aria-label="Next member"
+                className="hero-promo-birthday-nav hero-promo-birthday-next"
+                onClick={() => setBdayIndex((i) => (i + 1) % sortedBirthdays.length)}
+              >
+                &#8250;
+              </button>
+            )}
+          </div>
+
+          <div className="hero-promo-caption-row">Members celebrating their bday this month</div>
+        </div>
+      )}
 
       {isAdmin && (
         <div className="hero-promo-admin-panel">
-          <div className="hero-promo-admin">
+          <div className="hero-promo-mode-toggle">
             <button
               type="button"
-              className="hero-promo-manage-btn"
-              onClick={() => setManaging((m) => !m)}
+              className={`hero-promo-mode-btn ${promoMode === "promo" ? "hero-promo-mode-active" : ""}`}
+              disabled={savingMode}
+              onClick={() => setMode("promo")}
             >
-              {managing ? "Done" : "Manage"}
+              Promo
             </button>
-            {managing && (
-              <>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUpload}
-                  style={{ display: "none" }}
-                  id="hero-promo-upload"
-                />
-                <label
-                  htmlFor="hero-promo-upload"
-                  className="hero-promo-manage-btn"
-                  style={{ cursor: "pointer" }}
-                >
-                  {uploading ? "Uploading…" : "+ Add"}
-                </label>
-              </>
-            )}
+            <button
+              type="button"
+              className={`hero-promo-mode-btn ${promoMode === "birthday" ? "hero-promo-mode-active" : ""}`}
+              disabled={savingMode}
+              onClick={() => setMode("birthday")}
+            >
+              Birthday
+            </button>
           </div>
 
-          {managing && (
-            <>
-              <label className="hero-promo-birthday-toggle">
-                <input
-                  type="checkbox"
-                  checked={showBirthdays}
-                  disabled={savingBirthdayToggle}
-                  onChange={toggleBirthdaySlide}
-                />
-                Show birthday shoutout slide
-              </label>
-
-              {current?.type === "image" && (
-                <div className="hero-promo-caption-editor">
+          {promoMode === "promo" && (
+            <div className="hero-promo-admin">
+              <button
+                type="button"
+                className="hero-promo-manage-btn"
+                onClick={() => setManaging((m) => !m)}
+              >
+                {managing ? "Done" : "Manage"}
+              </button>
+              {managing && (
+                <>
                   <input
-                    type="text"
-                    placeholder="Caption, e.g. Promo Code : TKRPride"
-                    value={captionDrafts[current.data.id] ?? current.data.caption ?? ""}
-                    onChange={(e) =>
-                      setCaptionDrafts((d) => ({ ...d, [current.data.id]: e.target.value }))
-                    }
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpload}
+                    style={{ display: "none" }}
+                    id="hero-promo-upload"
                   />
-                  <button
-                    type="button"
+                  <label
+                    htmlFor="hero-promo-upload"
                     className="hero-promo-manage-btn"
-                    onClick={() => handleSaveCaption(current.data.id)}
+                    style={{ cursor: "pointer" }}
                   >
-                    Save
-                  </button>
-                </div>
+                    {uploading ? "Uploading…" : "+ Add"}
+                  </label>
+                </>
               )}
-            </>
+            </div>
+          )}
+
+          {promoMode === "promo" && managing && currentImage && (
+            <div className="hero-promo-caption-editor">
+              <input
+                type="text"
+                placeholder="Caption, e.g. Promo Code : TKRPride"
+                value={captionDrafts[currentImage.id] ?? currentImage.caption ?? ""}
+                onChange={(e) => setCaptionDrafts((d) => ({ ...d, [currentImage.id]: e.target.value }))}
+              />
+              <button
+                type="button"
+                className="hero-promo-manage-btn"
+                onClick={() => handleSaveCaption(currentImage.id)}
+              >
+                Save
+              </button>
+            </div>
           )}
         </div>
       )}
