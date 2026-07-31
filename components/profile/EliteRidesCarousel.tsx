@@ -10,7 +10,7 @@ type Ride = {
   hero_image_url: string | null;
 };
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 15;
 
 function parseRideNumber(title: string): string | null {
   const match = title.match(/ride\s*#\s*(\d+)/i);
@@ -24,64 +24,70 @@ export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
 
   return (
     <div>
-      <div className="elite-section-header" style={{ position: "relative" }}>
+      <div className="elite-section-header">
         <h2>My Rides</h2>
         <p>Expeditions &amp; Journeys</p>
-        {totalPages > 1 && (
-          <div style={{ position: "absolute", top: 4, right: 0, display: "flex", gap: 6 }}>
-            <button
-              type="button"
-              aria-label="Previous rides"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-              style={navBtnStyle(page === 0)}
-            >
-              &#8249;
-            </button>
-            <button
-              type="button"
-              aria-label="Next rides"
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={page === totalPages - 1}
-              style={navBtnStyle(page === totalPages - 1)}
-            >
-              &#8250;
-            </button>
-          </div>
-        )}
       </div>
 
       {rides.length === 0 ? (
         <p style={{ color: "#64748b" }}>No ride history linked yet.</p>
       ) : (
-        <div className="elite-rides-grid-v2">
-          {visible.map((ride) => {
-            const rideNumber = parseRideNumber(ride.title);
-            return (
-              <a key={ride.id} href={`/rides/${ride.slug}`} className="elite-ride-card-v2">
-                <div className="elite-ride-thumb">
-                  {ride.hero_image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ride.hero_image_url} alt={ride.title} />
-                  )}
-                  {rideNumber && <div className="elite-ride-badge-hex">{rideNumber}</div>}
-                </div>
-                <div className="elite-ride-info">
-                  <h3>{ride.title}</h3>
-                  {ride.ride_date && (
-                    <span>
-                      {new Date(ride.ride_date).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  )}
-                </div>
-              </a>
-            );
-          })}
-        </div>
+        <>
+          <div className="elite-rides-grid-v2">
+            {visible.map((ride) => {
+              const rideNumber = parseRideNumber(ride.title);
+              return (
+                <a key={ride.id} href={`/rides/${ride.slug}`} className="elite-ride-card-v2">
+                  <div className="elite-ride-thumb">
+                    {ride.hero_image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={ride.hero_image_url} alt={ride.title} />
+                    )}
+                    {rideNumber && <div className="elite-ride-badge-hex">{rideNumber}</div>}
+                  </div>
+                  <div className="elite-ride-info">
+                    <h3>{ride.title}</h3>
+                    {ride.ride_date && (
+                      <span>
+                        {new Date(ride.ride_date).toLocaleDateString("en-IN", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+
+          {totalPages > 1 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 24 }}>
+              <button
+                type="button"
+                aria-label="Previous rides"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                style={navBtnStyle(page === 0)}
+              >
+                &#8249;
+              </button>
+              <span style={{ color: "#94a3b8", fontSize: 12.5 }}>
+                Page {page + 1} of {totalPages}
+              </span>
+              <button
+                type="button"
+                aria-label="Next rides"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+                style={navBtnStyle(page === totalPages - 1)}
+              >
+                &#8250;
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

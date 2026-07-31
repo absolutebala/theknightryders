@@ -120,7 +120,7 @@ section{padding:70px 0;}
 .gallery-grid figure:hover img{transform:scale(1.06);}
 .gallery-grid figcaption{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);color:#fff;font-size:12.5px;padding:20px 10px 8px;opacity:0;transition:opacity .25s ease;}
 .gallery-grid figure:hover figcaption{opacity:1;}
-.gallery-grid.small{grid-template-columns:repeat(6,1fr);}
+.gallery-grid.small{grid-template-columns:repeat(3,1fr);}
 
 /* RIDES GRID (Past Rides listing) -- captions always visible, unlike the hover-only photo galleries */
 .rides-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
@@ -293,7 +293,7 @@ footer nav a:hover{color:var(--amber);}
   .hero-inner{flex:0 0 auto;}
   .hero-promo-zone{flex:0 0 auto;padding:20px 0 0;}
   .hero-promo-slider{width:min(312px,84%);margin:0 auto;}
-  .hero{padding-bottom:36px;}
+  .hero{padding-bottom:36px;padding-top:130px;}
   .about-grid{grid-template-columns:1fr;}
   .cards{grid-template-columns:1fr;}
   .gallery-grid{grid-template-columns:repeat(3,1fr);}

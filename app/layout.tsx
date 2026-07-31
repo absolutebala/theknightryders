@@ -27,6 +27,7 @@ export default async function RootLayout({
     avatarUrl: string | null;
     profileHref: string;
     isAdmin: boolean;
+    pendingRequestCount: number;
   } | null = null;
 
   if (user) {
@@ -38,6 +39,21 @@ export default async function RootLayout({
         .maybeSingle(),
       supabase.rpc("is_admin"),
     ]);
+
+    let pendingRequestCount = 0;
+    if (isAdminResult) {
+      const [{ count: pendingAccessCount }, { count: pendingTemplateCount }] = await Promise.all([
+        supabase
+          .from("pending_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+        supabase
+          .from("template_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+      ]);
+      pendingRequestCount = (pendingAccessCount ?? 0) + (pendingTemplateCount ?? 0);
+    }
 
     headerUser = {
       name:
@@ -52,6 +68,7 @@ export default async function RootLayout({
         null,
       profileHref: member?.handle ? `/@${member.handle}` : "/members",
       isAdmin: !!isAdminResult,
+      pendingRequestCount,
     };
   }
 

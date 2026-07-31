@@ -9,6 +9,7 @@ type HeaderUser = {
   avatarUrl: string | null;
   profileHref: string;
   isAdmin: boolean;
+  pendingRequestCount: number;
 } | null;
 
 const HEADER_HEIGHT = 80;
@@ -182,31 +183,57 @@ export default function Header({
                   color: "var(--white)",
                 }}
               >
-                {authUser.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={authUser.avatarUrl}
-                    alt={authUser.name}
-                    style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: "50%",
-                      background: "var(--amber)",
-                      color: "var(--navy)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 13,
-                      fontWeight: 800,
-                    }}
-                  >
-                    {authUser.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  {authUser.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={authUser.avatarUrl}
+                      alt={authUser.name}
+                      style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: "50%",
+                        background: "var(--amber)",
+                        color: "var(--navy)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 13,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {authUser.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {authUser.isAdmin && authUser.pendingRequestCount > 0 && (
+                    <span
+                      aria-label={`${authUser.pendingRequestCount} pending requests`}
+                      style={{
+                        position: "absolute",
+                        top: -4,
+                        right: -4,
+                        minWidth: 16,
+                        height: 16,
+                        padding: "0 3px",
+                        borderRadius: 8,
+                        background: "var(--red)",
+                        color: "#fff",
+                        fontSize: 10,
+                        fontWeight: 800,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "1.5px solid var(--headerbg)",
+                      }}
+                    >
+                      {authUser.pendingRequestCount > 9 ? "9+" : authUser.pendingRequestCount}
+                    </span>
+                  )}
+                </div>
                 <span className="header-username" style={{ fontSize: 13, fontWeight: 700 }}>{authUser.name}</span>
                 <span style={{ fontSize: 10, color: "var(--red)" }}>&#9662;</span>
               </button>
