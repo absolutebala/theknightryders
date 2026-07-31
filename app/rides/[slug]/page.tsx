@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import RideHeroEditor from "@/components/admin/RideHeroEditor";
 import RideGalleryEditor from "@/components/admin/RideGalleryEditor";
 import RideDescriptionEditor from "@/components/admin/RideDescriptionEditor";
-import CrownBadge from "@/components/CrownBadge";
+import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
 import { cleanRideTitle, findTerrainMentions, formatList } from "@/lib/journeyNarrative";
 
 function parseRideNumber(title: string): string | null {
@@ -195,48 +195,17 @@ export default async function RideDetailPage({
               padding: 24,
             }}
           >
-            <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 16 }}>
-              Riders on This Trip
-            </h2>
-            {participants.length > 0 ? (
-              <div className="ride-riders-grid">
-                {participants.map((p) => {
-                  const member = p.member_id ? memberById.get(p.member_id) : null;
-                  const content = (
-                    <>
-                      <div style={{ position: "relative", display: "inline-block" }}>
-                        {member?.profile_photo_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={member.profile_photo_url} alt="" className="ride-rider-avatar" />
-                        ) : (
-                          <div className="ride-rider-avatar ride-rider-avatar-noimg">
-                            {(member?.full_name ?? p.rider_name).charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        {member?.profile_template === "elite" && <CrownBadge size={18} />}
-                      </div>
-                      <span className="ride-rider-name">{member?.full_name ?? p.rider_name}</span>
-                    </>
-                  );
-
-                  return member ? (
-                    <a
-                      key={p.id}
-                      href={member.handle ? `/@${member.handle}` : `/members/${member.id}`}
-                      className="ride-rider-card"
-                    >
-                      {content}
-                    </a>
-                  ) : (
-                    <div key={p.id} className="ride-rider-card ride-rider-card-guest">
-                      {content}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p style={{ color: "var(--grey)", fontSize: 14 }}>Participant list not linked yet.</p>
-            )}
+            <RideParticipantsEditor
+              rideId={ride.id}
+              isAdmin={isAdmin}
+              sharedKm={totalKm}
+              participants={participants.map((p) => ({
+                id: p.id,
+                member_id: p.member_id,
+                rider_name: p.rider_name,
+                member: p.member_id ? memberById.get(p.member_id) ?? null : null,
+              }))}
+            />
           </div>
         </div>
       </section>
