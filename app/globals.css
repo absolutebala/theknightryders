@@ -290,7 +290,8 @@ footer nav a:hover{color:var(--amber);}
 
 @media(max-width:900px){
   .hero-content-row{flex-direction:column;}
-  .hero-promo-zone{flex:0 0 auto;margin:32px -24px -90px;background:var(--dark);padding:32px 24px 40px;}
+  .hero-inner{flex:0 0 auto;}
+  .hero-promo-zone{flex:0 0 auto;padding:20px 0 0;}
   .hero-promo-slider{width:min(312px,84%);margin:0 auto;}
   .hero{padding-bottom:36px;}
   .about-grid{grid-template-columns:1fr;}
