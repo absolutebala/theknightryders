@@ -224,8 +224,15 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
         </div>
       )}
 
-      {isAdmin && promoMode === "promo" && (
+      {isAdmin && (
         <div className="hero-promo-admin-panel">
+          {promoMode === "birthday" && (
+            <div style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)", textAlign: "center" }}>
+              Birthday slide showing automatically right now (a member&apos;s birthday is today or
+              within 2 days). You can still manage promo images below for when it's not active.
+            </div>
+          )}
+
           <div className="hero-promo-admin">
             <button
               type="button"
@@ -289,15 +296,6 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {isAdmin && promoMode === "birthday" && (
-        <div className="hero-promo-admin-panel">
-          <div style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)", textAlign: "center" }}>
-            Showing automatically because a member&apos;s birthday is today or within 2 days.
-            Promo images resume once that window passes.
-          </div>
         </div>
       )}
       {error && <div style={{ color: "#ffb4a3", fontSize: 11, marginTop: 6 }}>{error}</div>}
