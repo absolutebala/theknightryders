@@ -84,7 +84,7 @@ export default function Header({
         <div className="nav-wrap">
           <a href="/" className="brand">
             <img
-              src="https://www.theknightryders.com/wp-content/uploads/2022/03/TKR-Logo-White-1.png"
+              src="https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png"
               alt="The Knight Ryders logo"
               style={{ height: 48 }}
             />
