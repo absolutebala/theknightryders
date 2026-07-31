@@ -36,7 +36,7 @@ function pick<T>(options: T[], seed: number, salt: number): T {
 
 // Strips a leading "Ride #83 :" / "Ride #83:" style prefix, leaving just
 // the destination/description part of the title.
-function cleanRideTitle(title: string): string {
+export function cleanRideTitle(title: string): string {
   return title.replace(/^ride\s*#\s*\d+\s*[:\-]\s*/i, "").trim() || title;
 }
 
@@ -58,7 +58,7 @@ const TERRAIN_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /\bislands?\b/i, label: "islands" },
 ];
 
-function findTerrainMentions(rides: Ride[]): string[] {
+export function findTerrainMentions(rides: Ride[]): string[] {
   const found = new Set<string>();
   for (const ride of rides) {
     for (const { pattern, label } of TERRAIN_PATTERNS) {
@@ -70,7 +70,7 @@ function findTerrainMentions(rides: Ride[]): string[] {
   return Array.from(found);
 }
 
-function formatList(items: string[]): string {
+export function formatList(items: string[]): string {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0];
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
