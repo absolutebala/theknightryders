@@ -5,6 +5,7 @@ import ProfileBio from "@/components/profile/ProfileBio";
 import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
 import EliteProfileView from "@/components/profile/EliteProfileView";
 import CrownBadge from "@/components/CrownBadge";
+import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
@@ -237,36 +238,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       <div className="profile-two-col">
         <div>
           <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>Rides</h2>
-          {rides.length === 0 ? (
-            <p style={{ color: "var(--grey)" }}>No ride history linked yet.</p>
-          ) : (
-            <div className="past-rides-grid past-rides-grid-2col">
-              {rides.map((ride) => (
-                <a key={ride.id} href={`/rides/${ride.slug}`}>
-                  <figure>
-                    {ride.hero_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ride.hero_image_url} alt={ride.title} />
-                    ) : (
-                      <div className="no-image">{ride.title}</div>
-                    )}
-                    <figcaption>
-                      {ride.title}
-                      {ride.ride_date && (
-                        <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, fontWeight: 500 }}>
-                          {new Date(ride.ride_date).toLocaleDateString("en-IN", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </div>
-                      )}
-                    </figcaption>
-                  </figure>
-                </a>
-              ))}
-            </div>
-          )}
+          <StandardRidesGrid rides={rides} />
         </div>
 
         {coRiders && coRiders.length > 0 && (

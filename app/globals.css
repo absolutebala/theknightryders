@@ -114,7 +114,7 @@ section{padding:70px 0;}
 .about-grid p{color:#c8d3d5;font-size:15.5px;margin-bottom:14px;}
 
 /* GALLERY GRIDS */
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .gallery-grid figure{position:relative;border-radius:10px;overflow:hidden;background:#eee;aspect-ratio:4/3;}
 .gallery-grid img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease;}
 .gallery-grid figure:hover img{transform:scale(1.06);}
@@ -293,7 +293,7 @@ footer nav a:hover{color:var(--amber);}
   .hero-inner{flex:0 0 auto;}
   .hero-promo-zone{flex:0 0 auto;padding:20px 0 0;}
   .hero-promo-slider{width:min(312px,84%);margin:0 auto;}
-  .hero{padding-bottom:36px;padding-top:130px;}
+  .hero{padding-bottom:36px;padding-top:200px;}
   .about-grid{grid-template-columns:1fr;}
   .cards{grid-template-columns:1fr;}
   .gallery-grid{grid-template-columns:repeat(3,1fr);}
