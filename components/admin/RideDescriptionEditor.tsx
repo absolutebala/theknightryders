@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { parseItinerary } from "@/lib/parseItinerary";
 
 export default function RideDescriptionEditor({
   rideId,
@@ -86,21 +87,61 @@ export default function RideDescriptionEditor({
     );
   }
 
+  const itinerary = description ? parseItinerary(description) : null;
+
   return (
     <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-      <p
-        style={{
-          color: description ? "var(--dark)" : "var(--grey)",
-          fontStyle: description ? "normal" : "italic",
-          whiteSpace: "pre-line",
-          lineHeight: 1.8,
-          fontSize: 15.5,
-          margin: 0,
-          flex: 1,
-        }}
-      >
-        {description || fallbackText}
-      </p>
+      <div style={{ flex: 1 }}>
+        {itinerary ? (
+          <div>
+            {itinerary.intro && (
+              <p style={{ color: "var(--dark)", fontSize: 15.5, lineHeight: 1.7, marginTop: 0, marginBottom: 20 }}>
+                {itinerary.intro}
+              </p>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {itinerary.days.map((day, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "var(--white)",
+                    border: "1px solid #e3ebe7",
+                    borderRadius: 10,
+                    padding: "14px 18px",
+                  }}
+                >
+                  <div style={{ fontWeight: 800, color: "var(--navy)", fontSize: 14.5, marginBottom: 8 }}>
+                    {day.label}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {day.meals.map((m, j) => (
+                      <div key={j} style={{ display: "flex", gap: 8, fontSize: 14, lineHeight: 1.5 }}>
+                        <span style={{ color: "var(--cta-blue)", fontWeight: 700, minWidth: 68 }}>
+                          {m.meal}
+                        </span>
+                        <span style={{ color: "var(--dark)" }}>{m.place}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p
+            style={{
+              color: description ? "var(--dark)" : "var(--grey)",
+              fontStyle: description ? "normal" : "italic",
+              whiteSpace: "pre-line",
+              lineHeight: 1.8,
+              fontSize: 15.5,
+              margin: 0,
+            }}
+          >
+            {description || fallbackText}
+          </p>
+        )}
+      </div>
       {isAdmin && (
         <button
           type="button"
