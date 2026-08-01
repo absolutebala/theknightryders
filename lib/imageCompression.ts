@@ -11,8 +11,8 @@
  */
 export async function compressImage(
   file: File,
-  maxDimension = 1600,
-  quality = 0.82
+  maxDimension = 2200,
+  quality = 0.9
 ): Promise<Blob> {
   // Skip compression for very small files or non-standard image types
   // where re-encoding wouldn't help (e.g. already-tiny icons, or gif/svg

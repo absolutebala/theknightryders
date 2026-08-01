@@ -90,6 +90,7 @@ export default async function HomePage() {
   type BirthdayOffset = {
     id: string;
     full_name: string | null;
+    handle: string | null;
     profile_photo_url: string | null;
     days_diff: number;
   };

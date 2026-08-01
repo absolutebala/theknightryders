@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type Ride = {
   id: string;
@@ -19,12 +19,18 @@ function parseRideNumber(title: string): string | null {
 
 export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
   const [page, setPage] = useState(0);
+  const titleRef = useRef<HTMLDivElement>(null);
   const totalPages = Math.ceil(rides.length / PAGE_SIZE);
   const visible = rides.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
+  function goToPage(next: number) {
+    setPage(next);
+    titleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div>
-      <div className="elite-section-header">
+      <div className="elite-section-header" ref={titleRef}>
         <h2>My Rides</h2>
         <p>Expeditions &amp; Journeys</p>
       </div>
@@ -67,7 +73,7 @@ export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
               <button
                 type="button"
                 aria-label="Previous rides"
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                onClick={() => goToPage(Math.max(0, page - 1))}
                 disabled={page === 0}
                 style={navBtnStyle(page === 0)}
               >
@@ -79,7 +85,7 @@ export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
               <button
                 type="button"
                 aria-label="Next rides"
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                onClick={() => goToPage(Math.min(totalPages - 1, page + 1))}
                 disabled={page === totalPages - 1}
                 style={navBtnStyle(page === totalPages - 1)}
               >

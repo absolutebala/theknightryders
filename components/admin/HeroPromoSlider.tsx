@@ -15,6 +15,7 @@ export type PromoImage = {
 export type BirthdayMember = {
   id: string;
   full_name: string | null;
+  handle: string | null;
   profile_photo_url: string | null;
   days_diff: number;
 };
@@ -200,7 +201,10 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
             )}
 
             {currentBirthday ? (
-              <div className="hero-promo-birthday-profile">
+              <a
+                href={currentBirthday.handle ? `/@${currentBirthday.handle}` : `/members/${currentBirthday.id}`}
+                className="hero-promo-birthday-profile"
+              >
                 {currentBirthday.profile_photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={currentBirthday.profile_photo_url} alt="" />
@@ -211,7 +215,7 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
                 )}
                 <span className="hero-promo-birthday-name">{currentBirthday.full_name ?? "Knight Ryder"}</span>
                 <span className="hero-promo-birthday-date">{displayDate(currentBirthday.days_diff)}</span>
-              </div>
+              </a>
             ) : (
               isAdmin && <div className="hero-promo-empty">No birthdays nearby</div>
             )}

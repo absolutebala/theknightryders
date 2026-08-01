@@ -79,7 +79,7 @@ nav li.has-dropdown:hover .dropdown{display:block;}
 .hero-promo-birthday-title-row{padding:14px 12px 4px;text-align:center;font-size:16px;font-weight:800;color:var(--amber);}
 .hero-promo-birthday-profile-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 8px;min-height:200px;}
 .hero-promo-birthday-nav{width:28px;height:28px;border-radius:50%;border:1px solid rgba(240,194,78,.5);background:rgba(0,0,0,.4);color:var(--amber);font-size:15px;cursor:pointer;flex-shrink:0;}
-.hero-promo-birthday-profile{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
+.hero-promo-birthday-profile{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;text-decoration:none;cursor:pointer;}
 .hero-promo-birthday-profile img{width:84px;height:84px;border-radius:50%;object-fit:cover;border:2px solid var(--amber);}
 .hero-promo-birthday-noimg{width:84px;height:84px;border-radius:50%;background:var(--amber);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;}
 .hero-promo-birthday-name{color:#fff;font-size:14px;font-weight:700;}

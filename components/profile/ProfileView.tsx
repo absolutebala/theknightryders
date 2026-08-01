@@ -16,7 +16,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
     supabase
       .from("members_public")
       .select(
-        "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links, journey_text"
+        "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links, journey_text, elite_activated_at, elite_expires_at"
       )
       .eq("id", memberId)
       .maybeSingle(),
@@ -62,7 +62,13 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
     }
   }
 
-  const isElite = member.profile_template === "elite";
+  const eliteStillValid =
+    member.profile_template === "elite" &&
+    (!member.elite_expires_at || new Date(member.elite_expires_at) > new Date());
+  const isElite = eliteStillValid;
+  const daysUntilEliteExpiry = member.elite_expires_at
+    ? Math.ceil((new Date(member.elite_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
 
   // These three are all independent of one another (each only needs
   // memberId / isOwner, which we already have) -- run them concurrently.
@@ -138,6 +144,18 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   if (isElite) {
     const photos = (extraResult as { data: { id: string; image_url: string; sort_order: number }[] | null }).data;
 
+    let renewalPending = false;
+    if (isOwner) {
+      const { data: existingRenewal } = await supabase
+        .from("template_requests")
+        .select("status")
+        .eq("member_id", member.id)
+        .order("requested_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      renewalPending = existingRenewal?.status === "pending";
+    }
+
     return (
       <EliteProfileView
         memberId={member.id}
@@ -164,6 +182,8 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         viewerMemberId={viewerMemberId}
         viewerHasElite={viewerHasElite}
         viewerRequestPending={viewerRequestPending}
+        daysUntilExpiry={daysUntilEliteExpiry}
+        renewalPending={renewalPending}
       />
     );
   }
@@ -237,7 +257,6 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
       <div className="profile-two-col">
         <div>
-          <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>Rides</h2>
           <StandardRidesGrid rides={rides} />
         </div>
 
