@@ -1,11 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import CreateRideButton from "@/components/admin/CreateRideButton";
 
 export default async function PastRidesPage() {
   const supabase = await createClient();
 
   await supabase.rpc("expire_stale_elite_members");
 
-  const [{ data: rides }, { data: leaderboard }] = await Promise.all([
+  const [authResult, isAdminResult, { data: rides }, { data: leaderboard }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.rpc("is_admin"),
     supabase
       .from("rides")
       .select("id, slug, title, ride_date, hero_image_url")
@@ -16,16 +20,28 @@ export default async function PastRidesPage() {
       .limit(5),
   ]);
 
+  const {
+    data: { user },
+  } = authResult;
+  const cookieStore = await cookies();
+  const editModeOn = cookieStore.get("edit_mode")?.value === "true";
+  const isAdmin = !!user && !!isAdminResult.data && editModeOn;
+
   return (
     <>
       <section style={{ paddingBottom: 20 }}>
         <div className="container">
           <span className="eyebrow-sm">The Journey So Far</span>
-          <h1 className="section-title">Past Rides</h1>
-          <p className="section-sub">
-            {rides?.length ?? 0} rides and counting -- every trip, every
-            destination, every memory.
-          </p>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
+            <div>
+              <h1 className="section-title">Past Rides</h1>
+              <p className="section-sub">
+                {rides?.length ?? 0} rides and counting -- every trip, every
+                destination, every memory.
+              </p>
+            </div>
+            {isAdmin && <CreateRideButton />}
+          </div>
         </div>
       </section>
 

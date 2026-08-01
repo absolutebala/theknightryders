@@ -99,7 +99,14 @@ export default function RideDescriptionEditor({
                 {itinerary.intro}
               </p>
             )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 14,
+                alignItems: "start",
+              }}
+            >
               {itinerary.days.map((day, i) => (
                 <div
                   key={i}
