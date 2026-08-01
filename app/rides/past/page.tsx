@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 export default async function PastRidesPage() {
   const supabase = await createClient();
 
+  await supabase.rpc("expire_stale_elite_members");
+
   const [{ data: rides }, { data: leaderboard }] = await Promise.all([
     supabase
       .from("rides")
@@ -10,7 +12,7 @@ export default async function PastRidesPage() {
       .order("ride_date", { ascending: false, nullsFirst: false }),
     supabase
       .from("ride_leaderboard")
-      .select("rider_key, rider_name, member_id, handle, rides_count, total_km, profile_template")
+      .select("rider_key, rider_name, member_id, handle, rides_count, total_km, profile_template, profile_photo_url")
       .limit(5),
   ]);
 
@@ -66,6 +68,32 @@ export default async function PastRidesPage() {
                       <div className="rides-sidebar-row">
                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <span className="rides-sidebar-rank">#{i + 1}</span>
+                          {entry.profile_photo_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={entry.profile_photo_url}
+                              alt=""
+                              style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: 26,
+                                height: 26,
+                                borderRadius: "50%",
+                                background: "var(--mint)",
+                                color: "var(--navy)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 11,
+                                fontWeight: 800,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {entry.rider_name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                           <span className="rides-sidebar-name">
                             {entry.rider_name}
                             {entry.profile_template === "elite" && (

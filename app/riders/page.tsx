@@ -4,6 +4,8 @@ import CrownBadge from "@/components/CrownBadge";
 export default async function RidersPage() {
   const supabase = await createClient();
 
+  await supabase.rpc("expire_stale_elite_members");
+
   const [{ data: members }, { data: leaderboard }] = await Promise.all([
     supabase.from("members_public").select("id, full_name, handle, bio, profile_photo_url, profile_template"),
     supabase.from("ride_leaderboard").select("member_id, total_km, rides_count"),

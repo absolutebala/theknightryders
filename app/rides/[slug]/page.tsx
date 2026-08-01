@@ -20,6 +20,8 @@ export default async function RideDetailPage({
   const { slug } = await params;
   const supabase = await createClient();
 
+  await supabase.rpc("expire_stale_elite_members");
+
   const [rideResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("rides")

@@ -103,7 +103,7 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
             background: "var(--white)",
             borderRadius: 12,
             padding: 18,
-            width: 340,
+            width: 500,
             boxShadow: "0 10px 30px rgba(0,0,0,.3)",
           }}
         >
@@ -113,6 +113,7 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
                 imageUrl={previewUrl}
                 position={position}
                 onChange={setPosition}
+                frameHeight={195}
               />
             </div>
           )}
