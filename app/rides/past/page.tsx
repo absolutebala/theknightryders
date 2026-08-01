@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateRideButton from "@/components/admin/CreateRideButton";
 import RidePublishToggle from "@/components/admin/RidePublishToggle";
+import { cleanRideTitle } from "@/lib/journeyNarrative";
 
 export default async function PastRidesPage() {
   const supabase = await createClient();
@@ -13,7 +14,7 @@ export default async function PastRidesPage() {
     supabase.rpc("is_admin"),
     supabase
       .from("rides")
-      .select("id, slug, title, ride_date, hero_image_url, is_published")
+      .select("id, slug, title, ride_date, hero_image_url, is_published, state")
       .order("ride_date", { ascending: false, nullsFirst: false }),
     supabase
       .from("ride_leaderboard")
@@ -29,13 +30,21 @@ export default async function PastRidesPage() {
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
   const visibleRides = (rides ?? []).filter((r) => isAdmin || r.is_published);
 
+  const stateCounts = new Map<string, number>();
+  for (const ride of visibleRides) {
+    if (ride.state) {
+      stateCounts.set(ride.state, (stateCounts.get(ride.state) ?? 0) + 1);
+    }
+  }
+  const statesVisited = Array.from(stateCounts.entries()).sort((a, b) => b[1] - a[1]);
+
   return (
     <>
       <section style={{ paddingBottom: 20 }}>
         <div className="container">
-          <span className="eyebrow-sm">The Journey So Far</span>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
             <div>
+              <span className="eyebrow-sm" style={{ textAlign: "left" }}>The Journey So Far</span>
               <h1 className="section-title">Past Rides</h1>
               <p className="section-sub">
                 {visibleRides.length} rides and counting -- every trip, every
@@ -46,6 +55,43 @@ export default async function PastRidesPage() {
           </div>
         </div>
       </section>
+
+      {statesVisited.length > 0 && (
+        <section style={{ paddingBottom: 30 }}>
+          <div className="container">
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 10,
+                background: "var(--mint)",
+                borderRadius: 12,
+                padding: "16px 20px",
+              }}
+            >
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--navy)", marginRight: 4 }}>
+                {statesVisited.length} state{statesVisited.length === 1 ? "" : "s"} ridden:
+              </span>
+              {statesVisited.map(([state, count]) => (
+                <span
+                  key={state}
+                  style={{
+                    background: "var(--white)",
+                    border: "1px solid #c7d3cf",
+                    borderRadius: 16,
+                    padding: "4px 12px",
+                    fontSize: 12.5,
+                    color: "var(--dark)",
+                  }}
+                >
+                  {state} <strong style={{ color: "var(--cta-blue)" }}>&times;{count}</strong>
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section style={{ paddingTop: 20 }}>
         <div className="container">
@@ -65,6 +111,7 @@ export default async function PastRidesPage() {
                     ) : (
                       <div className="no-image">{ride.title}</div>
                     )}
+                    <div className="past-rides-destination-label">{cleanRideTitle(ride.title)}</div>
                     <figcaption>
                       {ride.title}
                       {ride.ride_date && (

@@ -218,7 +218,7 @@ export default async function HomePage() {
               value={milestone.content?.subtitle ?? null}
               isAdmin={isAdmin}
               as="span"
-              className="eyebrow-sm"
+              className="eyebrow-sm eyebrow-sm-dark"
               style={{ textAlign: "left" }}
             />
             <EditableField

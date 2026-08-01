@@ -26,7 +26,7 @@ export default async function RideDetailPage({
   const [rideResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("rides")
-      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km")
+      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state")
       .eq("slug", slug)
       .maybeSingle(),
     supabase.auth.getUser(),
@@ -166,6 +166,7 @@ export default async function RideDetailPage({
           riderCount={riderCount}
           terrain={ride.terrain}
           autoTerrain={autoTerrain}
+          state={ride.state}
           isAdmin={isAdmin}
         />
       </section>
