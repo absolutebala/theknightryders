@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
-import EditableField from "@/components/admin/EditableField";
 import EditableGallery from "@/components/admin/EditableGallery";
 
 const SECTION_KEY = "media";
@@ -10,10 +9,9 @@ export default async function MediaPage() {
   const cookieStore = await cookies();
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
 
-  const [authResult, isAdminResult, contentResult, imagesResult] = await Promise.all([
+  const [authResult, isAdminResult, imagesResult] = await Promise.all([
     supabase.auth.getUser(),
     supabase.rpc("is_admin"),
-    supabase.from("homepage_content").select("title, subtitle, body").eq("section_key", SECTION_KEY).maybeSingle(),
     supabase
       .from("homepage_images")
       .select("id, image_url, caption, sort_order")
@@ -25,33 +23,11 @@ export default async function MediaPage() {
     data: { user },
   } = authResult;
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
-  const content = contentResult.data;
   const images = imagesResult.data ?? [];
 
   return (
     <>
-      <section style={{ paddingTop: 90, paddingBottom: 20 }}>
-        <div className="container" style={{ textAlign: "center" }}>
-          <EditableField
-            sectionKey={SECTION_KEY}
-            column="subtitle"
-            value={content?.subtitle ?? null}
-            isAdmin={isAdmin}
-            as="span"
-            className="eyebrow-sm"
-          />
-          <EditableField
-            sectionKey={SECTION_KEY}
-            column="title"
-            value={content?.title ?? null}
-            isAdmin={isAdmin}
-            as="h1"
-            className="section-title"
-          />
-        </div>
-      </section>
-
-      <section style={{ paddingBottom: 60 }}>
+      <section style={{ paddingTop: 90, paddingBottom: 60 }}>
         <div className="container">
           <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 20, textAlign: "center" }}>
             Listen
