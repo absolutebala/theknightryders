@@ -44,6 +44,7 @@ export default async function HomePage() {
     heroPromoResult,
     promoTitleResult,
     birthdayMembersResult,
+    birthdayWishResult,
     milestone,
     rideForCause,
     awards,
@@ -68,6 +69,7 @@ export default async function HomePage() {
       .order("sort_order", { ascending: true }),
     supabase.from("homepage_content").select("title").eq("section_key", "hero_promo").maybeSingle(),
     supabase.rpc("get_members_with_birthday_offset"),
+    supabase.rpc("get_random_birthday_wish"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -111,6 +113,8 @@ export default async function HomePage() {
   }
 
   const promoMode: "promo" | "birthday" = birthdayMembers.length > 0 ? "birthday" : "promo";
+  const birthdayWish =
+    birthdayWishResult.data ?? "Wish you all the success and happiest life as we have on the road ;)";
 
   const heroSource = (heroContent?.hero_source ?? "auto") as "auto" | "custom";
   const useCustomHero = heroSource === "custom" && !!heroImage?.image_url;
@@ -180,6 +184,7 @@ export default async function HomePage() {
             promoMode={promoMode}
             promoTitle={promoTitle}
             birthdayMembers={birthdayMembers}
+            birthdayWish={birthdayWish}
           />
         </div>
         </div>

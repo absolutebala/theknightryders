@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 type Member = {
   id: string;
@@ -71,12 +73,13 @@ export default function EditProfileForm({
       return;
     }
 
-    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const compressed = await compressImage(file);
+    const cleanName = jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
     const path = `${user.id}/${Date.now()}-${cleanName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true });
+      .upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
 
     if (uploadError) {
       setUploading(false);
@@ -128,6 +131,10 @@ export default function EditProfileForm({
     if (error) {
       setError(error.message);
       return;
+    }
+
+    if (member.profile_photo_url && member.profile_photo_url !== form.profile_photo_url) {
+      await deleteStorageFileFromUrl(supabase, member.profile_photo_url);
     }
 
     setSaved(true);

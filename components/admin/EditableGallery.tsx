@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 export type GalleryImage = {
   id: string;
@@ -42,10 +44,11 @@ export default function EditableGallery({
     setError(null);
     const supabase = createClient();
 
-    const path = `${sectionKey}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "")}`;
+    const compressed = await compressImage(file);
+    const path = `${sectionKey}/${Date.now()}-${jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""))}`;
     const { error: uploadError } = await supabase.storage
       .from("homepage")
-      .upload(path, file);
+      .upload(path, compressed, { contentType: "image/jpeg" });
 
     if (uploadError) {
       setUploading(false);
@@ -54,12 +57,18 @@ export default function EditableGallery({
     }
 
     const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);
+
+    // Single-image slot (e.g. milestone photo): this upload is a
+    // replacement, not an addition -- clear out any existing row(s) for
+    // this section first so we don't accumulate orphaned rows/files.
+    const previousImages = singleImage ? images : [];
+
     const nextSortOrder = images.length > 0 ? Math.max(...images.map((i) => i.sort_order)) + 1 : 0;
 
     const { error: insertError } = await supabase.from("homepage_images").insert({
       section_key: sectionKey,
       image_url: publicUrlData.publicUrl,
-      sort_order: nextSortOrder,
+      sort_order: singleImage ? 0 : nextSortOrder,
     });
 
     setUploading(false);
@@ -68,16 +77,30 @@ export default function EditableGallery({
       return;
     }
 
+    if (singleImage && previousImages.length > 0) {
+      await supabase
+        .from("homepage_images")
+        .delete()
+        .in("id", previousImages.map((img) => img.id));
+      for (const img of previousImages) {
+        await deleteStorageFileFromUrl(supabase, img.image_url);
+      }
+    }
+
     if (fileInputRef.current) fileInputRef.current.value = "";
     router.refresh();
   }
 
   async function handleRemove(imageId: string) {
     const supabase = createClient();
+    const imageToRemove = images.find((i) => i.id === imageId);
     const { error } = await supabase.from("homepage_images").delete().eq("id", imageId);
     if (error) {
       setError(error.message);
       return;
+    }
+    if (imageToRemove) {
+      await deleteStorageFileFromUrl(supabase, imageToRemove.image_url);
     }
     router.refresh();
   }

@@ -264,7 +264,11 @@ export default function RideParticipantsEditor({
                     <button
                       type="button"
                       aria-label="Remove rider"
-                      onClick={() => handleRemove(p.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleRemove(p.id);
+                      }}
                       style={{
                         position: "absolute",
                         bottom: -2,
@@ -287,7 +291,7 @@ export default function RideParticipantsEditor({
               </>
             );
 
-            return member ? (
+            return member && !managing ? (
               <a
                 key={p.id}
                 href={member.handle ? `/@${member.handle}` : `/members/${member.id}`}

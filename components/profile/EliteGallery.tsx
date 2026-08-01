@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 export type MemberPhoto = {
   id: string;
@@ -60,10 +62,13 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
       return;
     }
 
-    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const compressed = await compressImage(file);
+    const cleanName = jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
     const path = `${user.id}/gallery/${Date.now()}-${cleanName}`;
 
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file);
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, compressed, { contentType: "image/jpeg" });
     if (uploadError) {
       setUploading(false);
       setError(uploadError.message);
@@ -91,10 +96,14 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
 
   async function handleRemove(photoId: string) {
     const supabase = createClient();
+    const photoToRemove = photos.find((p) => p.id === photoId);
     const { error } = await supabase.from("member_photos").delete().eq("id", photoId);
     if (error) {
       setError(error.message);
       return;
+    }
+    if (photoToRemove) {
+      await deleteStorageFileFromUrl(supabase, photoToRemove.image_url);
     }
     setIndex((i) => Math.max(0, i - 1));
     router.refresh();

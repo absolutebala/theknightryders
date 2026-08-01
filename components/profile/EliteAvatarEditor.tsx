@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import CrownBadge from "@/components/CrownBadge";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 type Props = {
   memberId: string;
@@ -45,12 +47,13 @@ export default function EliteAvatarEditor({
       return;
     }
 
-    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const compressed = await compressImage(file);
+    const cleanName = jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
     const path = `${user.id}/${Date.now()}-${cleanName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true });
+      .upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
 
     if (uploadError) {
       setUploading(false);
@@ -70,6 +73,8 @@ export default function EliteAvatarEditor({
       setError(updateError.message);
       return;
     }
+
+    await deleteStorageFileFromUrl(supabase, profilePhotoUrl);
 
     if (fileInputRef.current) fileInputRef.current.value = "";
     router.refresh();

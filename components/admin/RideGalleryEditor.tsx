@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 type Props = {
   rideId: string;
@@ -26,10 +28,13 @@ export default function RideGalleryEditor({ rideId, gallery, isAdmin }: Props) {
     setError(null);
     const supabase = createClient();
 
-    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const compressed = await compressImage(file);
+    const cleanName = jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
     const path = `rides/${rideId}/gallery-${Date.now()}-${cleanName}`;
 
-    const { error: uploadError } = await supabase.storage.from("homepage").upload(path, file);
+    const { error: uploadError } = await supabase.storage
+      .from("homepage")
+      .upload(path, compressed, { contentType: "image/jpeg" });
     if (uploadError) {
       setUploading(false);
       setError(uploadError.message);
@@ -63,6 +68,7 @@ export default function RideGalleryEditor({ rideId, gallery, isAdmin }: Props) {
       setError(error.message);
       return;
     }
+    await deleteStorageFileFromUrl(supabase, url);
     router.refresh();
   }
 

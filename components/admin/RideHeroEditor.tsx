@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DragPositionEditor from "./DragPositionEditor";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 type Props = {
   rideId: string;
@@ -39,11 +41,12 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
       let finalUrl = imageUrl;
 
       if (pendingFile) {
-        const cleanName = pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+        const compressed = await compressImage(pendingFile);
+        const cleanName = jpegFilename(pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
         const path = `rides/${rideId}/${Date.now()}-${cleanName}`;
         const { error: uploadError } = await supabase.storage
           .from("homepage")
-          .upload(path, pendingFile);
+          .upload(path, compressed, { contentType: "image/jpeg" });
         if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);
@@ -55,6 +58,10 @@ export default function RideHeroEditor({ rideId, isAdmin, imageUrl, imagePositio
         .update({ hero_image_url: finalUrl, hero_image_position: position })
         .eq("id", rideId);
       if (updateError) throw updateError;
+
+      if (pendingFile && imageUrl) {
+        await deleteStorageFileFromUrl(supabase, imageUrl);
+      }
 
       setEditing(false);
       setPendingFile(null);

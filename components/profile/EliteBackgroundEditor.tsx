@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DragPositionEditor from "@/components/admin/DragPositionEditor";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 type Props = {
   memberId: string;
@@ -51,9 +53,12 @@ export default function EliteBackgroundEditor({
         } = await supabase.auth.getUser();
         if (!user) throw new Error("You need to be signed in.");
 
-        const cleanName = pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+        const compressed = await compressImage(pendingFile);
+        const cleanName = jpegFilename(pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
         const path = `${user.id}/background/${Date.now()}-${cleanName}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(path, pendingFile);
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(path, compressed, { contentType: "image/jpeg" });
         if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
@@ -69,6 +74,10 @@ export default function EliteBackgroundEditor({
         })
         .eq("id", memberId);
       if (updateError) throw updateError;
+
+      if (mode === "custom" && pendingFile && customImageUrl) {
+        await deleteStorageFileFromUrl(supabase, customImageUrl);
+      }
 
       setEditing(false);
       setPendingFile(null);

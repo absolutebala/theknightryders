@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 export type PromoImage = {
   id: string;
@@ -25,6 +27,7 @@ type Props = {
   promoMode: PromoMode; // decided automatically upstream, this component just renders it
   promoTitle: string; // shared across all promo images, not per-image
   birthdayMembers: BirthdayMember[]; // already filtered to whichever set qualifies
+  birthdayWish: string;
 };
 
 const SECTION_KEY = "hero_promo";
@@ -35,7 +38,7 @@ function displayDate(daysDiff: number): string {
   return d.toLocaleDateString("en-IN", { month: "long", day: "numeric" });
 }
 
-export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle, birthdayMembers }: Props) {
+export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle, birthdayMembers, birthdayWish }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imgIndex, setImgIndex] = useState(0);
@@ -74,10 +77,13 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
     setError(null);
     const supabase = createClient();
 
-    const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+    const compressed = await compressImage(file);
+    const cleanName = jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
     const path = `${SECTION_KEY}/${Date.now()}-${cleanName}`;
 
-    const { error: uploadError } = await supabase.storage.from("homepage").upload(path, file);
+    const { error: uploadError } = await supabase.storage
+      .from("homepage")
+      .upload(path, compressed, { contentType: "image/jpeg" });
     if (uploadError) {
       setUploading(false);
       setError(uploadError.message);
@@ -105,10 +111,14 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
 
   async function handleRemove(imageId: string) {
     const supabase = createClient();
+    const imageToRemove = images.find((i) => i.id === imageId);
     const { error } = await supabase.from("homepage_images").delete().eq("id", imageId);
     if (error) {
       setError(error.message);
       return;
+    }
+    if (imageToRemove) {
+      await deleteStorageFileFromUrl(supabase, imageToRemove.image_url);
     }
     setImgIndex(0);
     router.refresh();
@@ -218,9 +228,7 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
             )}
           </div>
 
-          <div className="hero-promo-birthday-message">
-            Wish you all the success and happiest life as we have on the road ;)
-          </div>
+          <div className="hero-promo-birthday-message">{birthdayWish}</div>
         </div>
       )}
 

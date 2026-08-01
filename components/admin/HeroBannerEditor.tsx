@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DragPositionEditor from "./DragPositionEditor";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 type Props = {
   isAdmin: boolean;
@@ -49,11 +51,12 @@ export default function HeroBannerEditor({
         let finalUrl = customImageUrl;
 
         if (pendingFile) {
-          const cleanName = pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
+          const compressed = await compressImage(pendingFile);
+          const cleanName = jpegFilename(pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
           const path = `hero/${Date.now()}-${cleanName}`;
           const { error: uploadError } = await supabase.storage
             .from("homepage")
-            .upload(path, pendingFile);
+            .upload(path, compressed, { contentType: "image/jpeg" });
           if (uploadError) throw uploadError;
 
           const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);
@@ -68,6 +71,10 @@ export default function HeroBannerEditor({
             sort_order: 0,
           });
           if (insertError) throw insertError;
+
+          if (customImageUrl) {
+            await deleteStorageFileFromUrl(supabase, customImageUrl);
+          }
         } else if (finalUrl) {
           // No new upload, just update the position of the existing custom image.
           const { error: updateError } = await supabase
