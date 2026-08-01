@@ -48,30 +48,6 @@ export default async function MediaPage() {
             as="h1"
             className="section-title"
           />
-          <EditableField
-            sectionKey={SECTION_KEY}
-            column="body"
-            value={content?.body ?? null}
-            isAdmin={isAdmin}
-            as="p"
-            className="section-sub"
-            multiline
-            style={{ maxWidth: 560, margin: "16px auto 0" }}
-          />
-        </div>
-      </section>
-
-      <section style={{ paddingBottom: 20 }}>
-        <div className="container" style={{ textAlign: "center" }}>
-          <a
-            href="https://www.youtube.com/@TheKnightRyders1"
-            target="_blank"
-            rel="noopener"
-            className="btn btn-outline"
-            style={{ display: "inline-block" }}
-          >
-            Watch Our Rides on YouTube
-          </a>
         </div>
       </section>
 
@@ -112,6 +88,20 @@ export default async function MediaPage() {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      <section style={{ paddingBottom: 40 }}>
+        <div className="container" style={{ textAlign: "center" }}>
+          <a
+            href="https://www.youtube.com/@TheKnightRyders1"
+            target="_blank"
+            rel="noopener"
+            className="btn btn-outline"
+            style={{ display: "inline-block" }}
+          >
+            Watch Our Rides on YouTube
+          </a>
         </div>
       </section>
 
