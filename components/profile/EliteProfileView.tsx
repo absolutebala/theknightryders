@@ -8,6 +8,7 @@ import EliteHandleEditor from "./EliteHandleEditor";
 import EliteBioEditor from "./EliteBioEditor";
 import EliteJourneyEditor from "./EliteJourneyEditor";
 import RequestEliteBanner from "./RequestEliteBanner";
+import RenewEliteButton from "./RenewEliteButton";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
@@ -53,6 +54,8 @@ type Props = {
   viewerMemberId: string | null;
   viewerHasElite: boolean;
   viewerRequestPending: boolean;
+  daysUntilExpiry: number | null;
+  renewalPending: boolean;
 };
 
 export default function EliteProfileView({
@@ -80,6 +83,8 @@ export default function EliteProfileView({
   viewerMemberId,
   viewerHasElite,
   viewerRequestPending,
+  daysUntilExpiry,
+  renewalPending,
 }: Props) {
   const joinYear = joinDate ? new Date(joinDate).getFullYear() : null;
   const journeyNarrative = generateJourneyNarrative({
@@ -123,6 +128,9 @@ export default function EliteProfileView({
       )}
 
       <div className="elite-wrapper">
+        {isOwner && (
+          <RenewEliteButton memberId={memberId} daysUntilExpiry={daysUntilExpiry} renewalPending={renewalPending} />
+        )}
         {/* DOSSIER CARD */}
         <div className="elite-dossier-card">
           {isOwner && (
