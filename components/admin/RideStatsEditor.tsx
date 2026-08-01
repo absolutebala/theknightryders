@@ -11,6 +11,8 @@ export default function RideStatsEditor({
   terrain,
   autoTerrain,
   state,
+  destination,
+  autoDestination,
   isAdmin,
 }: {
   rideId: string;
@@ -19,6 +21,8 @@ export default function RideStatsEditor({
   terrain: string | null;
   autoTerrain: string;
   state: string | null;
+  destination: string | null;
+  autoDestination: string;
   isAdmin: boolean;
 }) {
   const router = useRouter();
@@ -28,6 +32,8 @@ export default function RideStatsEditor({
   const [terrainDraft, setTerrainDraft] = useState(terrain ?? "");
   const [editingState, setEditingState] = useState(false);
   const [stateDraft, setStateDraft] = useState(state ?? "");
+  const [editingDestination, setEditingDestination] = useState(false);
+  const [destinationDraft, setDestinationDraft] = useState(destination ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,8 +86,65 @@ export default function RideStatsEditor({
     router.refresh();
   }
 
+  async function saveDestination() {
+    setSaving(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("rides")
+      .update({ destination: destinationDraft.trim() || null })
+      .eq("id", rideId);
+    setSaving(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setEditingDestination(false);
+    router.refresh();
+  }
+
   return (
     <div className="container ride-stats-row">
+      <div className="ride-stat-card" style={{ position: "relative" }}>
+        {editingDestination ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+            <input
+              type="text"
+              value={destinationDraft}
+              onChange={(e) => setDestinationDraft(e.target.value)}
+              placeholder="e.g. Kodaikanal"
+              autoFocus
+              style={{ width: 140, padding: "6px 10px", border: "1.5px solid var(--cta-blue)", borderRadius: 6, textAlign: "center", fontSize: 14 }}
+            />
+            <div style={{ display: "flex", gap: 6 }}>
+              <button type="button" className="btn btn-amber" style={{ padding: "4px 12px", fontSize: 11 }} disabled={saving} onClick={saveDestination}>
+                {saving ? "…" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDestinationDraft(destination ?? "");
+                  setEditingDestination(false);
+                }}
+                style={{ padding: "4px 12px", fontSize: 11, background: "transparent", border: "1px solid #c7d3cf", borderRadius: 4, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="ride-stat-num" style={{ fontSize: 22 }}>{destination || autoDestination}</div>
+            <div className="ride-stat-label">Destination</div>
+          </>
+        )}
+        {isAdmin && !editingDestination && (
+          <button type="button" aria-label="Edit destination" onClick={() => setEditingDestination(true)} style={editPencilStyle}>
+            &#9998;
+          </button>
+        )}
+      </div>
+
       <div className="ride-stat-card" style={{ position: "relative" }}>
         {editingKm ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>

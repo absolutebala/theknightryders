@@ -26,7 +26,7 @@ export default async function RideDetailPage({
   const [rideResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("rides")
-      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state")
+      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state, destination")
       .eq("slug", slug)
       .maybeSingle(),
     supabase.auth.getUser(),
@@ -69,7 +69,7 @@ export default async function RideDetailPage({
   const totalKm = ride.total_km ?? participants[0]?.km_covered ?? 0;
   const riderCount = participants.length;
   const rideNumber = parseRideNumber(ride.title);
-  const destination = cleanRideTitle(ride.title);
+  const destination = ride.destination || cleanRideTitle(ride.title);
   const detectedTerrain = findTerrainMentions([{ title: ride.title, ride_date: ride.ride_date }]);
   const autoTerrain = detectedTerrain.length > 0 ? detectedTerrain[0] : "Open Road";
 
@@ -167,6 +167,8 @@ export default async function RideDetailPage({
           terrain={ride.terrain}
           autoTerrain={autoTerrain}
           state={ride.state}
+          destination={ride.destination}
+          autoDestination={cleanRideTitle(ride.title)}
           isAdmin={isAdmin}
         />
       </section>

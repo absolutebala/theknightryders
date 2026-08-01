@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateRideButton from "@/components/admin/CreateRideButton";
 import RidePublishToggle from "@/components/admin/RidePublishToggle";
-import { cleanRideTitle } from "@/lib/journeyNarrative";
+import RideDestinationBadge from "@/components/admin/RideDestinationBadge";
 
 export default async function PastRidesPage() {
   const supabase = await createClient();
@@ -14,7 +14,7 @@ export default async function PastRidesPage() {
     supabase.rpc("is_admin"),
     supabase
       .from("rides")
-      .select("id, slug, title, ride_date, hero_image_url, is_published, state")
+      .select("id, slug, title, ride_date, hero_image_url, is_published, state, destination")
       .order("ride_date", { ascending: false, nullsFirst: false }),
     supabase
       .from("ride_leaderboard")
@@ -41,18 +41,18 @@ export default async function PastRidesPage() {
   return (
     <>
       <section style={{ paddingBottom: 20 }}>
-        <div className="container">
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
-            <div>
-              <span className="eyebrow-sm" style={{ textAlign: "left" }}>The Journey So Far</span>
-              <h1 className="section-title">Past Rides</h1>
-              <p className="section-sub">
-                {visibleRides.length} rides and counting -- every trip, every
-                destination, every memory.
-              </p>
+        <div className="container" style={{ textAlign: "center" }}>
+          <span className="eyebrow-sm">The Journey So Far</span>
+          <h1 className="section-title">Past Rides</h1>
+          <p className="section-sub">
+            {visibleRides.length} rides and counting -- every trip, every
+            destination, every memory.
+          </p>
+          {isAdmin && (
+            <div style={{ marginTop: 18 }}>
+              <CreateRideButton />
             </div>
-            {isAdmin && <CreateRideButton />}
-          </div>
+          )}
         </div>
       </section>
 
@@ -111,7 +111,11 @@ export default async function PastRidesPage() {
                     ) : (
                       <div className="no-image">{ride.title}</div>
                     )}
-                    <div className="past-rides-destination-label">{cleanRideTitle(ride.title)}</div>
+                    <RideDestinationBadge
+                      rideId={ride.id}
+                      destination={ride.destination}
+                      isAdmin={isAdmin}
+                    />
                     <figcaption>
                       {ride.title}
                       {ride.ride_date && (
