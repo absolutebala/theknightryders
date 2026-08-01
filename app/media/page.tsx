@@ -75,6 +75,46 @@ export default async function MediaPage() {
         </div>
       </section>
 
+      <section style={{ paddingBottom: 60 }}>
+        <div className="container">
+          <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 20, textAlign: "center" }}>
+            Listen
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 24,
+            }}
+          >
+            <div>
+              <iframe
+                title="Rainbow FM playlist"
+                width="100%"
+                height="300"
+                scrolling="no"
+                frameBorder="no"
+                allow="autoplay"
+                src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fsoundcloud.com%2Fthe-knight-ryders%2Fsets%2Frainbowfm&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
+                style={{ borderRadius: 10 }}
+              />
+            </div>
+            <div>
+              <iframe
+                title="BigFM playlist"
+                width="100%"
+                height="300"
+                scrolling="no"
+                frameBorder="no"
+                allow="autoplay"
+                src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fsoundcloud.com%2Fbala-kandaswamy%2Fsets%2Fbigfm&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
+                style={{ borderRadius: 10 }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section style={{ paddingBottom: 80 }}>
         <div className="container">
           <EditableGallery

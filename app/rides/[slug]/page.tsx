@@ -5,6 +5,7 @@ import RideHeroEditor from "@/components/admin/RideHeroEditor";
 import RideGalleryEditor from "@/components/admin/RideGalleryEditor";
 import RideDescriptionEditor from "@/components/admin/RideDescriptionEditor";
 import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
+import RideStatsEditor from "@/components/admin/RideStatsEditor";
 import { cleanRideTitle, findTerrainMentions, formatList } from "@/lib/journeyNarrative";
 
 function parseRideNumber(title: string): string | null {
@@ -25,7 +26,7 @@ export default async function RideDetailPage({
   const [rideResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("rides")
-      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery")
+      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km")
       .eq("slug", slug)
       .maybeSingle(),
     supabase.auth.getUser(),
@@ -63,18 +64,19 @@ export default async function RideDetailPage({
 
   const memberById = new Map((memberProfiles ?? []).map((m) => [m.id, m]));
 
-  // Distance is stored once per ride (same value on every participant row
-  // from the original import), not summed per-rider.
-  const totalKm = participants[0]?.km_covered ?? 0;
+  // Distance now lives on the ride itself (rides.total_km), mirrored onto
+  // every participant row so aggregate stats elsewhere stay correct.
+  const totalKm = ride.total_km ?? participants[0]?.km_covered ?? 0;
   const riderCount = participants.length;
   const rideNumber = parseRideNumber(ride.title);
   const destination = cleanRideTitle(ride.title);
-  const terrain = findTerrainMentions([{ title: ride.title, ride_date: ride.ride_date }]);
+  const detectedTerrain = findTerrainMentions([{ title: ride.title, ride_date: ride.ride_date }]);
+  const autoTerrain = detectedTerrain.length > 0 ? detectedTerrain[0] : "Open Road";
 
   const fallbackDescription = [
     `${destination} brought ${riderCount > 0 ? `${riderCount} rider${riderCount === 1 ? "" : "s"}` : "the club"} together`,
     totalKm > 0 ? `for ${totalKm.toLocaleString("en-IN")} kilometers on the road` : null,
-    terrain.length > 0 ? `through ${formatList(terrain.slice(0, 3))}` : null,
+    detectedTerrain.length > 0 ? `through ${formatList(detectedTerrain.slice(0, 3))}` : null,
   ]
     .filter(Boolean)
     .join(" ") + ".";
@@ -158,22 +160,14 @@ export default async function RideDetailPage({
 
       {/* STATS ROW */}
       <section style={{ background: "var(--mint)" }}>
-        <div className="container ride-stats-row">
-          <div className="ride-stat-card">
-            <div className="ride-stat-num">{totalKm > 0 ? totalKm.toLocaleString("en-IN") : "—"}</div>
-            <div className="ride-stat-label">Kilometers Covered</div>
-          </div>
-          <div className="ride-stat-card">
-            <div className="ride-stat-num">{riderCount || "—"}</div>
-            <div className="ride-stat-label">Riders</div>
-          </div>
-          <div className="ride-stat-card">
-            <div className="ride-stat-num" style={{ fontSize: riderCount ? 28 : undefined }}>
-              {terrain.length > 0 ? terrain[0] : "Open Road"}
-            </div>
-            <div className="ride-stat-label">Terrain</div>
-          </div>
-        </div>
+        <RideStatsEditor
+          rideId={ride.id}
+          totalKm={ride.total_km}
+          riderCount={riderCount}
+          terrain={ride.terrain}
+          autoTerrain={autoTerrain}
+          isAdmin={isAdmin}
+        />
       </section>
 
       <section style={{ paddingBottom: 20 }}>

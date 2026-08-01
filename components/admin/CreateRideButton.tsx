@@ -16,7 +16,8 @@ export default function CreateRideButton() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [rideDate, setRideDate] = useState("");
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const [rideDate, setRideDate] = useState(todayStr);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,6 +119,7 @@ export default function CreateRideButton() {
                 type="date"
                 value={rideDate}
                 onChange={(e) => setRideDate(e.target.value)}
+                max={todayStr}
                 style={{
                   width: "100%",
                   padding: "9px 12px",

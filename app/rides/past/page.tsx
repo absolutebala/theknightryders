@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateRideButton from "@/components/admin/CreateRideButton";
+import RidePublishToggle from "@/components/admin/RidePublishToggle";
 
 export default async function PastRidesPage() {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export default async function PastRidesPage() {
     supabase.rpc("is_admin"),
     supabase
       .from("rides")
-      .select("id, slug, title, ride_date, hero_image_url")
+      .select("id, slug, title, ride_date, hero_image_url, is_published")
       .order("ride_date", { ascending: false, nullsFirst: false }),
     supabase
       .from("ride_leaderboard")
@@ -26,6 +27,7 @@ export default async function PastRidesPage() {
   const cookieStore = await cookies();
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
+  const visibleRides = (rides ?? []).filter((r) => isAdmin || r.is_published);
 
   return (
     <>
@@ -36,7 +38,7 @@ export default async function PastRidesPage() {
             <div>
               <h1 className="section-title">Past Rides</h1>
               <p className="section-sub">
-                {rides?.length ?? 0} rides and counting -- every trip, every
+                {visibleRides.length} rides and counting -- every trip, every
                 destination, every memory.
               </p>
             </div>
@@ -49,8 +51,13 @@ export default async function PastRidesPage() {
         <div className="container">
           <div className="past-rides-layout">
             <div className="past-rides-grid">
-              {rides?.map((ride) => (
-                <a key={ride.id} href={`/rides/${ride.slug}`}>
+              {visibleRides.map((ride) => (
+                <a
+                  key={ride.id}
+                  href={`/rides/${ride.slug}`}
+                  style={{ position: "relative", display: "block", opacity: ride.is_published ? 1 : 0.5 }}
+                >
+                  {isAdmin && <RidePublishToggle rideId={ride.id} isPublished={ride.is_published} />}
                   <figure>
                     {ride.hero_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
