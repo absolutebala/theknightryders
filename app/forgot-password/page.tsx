@@ -35,10 +35,6 @@ export default function ForgotPasswordPage() {
     <div className="auth-wrap">
       <div className="auth-card">
         <h1>Reset Password</h1>
-        <p className="sub">
-          Our website recently got migrated, so you may need to reset your
-          password once if you signed up with an email and password.
-        </p>
 
         {sent ? (
           <div style={{ background: "var(--mint)", borderRadius: 8, padding: "16px 18px", fontSize: 14.5, color: "var(--dark)" }}>
