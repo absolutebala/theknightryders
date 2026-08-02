@@ -83,6 +83,12 @@ function LoginForm() {
         {(error || authFailed) && (
           <div className="auth-error">
             {error ?? "Google sign-in didn't complete. Please try again."}
+            {error === "Invalid login credentials" && (
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 400 }}>
+                Our website recently got migrated, so you may need to reset
+                your password once. <a href="/forgot-password">Reset password</a>
+              </div>
+            )}
           </div>
         )}
 
@@ -160,6 +166,9 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <a href="/forgot-password" style={{ fontSize: 12.5, marginTop: 6, display: "inline-block" }}>
+              Forgot password?
+            </a>
           </div>
           <button
             type="submit"
