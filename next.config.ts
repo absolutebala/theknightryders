@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
 
+// Old WordPress URLs that Google still has indexed, mapped to their
+// correct destination on the new site. Add more pairs here as they're
+// found (e.g. via Search Console's 404 report) -- each becomes a
+// permanent (301) redirect, which is the SEO-correct way to handle this
+// rather than letting them hit the 404 page.
+const oldUrlRedirects: { source: string; destination: string }[] = [
+  {
+    source: "/the-knight-ryders-ride-to-thally-hondacb350-group-bike-ride",
+    destination: "/rides/ride-to-thalli-hosur",
+  },
+];
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -9,6 +21,9 @@ const nextConfig: NextConfig = {
         pathname: "/wp-content/uploads/**",
       },
     ],
+  },
+  async redirects() {
+    return oldUrlRedirects.map((r) => ({ ...r, permanent: true }));
   },
   async rewrites() {
     return [
