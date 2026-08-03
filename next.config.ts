@@ -10,6 +10,21 @@ const oldUrlRedirects: { source: string; destination: string }[] = [
     source: "/the-knight-ryders-ride-to-thally-hondacb350-group-bike-ride",
     destination: "/rides/ride-to-thalli-hosur",
   },
+  {
+    source: "/about-the-knight-ryders-club",
+    destination: "/about",
+  },
+  {
+    source: "/past-rides-theknightryders-honda-club",
+    destination: "/rides/past",
+  },
+  {
+    // Best guess -- the old site's generic "join a group ride" page has no
+    // exact equivalent on the new site, so this points to the homepage.
+    // Let me know if this should go somewhere more specific instead.
+    source: "/group-ride-with-the-knight-ryders",
+    destination: "/",
+  },
 ];
 
 const nextConfig: NextConfig = {
@@ -23,7 +38,18 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    return oldUrlRedirects.map((r) => ({ ...r, permanent: true }));
+    return [
+      ...oldUrlRedirects.map((r) => ({ ...r, permanent: true })),
+      {
+        // The old site nested every individual ride post under this path,
+        // and the migration preserved WordPress slugs verbatim for these
+        // -- so this single rule covers every old ride URL at once,
+        // including ones we haven't found in Search Console yet.
+        source: "/past-rides-theknightryders-honda-club/:slug",
+        destination: "/rides/:slug",
+        permanent: true,
+      },
+    ];
   },
   async rewrites() {
     return [
