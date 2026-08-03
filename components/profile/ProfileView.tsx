@@ -12,7 +12,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   // member (public data) and the current auth session are independent --
   // fetch both at once instead of one after the other.
-  const [memberResult, authResult] = await Promise.all([
+  const [memberResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("members_public")
       .select(
@@ -21,6 +21,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       .eq("id", memberId)
       .maybeSingle(),
     supabase.auth.getUser(),
+    supabase.rpc("is_admin"),
   ]);
 
   const member = memberResult.data;
@@ -31,6 +32,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   const {
     data: { user },
   } = authResult;
+  const isAdmin = !!isAdminResult.data;
 
   let isOwner = false;
   let viewerMemberId: string | null = null;
@@ -160,6 +162,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       <EliteProfileView
         memberId={member.id}
         isOwner={isOwner}
+        isAdmin={isAdmin}
         fullName={member.full_name}
         handle={member.handle}
         bio={member.bio}
@@ -197,6 +200,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       <ProfileHeader
         memberId={member.id}
         isOwner={isOwner}
+        isAdmin={isAdmin}
         fullName={member.full_name}
         handle={member.handle}
         canEditHandle={member.profile_template === "elite"}

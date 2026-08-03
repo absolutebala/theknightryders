@@ -9,6 +9,7 @@ import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 type Props = {
   memberId: string;
   isOwner: boolean;
+  isAdmin: boolean;
   fullName: string | null;
   handle: string | null;
   canEditHandle: boolean;
@@ -38,6 +39,7 @@ const pencilStyle: React.CSSProperties = {
 export default function ProfileHeader({
   memberId,
   isOwner,
+  isAdmin,
   fullName,
   handle,
   canEditHandle,
@@ -108,10 +110,15 @@ export default function ProfileHeader({
 
     const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
 
-    const { error: updateError } = await supabase
-      .from("members")
-      .update({ profile_photo_url: publicUrlData.publicUrl })
-      .eq("id", memberId);
+    const { error: updateError } = isOwner
+      ? await supabase
+          .from("members")
+          .update({ profile_photo_url: publicUrlData.publicUrl })
+          .eq("id", memberId)
+      : await supabase.rpc("admin_set_member_photo", {
+          target_member_id: memberId,
+          new_url: publicUrlData.publicUrl,
+        });
 
     setUploading(false);
 
@@ -166,7 +173,7 @@ export default function ProfileHeader({
               {(fullName ?? "?").charAt(0).toUpperCase()}
             </div>
           )}
-          {isOwner && (
+          {(isOwner || isAdmin) && (
             <button
               type="button"
               aria-label="Edit photo"

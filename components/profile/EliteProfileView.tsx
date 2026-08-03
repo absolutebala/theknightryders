@@ -32,6 +32,7 @@ type CoRider = {
 type Props = {
   memberId: string;
   isOwner: boolean;
+  isAdmin: boolean;
   fullName: string | null;
   handle: string | null;
   bio: string | null;
@@ -61,6 +62,7 @@ type Props = {
 export default function EliteProfileView({
   memberId,
   isOwner,
+  isAdmin,
   fullName,
   handle,
   bio,
@@ -161,6 +163,7 @@ export default function EliteProfileView({
               <EliteAvatarEditor
                 memberId={memberId}
                 isOwner={isOwner}
+                isAdmin={isAdmin}
                 fullName={fullName}
                 profilePhotoUrl={profilePhotoUrl}
                 showCrown
