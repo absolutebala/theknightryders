@@ -9,6 +9,7 @@ import EliteBioEditor from "./EliteBioEditor";
 import EliteJourneyEditor from "./EliteJourneyEditor";
 import RequestEliteBanner from "./RequestEliteBanner";
 import RenewEliteButton from "./RenewEliteButton";
+import RemoveMyProfileButton from "./RemoveMyProfileButton";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
@@ -33,6 +34,7 @@ type Props = {
   memberId: string;
   isOwner: boolean;
   isAdmin: boolean;
+  isHidden: boolean;
   fullName: string | null;
   handle: string | null;
   bio: string | null;
@@ -63,6 +65,7 @@ export default function EliteProfileView({
   memberId,
   isOwner,
   isAdmin,
+  isHidden,
   fullName,
   handle,
   bio,
@@ -154,6 +157,11 @@ export default function EliteProfileView({
             >
               Edit Profile
             </a>
+          )}
+          {isOwner && (
+            <div style={{ position: "absolute", top: 64, right: 30 }}>
+              <RemoveMyProfileButton memberId={memberId} isHidden={isHidden} dark />
+            </div>
           )}
           <div className="elite-dossier-header-title">
             The proud member of The Knight Ryders club

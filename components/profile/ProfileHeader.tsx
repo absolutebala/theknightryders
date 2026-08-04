@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
+import RemoveMyProfileButton from "./RemoveMyProfileButton";
 
 type Props = {
   memberId: string;
@@ -16,6 +17,7 @@ type Props = {
   dateOfBirth: string | null;
   bloodGroup: string | null;
   profilePhotoUrl: string | null;
+  isHidden: boolean;
 };
 
 type EditField = "photo" | "name" | "handle" | "dob" | null;
@@ -46,6 +48,7 @@ export default function ProfileHeader({
   dateOfBirth,
   bloodGroup,
   profilePhotoUrl,
+  isHidden,
 }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState<EditField>(null);
@@ -448,9 +451,12 @@ export default function ProfileHeader({
       </div>
 
       {isOwner && (
-        <a href="/members/edit" className="btn btn-outline" style={{ flexShrink: 0 }}>
-          Edit Profile
-        </a>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+          <a href="/members/edit" className="btn btn-outline">
+            Edit Profile
+          </a>
+          <RemoveMyProfileButton memberId={memberId} isHidden={isHidden} />
+        </div>
       )}
     </div>
   );

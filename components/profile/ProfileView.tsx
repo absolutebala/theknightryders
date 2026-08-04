@@ -16,7 +16,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
     supabase
       .from("members_public")
       .select(
-        "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links, journey_text, elite_activated_at, elite_expires_at"
+        "id, full_name, handle, bio, date_of_birth, blood_group, join_date, profile_photo_url, profile_template, background_source, background_image_url, background_image_position, social_links, journey_text, elite_activated_at, elite_expires_at, is_hidden"
       )
       .eq("id", memberId)
       .maybeSingle(),
@@ -163,6 +163,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         memberId={member.id}
         isOwner={isOwner}
         isAdmin={isAdmin}
+        isHidden={!!member.is_hidden}
         fullName={member.full_name}
         handle={member.handle}
         bio={member.bio}
@@ -207,6 +208,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         dateOfBirth={member.date_of_birth}
         bloodGroup={member.blood_group}
         profilePhotoUrl={member.profile_photo_url}
+        isHidden={!!member.is_hidden}
       />
 
       <ProfileBio memberId={member.id} isOwner={isOwner} bio={member.bio} />
