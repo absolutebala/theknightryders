@@ -23,7 +23,7 @@ export default function RideBadgeStrip({
   variant = "rider-card",
 }: {
   rideCount: number;
-  variant?: "rider-card" | "profile-card" | "elite" | "elite-co-rider";
+  variant?: "rider-card" | "profile-card" | "elite" | "elite-co-rider" | "ride-participant";
 }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
@@ -31,7 +31,7 @@ export default function RideBadgeStrip({
   const progress = getNextTierProgress(rideCount);
   const isDark = variant === "elite" || variant === "elite-co-rider";
   const textColor = isDark ? tier.colors.shine : tier.colors.edge;
-  const iconSize = variant === "elite-co-rider" ? 16 : 26;
+  const iconSize = variant === "elite-co-rider" || variant === "ride-participant" ? 16 : 26;
 
   return (
     <div className={`ride-badge-strip ride-badge-strip-${variant}`}>

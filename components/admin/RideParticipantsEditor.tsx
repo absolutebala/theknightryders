@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import CrownBadge from "@/components/CrownBadge";
-import RideBadge from "@/components/RideBadge";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 
 type Member = {
   id: string;
@@ -261,8 +260,6 @@ export default function RideParticipantsEditor({
                       {(member?.full_name ?? p.rider_name).charAt(0).toUpperCase()}
                     </div>
                   )}
-                  {member?.profile_template === "elite" && <CrownBadge size={18} />}
-                  {member && <RideBadge rideCount={member.ride_count ?? 0} size={16} />}
                   {isAdmin && managing && (
                     <button
                       type="button"
@@ -291,6 +288,7 @@ export default function RideParticipantsEditor({
                   )}
                 </div>
                 <span className="ride-rider-name">{member?.full_name ?? p.rider_name}</span>
+                {member && <RideBadgeStrip rideCount={member.ride_count ?? 0} variant="ride-participant" />}
               </>
             );
 
