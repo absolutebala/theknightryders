@@ -19,8 +19,10 @@ export default function RideBadgeStrip({ rideCount }: { rideCount: number }) {
         background: `linear-gradient(135deg, ${tier.colors.shine}, ${tier.colors.base} 55%, ${tier.colors.edge})`,
       }}
     >
-      <span style={{ marginRight: 6 }}>{TIER_GLYPHS[tier.level]}</span>
-      {tier.name}
+      <span style={{ fontSize: 20, marginRight: 6, verticalAlign: "middle", lineHeight: 1 }}>
+        {TIER_GLYPHS[tier.level]}
+      </span>
+      <span style={{ verticalAlign: "middle" }}>{tier.name}</span>
     </div>
   );
 }
