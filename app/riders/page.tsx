@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
 import RiderRemoveButton from "@/components/admin/RiderRemoveButton";
+import { RIDE_BADGE_TIERS } from "@/lib/rideBadges";
 
 export default async function RidersPage() {
   const supabase = await createClient();
@@ -48,16 +49,53 @@ export default async function RidersPage() {
     }))
     .filter((m) => m.ride_count > 0)
     .filter((m) => isAdmin || !m.is_hidden)
-    .sort((a, b) => (b.total_km ?? 0) - (a.total_km ?? 0));
+    .sort((a, b) => {
+      const aHasPhoto = a.profile_photo_url ? 1 : 0;
+      const bHasPhoto = b.profile_photo_url ? 1 : 0;
+      if (aHasPhoto !== bHasPhoto) return bHasPhoto - aHasPhoto; // photo members first
+      return (b.total_km ?? 0) - (a.total_km ?? 0); // then by distance, descending
+    });
 
   return (
     <section style={{ paddingBottom: 70 }}>
       <div className="container">
-        <span className="eyebrow-sm">The Knight Ryders</span>
-        <h1 className="section-title">Riders</h1>
-        <p className="section-sub">
-          {riders.length} member{riders.length === 1 ? "" : "s"} strong.
-        </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 24,
+            marginBottom: 40,
+          }}
+        >
+          <div>
+            <h1 className="section-title" style={{ textAlign: "left", margin: 0 }}>
+              Riders
+            </h1>
+            <p className="section-sub" style={{ textAlign: "left", margin: "6px 0 0" }}>
+              {riders.length} member{riders.length === 1 ? "" : "s"} strong.
+            </p>
+          </div>
+
+          <div className="riders-badge-legend">
+            <div className="riders-badge-legend-title">Badge Tiers</div>
+            <div className="riders-badge-legend-grid">
+              {RIDE_BADGE_TIERS.map((tier) => (
+                <div key={tier.level} className="riders-badge-legend-item">
+                  <svg width="11" height="9" viewBox="0 0 24 20" style={{ flexShrink: 0 }}>
+                    <path
+                      d="M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z"
+                      fill={tier.colors.base}
+                    />
+                    <rect x="2" y="16.5" width="20" height="2.5" rx="0.5" fill={tier.colors.base} />
+                  </svg>
+                  <span>{tier.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <div className="riders-grid">
           {riders.map((rider) => (
