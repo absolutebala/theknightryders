@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
-import CrownBadge from "@/components/CrownBadge";
-import RideBadge from "@/components/RideBadge";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 import RiderRemoveButton from "@/components/admin/RiderRemoveButton";
 
 export default async function RidersPage() {
@@ -95,8 +94,6 @@ export default async function RidersPage() {
                     {(rider.full_name ?? "?").charAt(0).toUpperCase()}
                   </div>
                 )}
-                {rider.profile_template === "elite" && <CrownBadge size={26} />}
-                <RideBadge rideCount={rider.ride_count} size={22} />
               </div>
               <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
               {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
@@ -104,6 +101,7 @@ export default async function RidersPage() {
                 {rider.ride_count} ride{rider.ride_count === 1 ? "" : "s"}
                 {rider.total_km > 0 && <> &middot; {rider.total_km} km</>}
               </div>
+              <RideBadgeStrip rideCount={rider.ride_count} />
             </a>
           ))}
         </div>
