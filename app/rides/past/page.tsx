@@ -167,7 +167,7 @@ export default async function PastRidesPage() {
                             <img
                               src={entry.profile_photo_url ?? undefined}
                               alt=""
-                              style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                              style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover" }}
                             />
                           </div>
                           <div style={{ minWidth: 0 }}>
