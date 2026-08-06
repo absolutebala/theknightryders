@@ -23,19 +23,20 @@ export default function RideBadgeStrip({
   variant = "rider-card",
 }: {
   rideCount: number;
-  variant?: "rider-card" | "profile-card" | "elite";
+  variant?: "rider-card" | "profile-card" | "elite" | "elite-co-rider";
 }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
 
   const progress = getNextTierProgress(rideCount);
-  const isDark = variant === "elite";
+  const isDark = variant === "elite" || variant === "elite-co-rider";
   const textColor = isDark ? tier.colors.shine : tier.colors.edge;
+  const iconSize = variant === "elite-co-rider" ? 16 : 26;
 
   return (
     <div className={`ride-badge-strip ride-badge-strip-${variant}`}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <TierCrownIcon {...tier.colors} size={26} />
+        <TierCrownIcon {...tier.colors} size={iconSize} />
         <span style={{ color: textColor }}>{tier.name}</span>
       </div>
       {progress && (

@@ -2,7 +2,6 @@ import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
-import RideBadge from "@/components/RideBadge";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteHandleEditor from "./EliteHandleEditor";
 import EliteBioEditor from "./EliteBioEditor";
@@ -270,12 +269,12 @@ export default function EliteProfileView({
                             alt={rider.full_name ?? "Rider"}
                             style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
                           />
-                          <RideBadge rideCount={rider.ride_count} size={16} />
                         </div>
                         <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
                         <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
                           {rider.shared_rides} together
                         </div>
+                        <RideBadgeStrip rideCount={rider.ride_count} variant="elite-co-rider" />
                       </a>
                     ))}
                 </div>

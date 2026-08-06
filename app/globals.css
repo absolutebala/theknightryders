@@ -180,6 +180,8 @@ section{padding:70px 0;}
 .ride-badge-strip-profile-card{width:calc(100% + 48px);margin:20px -24px -24px;}
 .ride-badge-strip-elite{background:rgba(255,255,255,.06);border-top:1px solid rgba(212,175,55,.3);border-radius:0 0 18.5px 18.5px;width:calc(100% + 80px);margin:28px -40px -35px;}
 .ride-badge-strip-elite .ride-badge-strip-progress{color:rgba(255,255,255,.55);}
+.ride-badge-strip-elite-co-rider{background:rgba(255,255,255,.06);border-top:1px solid rgba(212,175,55,.25);border-radius:0 0 9px 9px;width:calc(100% + 28px);margin:10px -14px -14px;padding:8px 6px 6px;font-size:11px;}
+.ride-badge-strip-elite-co-rider .ride-badge-strip-progress{color:rgba(255,255,255,.5);font-size:9px;}
 .ride-badge-strip-progress{margin-top:4px;font-size:11px;font-weight:600;color:var(--grey);letter-spacing:0;}
 
 /* ELITE PROFILE TEMPLATE -- ported directly from the approved reference design */
@@ -231,7 +233,7 @@ section{padding:70px 0;}
 .elite-subsection-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:20px;color:#fff;margin-bottom:16px;}
 .elite-gallery-grid-v2{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
 .elite-co-riders-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.elite-co-rider-card{text-align:center;background:var(--elite-glass-panel);backdrop-filter:blur(8px);border:1px solid var(--elite-glass-border);border-radius:10px;padding:14px;display:block;}
+.elite-co-rider-card{text-align:center;background:var(--elite-glass-panel);backdrop-filter:blur(8px);border:1px solid var(--elite-glass-border);border-radius:10px;padding:14px;display:block;overflow:hidden;position:relative;}
 
 .elite-two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
 

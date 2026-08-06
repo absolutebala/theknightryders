@@ -4,7 +4,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileBio from "@/components/profile/ProfileBio";
 import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
 import EliteProfileView from "@/components/profile/EliteProfileView";
-import RideBadge from "@/components/RideBadge";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
@@ -286,13 +286,13 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
                     <div style={{ position: "relative", display: "inline-block" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={rider.profile_photo_url!} alt={rider.full_name ?? "Rider"} />
-                      <RideBadge rideCount={rider.ride_count} size={18} />
                     </div>
                     <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
                     {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
                     <div className="rider-card-stats">
                       {rider.shared_rides} ride{rider.shared_rides === 1 ? "" : "s"} together
                     </div>
+                    <RideBadgeStrip rideCount={rider.ride_count} />
                   </a>
                 ))}
             </div>

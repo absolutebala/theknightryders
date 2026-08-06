@@ -3,7 +3,25 @@ import { cookies } from "next/headers";
 import CreateRideButton from "@/components/admin/CreateRideButton";
 import RidePublishToggle from "@/components/admin/RidePublishToggle";
 import RideDestinationBadge from "@/components/admin/RideDestinationBadge";
-import RideBadge from "@/components/RideBadge";
+import { getRideBadgeTier } from "@/lib/rideBadges";
+
+function LeaderboardBadgeLine({ rideCount }: { rideCount: number }) {
+  const tier = getRideBadgeTier(rideCount);
+  if (!tier) return null;
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+      <svg width="10" height="8" viewBox="0 0 24 20" style={{ flexShrink: 0 }}>
+        <path
+          d="M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z"
+          fill={tier.colors.base}
+        />
+        <rect x="2" y="16.5" width="20" height="2.5" rx="0.5" fill={tier.colors.base} />
+      </svg>
+      <span style={{ fontSize: 10.5, fontWeight: 700, color: tier.colors.edge }}>{tier.name}</span>
+    </div>
+  );
+}
 
 export default async function PastRidesPage() {
   const supabase = await createClient();
@@ -151,11 +169,11 @@ export default async function PastRidesPage() {
                               alt=""
                               style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
                             />
-                          <RideBadge rideCount={entry.rides_count} size={13} />
                           </div>
-                          <span className="rides-sidebar-name">
-                            {entry.rider_name}
-                          </span>
+                          <div style={{ minWidth: 0 }}>
+                            <span className="rides-sidebar-name">{entry.rider_name}</span>
+                            <LeaderboardBadgeLine rideCount={entry.rides_count} />
+                          </div>
                         </div>
                         <div className="rides-sidebar-stats">
                           {entry.rides_count} rides
