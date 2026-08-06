@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
-import RideBadge from "@/components/RideBadge";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 
 type Props = {
   memberId: string;
@@ -143,16 +143,25 @@ export default function ProfileHeader({
   return (
     <div
       style={{
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 20,
-        marginBottom: 20,
+        background: "var(--mint)",
+        borderRadius: 14,
+        padding: 24,
+        marginBottom: 40,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
-        {/* Photo */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 20,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
+          {/* Photo */}
         <div style={{ position: "relative" }}>
           {profilePhotoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -179,7 +188,6 @@ export default function ProfileHeader({
               {(fullName ?? "?").charAt(0).toUpperCase()}
             </div>
           )}
-          <RideBadge rideCount={rideCount} size={24} />
           {(isOwner || isAdmin) && (
             <button
               type="button"
@@ -462,6 +470,9 @@ export default function ProfileHeader({
           <RemoveMyProfileButton memberId={memberId} isHidden={isHidden} />
         </div>
       )}
+      </div>
+
+      <RideBadgeStrip rideCount={rideCount} variant="profile-card" />
     </div>
   );
 }

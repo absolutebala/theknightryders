@@ -7,7 +7,6 @@ import EliteProfileView from "@/components/profile/EliteProfileView";
 import CrownBadge from "@/components/CrownBadge";
 import RideBadge from "@/components/RideBadge";
 import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
-import RideBadgeStrip from "@/components/RideBadgeStrip";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
@@ -213,8 +212,6 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         isHidden={!!member.is_hidden}
         rideCount={rides.length}
       />
-
-      <RideBadgeStrip rideCount={rides.length} variant="standalone" />
 
       <ProfileBio memberId={member.id} isOwner={isOwner} bio={member.bio} />
 

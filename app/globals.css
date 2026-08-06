@@ -170,12 +170,11 @@ section{padding:70px 0;}
 .rider-card-name{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--navy);font-size:15.5px;margin-bottom:8px;}
 .rider-card-bio{font-size:13px;color:#3a4a4f;line-height:1.5;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .rider-card-stats{font-size:12.5px;color:var(--grey);font-weight:600;margin-top:auto;}
-.ride-badge-strip{border-radius:0 0 14px 14px;background:#fff;border-top:1px solid rgba(0,0,0,.06);padding:12px 12px 10px;font-size:14px;font-weight:800;text-align:center;letter-spacing:.02em;}
+.ride-badge-strip{border-radius:0 0 14px 14px;background:var(--mint);border-top:1px solid rgba(3,12,73,.08);padding:12px 12px 10px;font-size:14px;font-weight:800;text-align:center;letter-spacing:.02em;}
 .ride-badge-strip-rider-card{width:calc(100% + 36px);margin:16px -18px -26px;}
 .ride-badge-strip-profile-card{width:calc(100% + 48px);margin:20px -24px -24px;}
-.ride-badge-strip-elite{background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.3);border-radius:12px;margin-bottom:36px;}
+.ride-badge-strip-elite{background:rgba(255,255,255,.06);border-top:1px solid rgba(212,175,55,.3);border-radius:0 0 18.5px 18.5px;width:calc(100% + 80px);margin:28px -40px -35px;}
 .ride-badge-strip-elite .ride-badge-strip-progress{color:rgba(255,255,255,.55);}
-.ride-badge-strip-standalone{background:var(--mint);border-radius:12px;margin-bottom:24px;border-top:none;}
 .ride-badge-strip-progress{margin-top:4px;font-size:11px;font-weight:600;color:var(--grey);letter-spacing:0;}
 
 /* ELITE PROFILE TEMPLATE -- ported directly from the approved reference design */
@@ -190,7 +189,7 @@ section{padding:70px 0;}
 .elite-page{background-color:var(--elite-bg-dark);color:#fff;font-family:'Inter',sans-serif;padding-bottom:80px;min-height:100vh;}
 .elite-wrapper{max-width:1280px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:1fr;gap:40px;}
 
-.elite-dossier-card{background:var(--elite-glass-panel);backdrop-filter:blur(16px);border:1.5px solid var(--elite-glass-border);border-radius:20px;padding:35px 40px;box-shadow:0 20px 40px rgba(0,0,0,.8),inset 0 0 20px rgba(212,175,55,.1);position:relative;}
+.elite-dossier-card{background:var(--elite-glass-panel);backdrop-filter:blur(16px);border:1.5px solid var(--elite-glass-border);border-radius:20px;padding:35px 40px;box-shadow:0 20px 40px rgba(0,0,0,.8),inset 0 0 20px rgba(212,175,55,.1);position:relative;overflow:hidden;}
 .elite-dossier-header-title{font-family:'Poppins',sans-serif;font-size:22px;letter-spacing:3px;color:#94a3b8;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:15px;margin-bottom:30px;}
 .elite-dossier-body{display:grid;grid-template-columns:180px 1fr;gap:35px;align-items:center;}
 
@@ -260,6 +259,7 @@ section{padding:70px 0;}
   .elite-two-col{grid-template-columns:1fr;}
   .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
   .elite-dossier-card{padding:26px 20px;}
+  .ride-badge-strip-elite{width:calc(100% + 40px);margin:24px -20px -26px;}
   .elite-profile-details{text-align:center;}
   .elite-profile-details h1{justify-content:center;}
   .elite-wrapper{margin:24px auto;padding:0 16px;gap:28px;}

@@ -23,7 +23,7 @@ export default function RideBadgeStrip({
   variant = "rider-card",
 }: {
   rideCount: number;
-  variant?: "rider-card" | "profile-card" | "elite" | "standalone";
+  variant?: "rider-card" | "profile-card" | "elite";
 }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;

@@ -220,9 +220,9 @@ export default function EliteProfileView({
               <EliteBioEditor memberId={memberId} isOwner={isOwner} bio={bio} />
             </div>
           </div>
-        </div>
 
-        <RideBadgeStrip rideCount={ridesCount} variant="elite" />
+          <RideBadgeStrip rideCount={ridesCount} variant="elite" />
+        </div>
 
         {/* TWO COLUMN: stats+co-riders | photos */}
         <div className="elite-two-col">
