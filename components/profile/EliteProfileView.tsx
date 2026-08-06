@@ -10,6 +10,7 @@ import EliteJourneyEditor from "./EliteJourneyEditor";
 import RequestEliteBanner from "./RequestEliteBanner";
 import RenewEliteButton from "./RenewEliteButton";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
+import AssignRidesButton from "@/components/admin/AssignRidesButton";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
@@ -163,6 +164,11 @@ export default function EliteProfileView({
           {isOwner && (
             <div style={{ position: "absolute", top: 64, right: 30 }}>
               <RemoveMyProfileButton memberId={memberId} isHidden={isHidden} dark />
+            </div>
+          )}
+          {isAdmin && !isOwner && (
+            <div style={{ position: "absolute", top: 24, right: 30, zIndex: 2 }}>
+              <AssignRidesButton memberId={memberId} memberName={fullName} />
             </div>
           )}
           <div className="elite-dossier-header-title">

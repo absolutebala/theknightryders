@@ -25,6 +25,26 @@ const oldUrlRedirects: { source: string; destination: string }[] = [
     source: "/group-ride-with-the-knight-ryders",
     destination: "/",
   },
+  {
+    source: "/kulu-kulu-ride-to-kotagiri-my-first-long-ride-with-the-knight-ryders",
+    destination: "/rides/kulu-kulu-ride-to-kotagiri",
+  },
+  {
+    source: "/canyon-drive-with-the-knight-ryders-29-31-october-2022",
+    destination: "/rides/ride-to-great-canyon-gandikota",
+  },
+  {
+    // Anniversary blog post, no direct equivalent on the new site --
+    // pointing to the homepage. Let me know if there's a better target.
+    source: "/celebrating-three-years-of-the-knight-ryders-club-a-journey-of-passion-and-adventure",
+    destination: "/",
+  },
+  {
+    // Old WordPress tag archive page -- redirecting to the closest
+    // browsing equivalent.
+    source: "/tag/honda-group-ride",
+    destination: "/rides/past",
+  },
 ];
 
 const nextConfig: NextConfig = {

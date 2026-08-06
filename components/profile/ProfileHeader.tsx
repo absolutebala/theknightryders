@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
+import AssignRidesButton from "@/components/admin/AssignRidesButton";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
 
 type Props = {
@@ -468,6 +469,11 @@ export default function ProfileHeader({
             Edit Profile
           </a>
           <RemoveMyProfileButton memberId={memberId} isHidden={isHidden} />
+        </div>
+      )}
+      {isAdmin && !isOwner && (
+        <div style={{ flexShrink: 0 }}>
+          <AssignRidesButton memberId={memberId} memberName={fullName} />
         </div>
       )}
       </div>
