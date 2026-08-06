@@ -1,4 +1,4 @@
-import { getRideBadgeTier } from "@/lib/rideBadges";
+import { getRideBadgeTier, getNextTierProgress } from "@/lib/rideBadges";
 
 function TierCrownIcon({ base, edge, shine, size }: { base: string; edge: string; shine: string; size: number }) {
   return (
@@ -22,10 +22,19 @@ export default function RideBadgeStrip({ rideCount }: { rideCount: number }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
 
+  const progress = getNextTierProgress(rideCount);
+
   return (
     <div className="ride-badge-strip">
-      <TierCrownIcon {...tier.colors} size={26} />
-      <span style={{ color: tier.colors.edge }}>{tier.name}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <TierCrownIcon {...tier.colors} size={26} />
+        <span style={{ color: tier.colors.edge }}>{tier.name}</span>
+      </div>
+      {progress && (
+        <div className="ride-badge-strip-progress">
+          {progress.ridesRemaining} more ride{progress.ridesRemaining === 1 ? "" : "s"} to be {progress.nextTierName}
+        </div>
+      )}
     </div>
   );
 }
