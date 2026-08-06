@@ -1,28 +1,31 @@
 import { getRideBadgeTier } from "@/lib/rideBadges";
 
-const TIER_GLYPHS: Record<number, string> = {
-  1: "\u2694", // Squire - plain
-  2: "\u2694", // Knight
-  3: "\u2694\ufe0f", // Knight Errant
-  4: "\u2b50", // Commander
-  5: "\ud83d\udc51", // Grand Knight
-};
+function TierCrownIcon({ base, edge, shine, size }: { base: string; edge: string; shine: string; size: number }) {
+  return (
+    <svg width={size} height={size * 0.8} viewBox="0 0 24 20" style={{ verticalAlign: "middle", marginRight: 8, flexShrink: 0 }}>
+      <path
+        d="M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z"
+        fill={base}
+        stroke={edge}
+        strokeWidth="0.75"
+        strokeLinejoin="round"
+      />
+      <rect x="2" y="16.5" width="20" height="2.5" rx="0.5" fill={base} stroke={edge} strokeWidth="0.75" />
+      <circle cx="6.5" cy="12.5" r="1.3" fill={shine} />
+      <circle cx="12" cy="12" r="1.3" fill={shine} />
+      <circle cx="17.5" cy="12.5" r="1.3" fill={shine} />
+    </svg>
+  );
+}
 
 export default function RideBadgeStrip({ rideCount }: { rideCount: number }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
 
   return (
-    <div
-      className="ride-badge-strip"
-      style={{
-        background: `linear-gradient(135deg, ${tier.colors.shine}, ${tier.colors.base} 55%, ${tier.colors.edge})`,
-      }}
-    >
-      <span style={{ fontSize: 20, marginRight: 6, verticalAlign: "middle", lineHeight: 1 }}>
-        {TIER_GLYPHS[tier.level]}
-      </span>
-      <span style={{ verticalAlign: "middle" }}>{tier.name}</span>
+    <div className="ride-badge-strip">
+      <TierCrownIcon {...tier.colors} size={26} />
+      <span style={{ color: tier.colors.edge }}>{tier.name}</span>
     </div>
   );
 }

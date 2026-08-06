@@ -3,36 +3,16 @@
 import { useId } from "react";
 import { getRideBadgeTier } from "@/lib/rideBadges";
 
-function TierGlyph({ level, color }: { level: number; color: string }) {
-  switch (level) {
-    case 1:
-      return null;
-    case 2:
-      return <circle cx="0" cy="0" r="2.6" fill={color} />;
-    case 3:
-      return (
-        <>
-          <line x1="-4" y1="-4" x2="4" y2="4" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-          <line x1="4" y1="-4" x2="-4" y2="4" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-        </>
-      );
-    case 4:
-      return (
-        <path
-          d="M0 -6 L1.6 -1.8 L6 -1.8 L2.6 0.8 L4 5 L0 2.4 L-4 5 L-2.6 0.8 L-6 -1.8 L-1.6 -1.8 Z"
-          fill={color}
-        />
-      );
-    case 5:
-      return (
-        <path
-          d="M-5 2 L-4 -4 L-1.6 -0.5 L0 -5 L1.6 -0.5 L4 -4 L5 2 L4 3.5 L-4 3.5 Z"
-          fill={color}
-        />
-      );
-    default:
-      return null;
-  }
+function TierGlyph({ color }: { color: string }) {
+  return (
+    <g transform="translate(-6,-4) scale(0.5)">
+      <path
+        d="M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z"
+        fill={color}
+      />
+      <rect x="2" y="16.5" width="20" height="2.5" rx="0.5" fill={color} />
+    </g>
+  );
 }
 
 export default function RideBadge({
@@ -71,7 +51,7 @@ export default function RideBadge({
         <circle cx="0" cy="0" r="14" fill={edge} />
         <circle cx="0" cy="0" r="12.5" fill={`url(#${gradId})`} stroke={edge} strokeWidth="0.75" />
         <ellipse cx="-4" cy="-6" rx="5" ry="2.6" fill="#ffffff" opacity="0.35" transform="rotate(-25 -4 -6)" />
-        <TierGlyph level={tier.level} color="#ffffff" />
+        <TierGlyph color="#ffffff" />
       </svg>
     </div>
   );
