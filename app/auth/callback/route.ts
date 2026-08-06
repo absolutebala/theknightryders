@@ -21,17 +21,17 @@ export async function GET(request: Request) {
 
       const { data: member } = await supabase
         .from("members")
-        .select("id, handle")
+        .select("id, handle, is_hidden")
         .eq("user_id", data.user.id)
         .maybeSingle();
 
-      if (member) {
+      if (member && !member.is_hidden) {
         const dest = member.handle ? `/@${member.handle}` : `/members/${member.id}`;
         return NextResponse.redirect(`${origin}${dest}`);
       }
 
-      // Not a recognized member yet -- /members shows the pending-approval
-      // screen and files the access request.
+      // Not a recognized member yet, or their profile is hidden pending
+      // reactivation -- /members handles both of those states.
       return NextResponse.redirect(`${origin}/members`);
     }
   }

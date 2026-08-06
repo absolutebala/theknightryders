@@ -16,11 +16,9 @@ export default function RemoveMyProfileButton({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  async function handleClick() {
+  async function handleRemove() {
     const confirmed = window.confirm(
-      isHidden
-        ? "Restore your profile? You'll show up again in the Members directory, leaderboard, and Frequently Rides With."
-        : "Remove your profile from the Members directory, leaderboard, and Frequently Rides With? Your account and ride history stay intact -- you can restore it anytime from here."
+      "Remove your profile from the Members directory, leaderboard, and Frequently Rides With? Your account and ride history stay intact -- but to come back afterward, you'll need to log in again and an admin will need to approve your return."
     );
     if (!confirmed) return;
 
@@ -28,7 +26,7 @@ export default function RemoveMyProfileButton({
     const supabase = createClient();
     const { error } = await supabase.rpc("set_member_hidden", {
       target_member_id: memberId,
-      hidden: !isHidden,
+      hidden: true,
     });
     setLoading(false);
 
@@ -39,10 +37,22 @@ export default function RemoveMyProfileButton({
     router.refresh();
   }
 
+  if (isHidden) {
+    // Self-restore isn't possible anymore -- log in again to trigger the
+    // reactivation request, which an admin then approves. Shown mainly as
+    // a defensive fallback since the normal flow redirects a hidden
+    // member away from their own profile before they'd ever see this.
+    return (
+      <span style={{ fontSize: 12.5, color: dark ? "rgba(255,255,255,.55)" : "var(--grey)" }}>
+        Profile removed -- log in again to request reactivation.
+      </span>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={handleRemove}
       disabled={loading}
       style={{
         background: "none",
@@ -54,7 +64,7 @@ export default function RemoveMyProfileButton({
         cursor: "pointer",
       }}
     >
-      {loading ? "…" : isHidden ? "Restore my profile" : "Remove my profile"}
+      {loading ? "…" : "Remove my profile"}
     </button>
   );
 }

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
 import RiderRemoveButton from "@/components/admin/RiderRemoveButton";
+import ApproveReactivationButton from "@/components/admin/ApproveReactivationButton";
 import { RIDE_BADGE_TIERS } from "@/lib/rideBadges";
 
 export default async function RidersPage() {
@@ -25,7 +26,7 @@ export default async function RidersPage() {
     await Promise.all([
       supabase
         .from("members_public")
-        .select("id, full_name, handle, bio, profile_photo_url, profile_template, is_hidden"),
+        .select("id, full_name, handle, bio, profile_photo_url, profile_template, is_hidden, reactivation_requested_at"),
       supabase.from("ride_leaderboard").select("member_id, total_km, rides_count"),
       isAdmin
         ? supabase
@@ -47,6 +48,10 @@ export default async function RidersPage() {
       .filter((row) => row.member_id)
       .map((row) => [row.member_id, { total_km: row.total_km, ride_count: row.rides_count }])
   );
+
+  const reactivationRequests = (members ?? [])
+    .filter((m) => m.is_hidden && m.reactivation_requested_at)
+    .sort((a, b) => (a.reactivation_requested_at! < b.reactivation_requested_at! ? -1 : 1));
 
   const riders = (members ?? [])
     .map((m) => ({
@@ -180,6 +185,42 @@ export default async function RidersPage() {
             </a>
           ))}
         </div>
+
+        {isAdmin && reactivationRequests.length > 0 && (
+          <div style={{ marginTop: 60, borderTop: "1px solid #e3ebe7", paddingTop: 30 }}>
+            <h2 style={{ fontSize: 16, color: "var(--navy)", marginBottom: 4 }}>
+              Reactivation Requests <span style={{ fontWeight: 400, color: "var(--grey)", fontSize: 12.5 }}>(admin only)</span>
+            </h2>
+            <p style={{ fontSize: 12.5, color: "var(--grey)", marginBottom: 14 }}>
+              These members removed their own profile and have since logged in again, asking to come back.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {reactivationRequests.map((m) => (
+                <div
+                  key={m.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                    color: "var(--dark)",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #f0f4f2",
+                    gap: 12,
+                  }}
+                >
+                  <span>
+                    {m.full_name ?? "Knight Ryder"}
+                    <span style={{ color: "var(--grey)", fontSize: 12, marginLeft: 8 }}>
+                      requested {new Date(m.reactivation_requested_at!).toLocaleString("en-IN")}
+                    </span>
+                  </span>
+                  <ApproveReactivationButton memberId={m.id} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isAdmin && missedRidesReport.length > 0 && (
           <div style={{ marginTop: 60, borderTop: "1px solid #e3ebe7", paddingTop: 30 }}>

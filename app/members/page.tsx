@@ -20,7 +20,7 @@ export default async function MembersPage() {
   const { data: member } = await supabase
     .from("members")
     .select(
-      "id, full_name, handle, bio, date_of_birth, join_date, gender, blood_group, why_joining, vehicle_number, address, profile_photo_url, social_links, ride_count, ride_list"
+      "id, full_name, handle, bio, date_of_birth, join_date, gender, blood_group, why_joining, vehicle_number, address, profile_photo_url, social_links, ride_count, ride_list, is_hidden"
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -91,6 +91,25 @@ export default async function MembersPage() {
               on WhatsApp (+91 6381 890 182) to speed things along.
             </>
           )}
+        </p>
+      </div>
+    );
+  }
+
+  if (member.is_hidden) {
+    await supabase.rpc("request_reactivation");
+
+    return (
+      <div className="container" style={{ padding: "70px 24px", maxWidth: 640 }}>
+        <h1 style={{ color: "var(--navy)", marginBottom: 12 }}>
+          Profile pending reactivation
+        </h1>
+        <p style={{ color: "var(--grey)" }}>
+          You previously removed your own profile from the club directory.
+          We&apos;ve let a club admin know you&apos;re back -- once
+          approved, refresh this page to see your profile again. You can
+          also reach out on WhatsApp (+91 6381 890 182) to speed things
+          along.
         </p>
       </div>
     );

@@ -56,13 +56,13 @@ function LoginForm() {
     if (data.user) {
       const { data: member } = await supabase
         .from("members")
-        .select("id, handle")
+        .select("id, handle, is_hidden")
         .eq("user_id", data.user.id)
         .maybeSingle();
 
       setLoading(false);
 
-      if (member) {
+      if (member && !member.is_hidden) {
         router.push(member.handle ? `/@${member.handle}` : `/members/${member.id}`);
         router.refresh();
         return;
