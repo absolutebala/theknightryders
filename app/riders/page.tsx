@@ -36,7 +36,7 @@ export default async function RidersPage() {
             .limit(30)
         : Promise.resolve({ data: null }),
       isAdmin
-        ? supabase.from("rides").select("id, ride_date").not("ride_date", "is", null).order("ride_date", { ascending: true })
+        ? supabase.from("rides").select("id, ride_date, exclude_from_count").not("ride_date", "is", null).order("ride_date", { ascending: true })
         : Promise.resolve({ data: null }),
       isAdmin
         ? supabase.from("ride_participants").select("member_id, ride_id").not("member_id", "is", null)
@@ -72,7 +72,13 @@ export default async function RidersPage() {
   // their own last ride -- surfaces members who've gone quiet.
   let missedRidesReport: { id: string; full_name: string | null; lastRideDate: string; missedCount: number }[] = [];
   if (isAdmin && allRides && allParticipations) {
-    const rideDateById = new Map(allRides.map((r) => [r.id, r.ride_date as string]));
+    // Rides marked exclude_from_count (e.g. a solo/off-club trip) don't
+    // count toward anyone's totals -- treat them as invisible here too,
+    // both as a ride someone "attended" (so it can't be anyone's last
+    // ride) and as a ride that could be "missed" (so it's dropped from
+    // the pool entirely).
+    const countableRides = allRides.filter((r) => !r.exclude_from_count);
+    const rideDateById = new Map(countableRides.map((r) => [r.id, r.ride_date as string]));
     const lastRideDateByMember = new Map<string, string>();
     for (const p of allParticipations) {
       const date = p.member_id ? rideDateById.get(p.ride_id) : undefined;
@@ -85,7 +91,7 @@ export default async function RidersPage() {
       .map((rider) => {
         const lastRideDate = lastRideDateByMember.get(rider.id);
         if (!lastRideDate) return null;
-        const missedCount = allRides.filter((r) => (r.ride_date as string) > lastRideDate).length;
+        const missedCount = countableRides.filter((r) => (r.ride_date as string) > lastRideDate).length;
         return { id: rider.id, full_name: rider.full_name, lastRideDate, missedCount };
       })
       .filter((r): r is { id: string; full_name: string | null; lastRideDate: string; missedCount: number } => r !== null)
