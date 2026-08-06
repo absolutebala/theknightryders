@@ -7,6 +7,7 @@ import EliteProfileView from "@/components/profile/EliteProfileView";
 import CrownBadge from "@/components/CrownBadge";
 import RideBadge from "@/components/RideBadge";
 import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
@@ -230,6 +231,8 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
           display: "flex",
           gap: 40,
           flexWrap: "wrap",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
         <div>
@@ -260,6 +263,9 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
           <div style={{ fontSize: 13, color: "var(--grey)", textTransform: "uppercase" }}>
             Member Since
           </div>
+        </div>
+        <div style={{ flexBasis: "100%" }}>
+          <RideBadgeStrip rideCount={rides.length} variant="profile-card" />
         </div>
       </div>
 

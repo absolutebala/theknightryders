@@ -18,17 +18,25 @@ function TierCrownIcon({ base, edge, shine, size }: { base: string; edge: string
   );
 }
 
-export default function RideBadgeStrip({ rideCount }: { rideCount: number }) {
+export default function RideBadgeStrip({
+  rideCount,
+  variant = "rider-card",
+}: {
+  rideCount: number;
+  variant?: "rider-card" | "profile-card" | "elite";
+}) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
 
   const progress = getNextTierProgress(rideCount);
+  const isDark = variant === "elite";
+  const textColor = isDark ? tier.colors.shine : tier.colors.edge;
 
   return (
-    <div className="ride-badge-strip">
+    <div className={`ride-badge-strip ride-badge-strip-${variant}`}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <TierCrownIcon {...tier.colors} size={26} />
-        <span style={{ color: tier.colors.edge }}>{tier.name}</span>
+        <span style={{ color: textColor }}>{tier.name}</span>
       </div>
       {progress && (
         <div className="ride-badge-strip-progress">

@@ -170,7 +170,11 @@ section{padding:70px 0;}
 .rider-card-name{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--navy);font-size:15.5px;margin-bottom:8px;}
 .rider-card-bio{font-size:13px;color:#3a4a4f;line-height:1.5;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .rider-card-stats{font-size:12.5px;color:var(--grey);font-weight:600;margin-top:auto;}
-.ride-badge-strip{width:calc(100% + 36px);margin:16px -18px -26px;padding:12px 12px 10px;border-radius:0 0 14px 14px;background:#fff;border-top:1px solid rgba(0,0,0,.06);font-size:14px;font-weight:800;text-align:center;letter-spacing:.02em;}
+.ride-badge-strip{border-radius:0 0 14px 14px;background:#fff;border-top:1px solid rgba(0,0,0,.06);padding:12px 12px 10px;font-size:14px;font-weight:800;text-align:center;letter-spacing:.02em;}
+.ride-badge-strip-rider-card{width:calc(100% + 36px);margin:16px -18px -26px;}
+.ride-badge-strip-profile-card{width:calc(100% + 48px);margin:20px -24px -24px;}
+.ride-badge-strip-elite{background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.3);border-radius:12px;margin-bottom:36px;}
+.ride-badge-strip-elite .ride-badge-strip-progress{color:rgba(255,255,255,.55);}
 .ride-badge-strip-progress{margin-top:4px;font-size:11px;font-weight:600;color:var(--grey);letter-spacing:0;}
 
 /* ELITE PROFILE TEMPLATE -- ported directly from the approved reference design */

@@ -11,6 +11,7 @@ import EliteJourneyEditor from "./EliteJourneyEditor";
 import RequestEliteBanner from "./RequestEliteBanner";
 import RenewEliteButton from "./RenewEliteButton";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
@@ -242,6 +243,8 @@ export default function EliteProfileView({
                 <div className="elite-stat-label">Member Since</div>
               </div>
             </div>
+
+            <RideBadgeStrip rideCount={ridesCount} variant="elite" />
 
             {coRiders.length > 0 && (
               <div>
