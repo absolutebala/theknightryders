@@ -20,6 +20,7 @@ export default async function PastRidesPage() {
     supabase
       .from("ride_leaderboard")
       .select("rider_key, rider_name, member_id, handle, rides_count, total_km, profile_template, profile_photo_url")
+      .not("profile_photo_url", "is", null)
       .limit(5),
   ]);
 
@@ -144,41 +145,16 @@ export default async function PastRidesPage() {
                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <span className="rides-sidebar-rank">#{i + 1}</span>
                           <div style={{ position: "relative", flexShrink: 0 }}>
-                            {entry.profile_photo_url ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={entry.profile_photo_url}
-                                alt=""
-                                style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
-                              />
-                            ) : (
-                            <div
-                              style={{
-                                width: 26,
-                                height: 26,
-                                borderRadius: "50%",
-                                background: "var(--mint)",
-                                color: "var(--navy)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 11,
-                                fontWeight: 800,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {entry.rider_name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={entry.profile_photo_url ?? undefined}
+                              alt=""
+                              style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                            />
                           <RideBadge rideCount={entry.rides_count} size={13} />
                           </div>
                           <span className="rides-sidebar-name">
                             {entry.rider_name}
-                            {entry.profile_template === "elite" && (
-                              <span title="Elite member" style={{ fontSize: 12, marginLeft: 4 }}>
-                                &#128081;
-                              </span>
-                            )}
                           </span>
                         </div>
                         <div className="rides-sidebar-stats">

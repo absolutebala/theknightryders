@@ -4,7 +4,6 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileBio from "@/components/profile/ProfileBio";
 import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
 import EliteProfileView from "@/components/profile/EliteProfileView";
-import CrownBadge from "@/components/CrownBadge";
 import RideBadge from "@/components/RideBadge";
 import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
 
@@ -270,41 +269,32 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
           <StandardRidesGrid rides={rides} />
         </div>
 
-        {coRiders && coRiders.length > 0 && (
+        {coRiders && coRiders.filter((r) => r.profile_photo_url).length > 0 && (
           <div>
             <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 16 }}>
               Frequently Rides With
             </h2>
             <div className="riders-grid riders-grid-1col">
-              {coRiders.map((rider) => (
-                <a
-                  key={rider.id}
-                  href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
-                  className="rider-card"
-                >
-                  {rider.profile_photo_url ? (
+              {coRiders
+                .filter((rider) => rider.profile_photo_url)
+                .map((rider) => (
+                  <a
+                    key={rider.id}
+                    href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
+                    className="rider-card"
+                  >
                     <div style={{ position: "relative", display: "inline-block" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
-                      {rider.profile_template === "elite" && <CrownBadge size={22} />}
+                      <img src={rider.profile_photo_url!} alt={rider.full_name ?? "Rider"} />
                       <RideBadge rideCount={rider.ride_count} size={18} />
                     </div>
-                  ) : (
-                    <div style={{ position: "relative", display: "inline-block" }}>
-                      <div className="rider-card-noimg">
-                        {(rider.full_name ?? "?").charAt(0).toUpperCase()}
-                      </div>
-                      {rider.profile_template === "elite" && <CrownBadge size={22} />}
-                      <RideBadge rideCount={rider.ride_count} size={18} />
+                    <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
+                    {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
+                    <div className="rider-card-stats">
+                      {rider.shared_rides} ride{rider.shared_rides === 1 ? "" : "s"} together
                     </div>
-                  )}
-                  <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
-                  {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
-                  <div className="rider-card-stats">
-                    {rider.shared_rides} ride{rider.shared_rides === 1 ? "" : "s"} together
-                  </div>
-                </a>
-              ))}
+                  </a>
+                ))}
             </div>
           </div>
         )}

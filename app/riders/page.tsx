@@ -115,14 +115,19 @@ export default async function RidersPage() {
             <div className="riders-badge-legend-grid">
               {RIDE_BADGE_TIERS.map((tier) => (
                 <div key={tier.level} className="riders-badge-legend-item">
-                  <svg width="11" height="9" viewBox="0 0 24 20" style={{ flexShrink: 0 }}>
+                  <svg width="11" height="9" viewBox="0 0 24 20" style={{ flexShrink: 0, marginTop: 2 }}>
                     <path
                       d="M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z"
                       fill={tier.colors.base}
                     />
                     <rect x="2" y="16.5" width="20" height="2.5" rx="0.5" fill={tier.colors.base} />
                   </svg>
-                  <span>{tier.name}</span>
+                  <div>
+                    <div>{tier.name}</div>
+                    <div className="riders-badge-legend-range">
+                      {tier.maxRides === null ? `${tier.minRides}+ rides` : `${tier.minRides}-${tier.maxRides} rides`}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

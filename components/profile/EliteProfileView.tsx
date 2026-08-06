@@ -2,7 +2,6 @@ import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
-import CrownBadge from "@/components/CrownBadge";
 import RideBadge from "@/components/RideBadge";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteHandleEditor from "./EliteHandleEditor";
@@ -246,54 +245,33 @@ export default function EliteProfileView({
               </div>
             </div>
 
-            {coRiders.length > 0 && (
+            {coRiders.filter((r) => r.profile_photo_url).length > 0 && (
               <div>
                 <div className="elite-subsection-title">Frequently Rides With</div>
                 <div className="elite-co-riders-row">
-                  {coRiders.map((rider) => (
-                    <a
-                      key={rider.id}
-                      href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
-                      className="elite-co-rider-card"
-                    >
-                      {rider.profile_photo_url ? (
+                  {coRiders
+                    .filter((rider) => rider.profile_photo_url)
+                    .map((rider) => (
+                      <a
+                        key={rider.id}
+                        href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
+                        className="elite-co-rider-card"
+                      >
                         <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={rider.profile_photo_url}
+                            src={rider.profile_photo_url!}
                             alt={rider.full_name ?? "Rider"}
                             style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
                           />
-                          {rider.profile_template === "elite" && <CrownBadge size={20} />}
                           <RideBadge rideCount={rider.ride_count} size={16} />
                         </div>
-                      ) : (
-                        <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
-                          <div
-                            style={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: "50%",
-                              background: "#07090e",
-                              color: "#d4af37",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 800,
-                            }}
-                          >
-                            {(rider.full_name ?? "?").charAt(0).toUpperCase()}
-                          </div>
-                          {rider.profile_template === "elite" && <CrownBadge size={20} />}
-                          <RideBadge rideCount={rider.ride_count} size={16} />
+                        <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
+                        <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
+                          {rider.shared_rides} together
                         </div>
-                      )}
-                      <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
-                      <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
-                        {rider.shared_rides} together
-                      </div>
-                    </a>
-                  ))}
+                      </a>
+                    ))}
                 </div>
               </div>
             )}
