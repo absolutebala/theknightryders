@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
+import RideBadge from "@/components/RideBadge";
 
 type Props = {
   memberId: string;
@@ -18,6 +19,7 @@ type Props = {
   bloodGroup: string | null;
   profilePhotoUrl: string | null;
   isHidden: boolean;
+  rideCount: number;
 };
 
 type EditField = "photo" | "name" | "handle" | "dob" | null;
@@ -49,6 +51,7 @@ export default function ProfileHeader({
   bloodGroup,
   profilePhotoUrl,
   isHidden,
+  rideCount,
 }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState<EditField>(null);
@@ -176,6 +179,7 @@ export default function ProfileHeader({
               {(fullName ?? "?").charAt(0).toUpperCase()}
             </div>
           )}
+          <RideBadge rideCount={rideCount} size={24} />
           {(isOwner || isAdmin) && (
             <button
               type="button"

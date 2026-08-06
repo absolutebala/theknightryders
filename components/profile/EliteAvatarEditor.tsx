@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import CrownBadge from "@/components/CrownBadge";
+import RideBadge from "@/components/RideBadge";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
@@ -14,6 +15,7 @@ type Props = {
   fullName: string | null;
   profilePhotoUrl: string | null;
   showCrown?: boolean;
+  rideCount?: number;
 };
 
 const GOLD = "#d4af37";
@@ -25,6 +27,7 @@ export default function EliteAvatarEditor({
   fullName,
   profilePhotoUrl,
   showCrown = false,
+  rideCount = 0,
 }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -146,6 +149,7 @@ export default function EliteAvatarEditor({
           </>
         )}
         {showCrown && <CrownBadge size={34} />}
+        <RideBadge rideCount={rideCount} size={26} />
       </div>
       {error && <div style={{ color: "#e08a7d", fontSize: 11, marginTop: 6 }}>{error}</div>}
     </div>

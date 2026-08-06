@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import CrownBadge from "@/components/CrownBadge";
+import RideBadge from "@/components/RideBadge";
 
 type Member = {
   id: string;
@@ -11,6 +12,7 @@ type Member = {
   handle: string | null;
   profile_photo_url: string | null;
   profile_template: string | null;
+  ride_count: number | null;
 };
 
 type Participant = {
@@ -260,6 +262,7 @@ export default function RideParticipantsEditor({
                     </div>
                   )}
                   {member?.profile_template === "elite" && <CrownBadge size={18} />}
+                  {member && <RideBadge rideCount={member.ride_count ?? 0} size={16} />}
                   {isAdmin && managing && (
                     <button
                       type="button"

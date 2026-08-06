@@ -5,6 +5,7 @@ import ProfileBio from "@/components/profile/ProfileBio";
 import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
 import EliteProfileView from "@/components/profile/EliteProfileView";
 import CrownBadge from "@/components/CrownBadge";
+import RideBadge from "@/components/RideBadge";
 import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
@@ -209,6 +210,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         bloodGroup={member.blood_group}
         profilePhotoUrl={member.profile_photo_url}
         isHidden={!!member.is_hidden}
+        rideCount={rides.length}
       />
 
       <ProfileBio memberId={member.id} isOwner={isOwner} bio={member.bio} />
@@ -283,6 +285,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
                       {rider.profile_template === "elite" && <CrownBadge size={22} />}
+                      <RideBadge rideCount={rider.ride_count} size={18} />
                     </div>
                   ) : (
                     <div style={{ position: "relative", display: "inline-block" }}>
@@ -290,6 +293,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
                         {(rider.full_name ?? "?").charAt(0).toUpperCase()}
                       </div>
                       {rider.profile_template === "elite" && <CrownBadge size={22} />}
+                      <RideBadge rideCount={rider.ride_count} size={18} />
                     </div>
                   )}
                   <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>

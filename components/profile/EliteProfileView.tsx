@@ -3,6 +3,7 @@ import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
 import EliteAvatarEditor from "./EliteAvatarEditor";
 import CrownBadge from "@/components/CrownBadge";
+import RideBadge from "@/components/RideBadge";
 import EliteNameEditor from "./EliteNameEditor";
 import EliteHandleEditor from "./EliteHandleEditor";
 import EliteBioEditor from "./EliteBioEditor";
@@ -26,6 +27,7 @@ type CoRider = {
   handle: string | null;
   bio: string | null;
   profile_photo_url: string | null;
+  ride_count: number;
   shared_rides: number;
   profile_template: string | null;
 };
@@ -175,6 +177,7 @@ export default function EliteProfileView({
                 fullName={fullName}
                 profilePhotoUrl={profilePhotoUrl}
                 showCrown
+                rideCount={ridesCount}
               />
               {instagram && (
                 <a
@@ -259,6 +262,7 @@ export default function EliteProfileView({
                             style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
                           />
                           {rider.profile_template === "elite" && <CrownBadge size={20} />}
+                          <RideBadge rideCount={rider.ride_count} size={16} />
                         </div>
                       ) : (
                         <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
@@ -278,6 +282,7 @@ export default function EliteProfileView({
                             {(rider.full_name ?? "?").charAt(0).toUpperCase()}
                           </div>
                           {rider.profile_template === "elite" && <CrownBadge size={20} />}
+                          <RideBadge rideCount={rider.ride_count} size={16} />
                         </div>
                       )}
                       <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>

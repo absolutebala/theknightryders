@@ -58,7 +58,7 @@ export default async function RideDetailPage({
     memberIds.length > 0
       ? await supabase
           .from("members_public")
-          .select("id, full_name, handle, profile_photo_url, profile_template")
+          .select("id, full_name, handle, profile_photo_url, profile_template, ride_count")
           .in("id", memberIds)
       : { data: [] };
 

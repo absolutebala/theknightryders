@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import CreateRideButton from "@/components/admin/CreateRideButton";
 import RidePublishToggle from "@/components/admin/RidePublishToggle";
 import RideDestinationBadge from "@/components/admin/RideDestinationBadge";
+import RideBadge from "@/components/RideBadge";
 
 export default async function PastRidesPage() {
   const supabase = await createClient();
@@ -142,14 +143,15 @@ export default async function PastRidesPage() {
                       <div className="rides-sidebar-row">
                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <span className="rides-sidebar-rank">#{i + 1}</span>
-                          {entry.profile_photo_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={entry.profile_photo_url}
-                              alt=""
-                              style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-                            />
-                          ) : (
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            {entry.profile_photo_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={entry.profile_photo_url}
+                                alt=""
+                                style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                              />
+                            ) : (
                             <div
                               style={{
                                 width: 26,
@@ -168,6 +170,8 @@ export default async function PastRidesPage() {
                               {entry.rider_name.charAt(0).toUpperCase()}
                             </div>
                           )}
+                          <RideBadge rideCount={entry.rides_count} size={13} />
+                          </div>
                           <span className="rides-sidebar-name">
                             {entry.rider_name}
                             {entry.profile_template === "elite" && (
