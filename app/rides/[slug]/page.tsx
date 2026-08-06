@@ -54,15 +54,21 @@ export default async function RideDetailPage({
   const participants = participantsRaw ?? [];
   const memberIds = participants.map((p) => p.member_id).filter((id): id is string => !!id);
 
-  const { data: memberProfiles } =
+  const [{ data: memberProfiles }, { data: liveCounts }] =
     memberIds.length > 0
-      ? await supabase
-          .from("members_public")
-          .select("id, full_name, handle, profile_photo_url, profile_template, ride_count")
-          .in("id", memberIds)
-      : { data: [] };
+      ? await Promise.all([
+          supabase
+            .from("members_public")
+            .select("id, full_name, handle, profile_photo_url, profile_template")
+            .in("id", memberIds),
+          supabase.from("ride_leaderboard").select("member_id, rides_count").in("member_id", memberIds),
+        ])
+      : [{ data: [] }, { data: [] }];
 
-  const memberById = new Map((memberProfiles ?? []).map((m) => [m.id, m]));
+  const liveCountByMember = new Map((liveCounts ?? []).map((r) => [r.member_id, r.rides_count]));
+  const memberById = new Map(
+    (memberProfiles ?? []).map((m) => [m.id, { ...m, ride_count: liveCountByMember.get(m.id) ?? 0 }])
+  );
 
   // Distance now lives on the ride itself (rides.total_km), mirrored onto
   // every participant row so aggregate stats elsewhere stay correct.
