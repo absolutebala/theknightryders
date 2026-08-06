@@ -21,19 +21,26 @@ export default async function RidersPage() {
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
 
-  const [{ data: members }, { data: leaderboard }, { data: activityLog }] = await Promise.all([
-    supabase
-      .from("members_public")
-      .select("id, full_name, handle, bio, profile_photo_url, profile_template, is_hidden"),
-    supabase.from("ride_leaderboard").select("member_id, total_km, rides_count"),
-    isAdmin
-      ? supabase
-          .from("admin_activity_log")
-          .select("id, actor_email, action, target_description, created_at")
-          .order("created_at", { ascending: false })
-          .limit(30)
-      : Promise.resolve({ data: null }),
-  ]);
+  const [{ data: members }, { data: leaderboard }, { data: activityLog }, { data: allRides }, { data: allParticipations }] =
+    await Promise.all([
+      supabase
+        .from("members_public")
+        .select("id, full_name, handle, bio, profile_photo_url, profile_template, is_hidden"),
+      supabase.from("ride_leaderboard").select("member_id, total_km, rides_count"),
+      isAdmin
+        ? supabase
+            .from("admin_activity_log")
+            .select("id, actor_email, action, target_description, created_at")
+            .order("created_at", { ascending: false })
+            .limit(30)
+        : Promise.resolve({ data: null }),
+      isAdmin
+        ? supabase.from("rides").select("id, ride_date").not("ride_date", "is", null).order("ride_date", { ascending: true })
+        : Promise.resolve({ data: null }),
+      isAdmin
+        ? supabase.from("ride_participants").select("member_id, ride_id").not("member_id", "is", null)
+        : Promise.resolve({ data: null }),
+    ]);
 
   const statsByMember = new Map(
     (leaderboard ?? [])
@@ -55,6 +62,31 @@ export default async function RidersPage() {
       if (aHasPhoto !== bHasPhoto) return bHasPhoto - aHasPhoto; // photo members first
       return (b.total_km ?? 0) - (a.total_km ?? 0); // then by distance, descending
     });
+
+  // Admin-only: for each rider, how many club rides have happened since
+  // their own last ride -- surfaces members who've gone quiet.
+  let missedRidesReport: { id: string; full_name: string | null; lastRideDate: string; missedCount: number }[] = [];
+  if (isAdmin && allRides && allParticipations) {
+    const rideDateById = new Map(allRides.map((r) => [r.id, r.ride_date as string]));
+    const lastRideDateByMember = new Map<string, string>();
+    for (const p of allParticipations) {
+      const date = p.member_id ? rideDateById.get(p.ride_id) : undefined;
+      if (!date || !p.member_id) continue;
+      const current = lastRideDateByMember.get(p.member_id);
+      if (!current || date > current) lastRideDateByMember.set(p.member_id, date);
+    }
+
+    missedRidesReport = riders
+      .map((rider) => {
+        const lastRideDate = lastRideDateByMember.get(rider.id);
+        if (!lastRideDate) return null;
+        const missedCount = allRides.filter((r) => (r.ride_date as string) > lastRideDate).length;
+        return { id: rider.id, full_name: rider.full_name, lastRideDate, missedCount };
+      })
+      .filter((r): r is { id: string; full_name: string | null; lastRideDate: string; missedCount: number } => r !== null)
+      .filter((r) => r.missedCount > 0)
+      .sort((a, b) => b.missedCount - a.missedCount);
+  }
 
   return (
     <section style={{ paddingBottom: 70 }}>
@@ -143,6 +175,42 @@ export default async function RidersPage() {
             </a>
           ))}
         </div>
+
+        {isAdmin && missedRidesReport.length > 0 && (
+          <div style={{ marginTop: 60, borderTop: "1px solid #e3ebe7", paddingTop: 30 }}>
+            <h2 style={{ fontSize: 16, color: "var(--navy)", marginBottom: 4 }}>
+              Riders Going Quiet <span style={{ fontWeight: 400, color: "var(--grey)", fontSize: 12.5 }}>(admin only)</span>
+            </h2>
+            <p style={{ fontSize: 12.5, color: "var(--grey)", marginBottom: 14 }}>
+              How many club rides each rider has missed since their own last one -- most rides missed first.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {missedRidesReport.map((r) => (
+                <div
+                  key={r.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                    color: "var(--dark)",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #f0f4f2",
+                  }}
+                >
+                  <span>{r.full_name ?? "Knight Ryder"}</span>
+                  <span style={{ color: "var(--grey)", fontSize: 12.5 }}>
+                    last rode {new Date(r.lastRideDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
+                    {" — "}
+                    <strong style={{ color: r.missedCount >= 10 ? "#a3312a" : "var(--dark)" }}>
+                      {r.missedCount} ride{r.missedCount === 1 ? "" : "s"} missed
+                    </strong>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isAdmin && (
           <div style={{ marginTop: 60, borderTop: "1px solid #e3ebe7", paddingTop: 30 }}>
