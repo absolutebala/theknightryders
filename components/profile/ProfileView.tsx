@@ -214,6 +214,8 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         rideCount={rides.length}
       />
 
+      <RideBadgeStrip rideCount={rides.length} variant="standalone" />
+
       <ProfileBio memberId={member.id} isOwner={isOwner} bio={member.bio} />
 
       {isOwner && (
@@ -263,9 +265,6 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
           <div style={{ fontSize: 13, color: "var(--grey)", textTransform: "uppercase" }}>
             Member Since
           </div>
-        </div>
-        <div style={{ flexBasis: "100%" }}>
-          <RideBadgeStrip rideCount={rides.length} variant="profile-card" />
         </div>
       </div>
 

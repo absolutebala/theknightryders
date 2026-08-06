@@ -222,6 +222,8 @@ export default function EliteProfileView({
           </div>
         </div>
 
+        <RideBadgeStrip rideCount={ridesCount} variant="elite" />
+
         {/* TWO COLUMN: stats+co-riders | photos */}
         <div className="elite-two-col">
           <div>
@@ -243,8 +245,6 @@ export default function EliteProfileView({
                 <div className="elite-stat-label">Member Since</div>
               </div>
             </div>
-
-            <RideBadgeStrip rideCount={ridesCount} variant="elite" />
 
             {coRiders.length > 0 && (
               <div>
