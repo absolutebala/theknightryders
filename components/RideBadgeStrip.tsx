@@ -23,13 +23,13 @@ export default function RideBadgeStrip({
   variant = "rider-card",
 }: {
   rideCount: number;
-  variant?: "rider-card" | "profile-card" | "elite" | "elite-co-rider" | "ride-participant";
+  variant?: "rider-card" | "profile-card" | "elite" | "elite-co-rider" | "ride-participant" | "promo-slider";
 }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
 
   const progress = getNextTierProgress(rideCount);
-  const isDark = variant === "elite" || variant === "elite-co-rider";
+  const isDark = variant === "elite" || variant === "elite-co-rider" || variant === "promo-slider";
   const textColor = isDark ? tier.colors.shine : tier.colors.edge;
   const iconSize = variant === "elite-co-rider" || variant === "ride-participant" ? 16 : 26;
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
+import RideBadgeStrip from "@/components/RideBadgeStrip";
 
 export type PromoImage = {
   id: string;
@@ -18,9 +19,19 @@ export type BirthdayMember = {
   handle: string | null;
   profile_photo_url: string | null;
   days_diff: number;
+  ride_count: number;
 };
 
-type PromoMode = "promo" | "birthday";
+export type PromotedMember = {
+  id: string;
+  full_name: string | null;
+  handle: string | null;
+  profile_photo_url: string | null;
+  ride_count: number;
+  tier_promoted_at: string;
+};
+
+type PromoMode = "promo" | "birthday" | "promoted";
 
 type Props = {
   images: PromoImage[];
@@ -29,6 +40,7 @@ type Props = {
   promoTitle: string; // shared across all promo images, not per-image
   birthdayMembers: BirthdayMember[]; // already filtered to whichever set qualifies
   birthdayWish: string;
+  promotedMembers: PromotedMember[];
 };
 
 const SECTION_KEY = "hero_promo";
@@ -39,11 +51,12 @@ function displayDate(daysDiff: number): string {
   return d.toLocaleDateString("en-IN", { month: "long", day: "numeric" });
 }
 
-export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle, birthdayMembers, birthdayWish }: Props) {
+export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle, birthdayMembers, birthdayWish, promotedMembers }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imgIndex, setImgIndex] = useState(0);
   const [bdayIndex, setBdayIndex] = useState(0);
+  const [promotedIndex, setPromotedIndex] = useState(0);
   const [managing, setManaging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -53,6 +66,7 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
 
   const currentImage = images[imgIndex];
   const currentBirthday = birthdayMembers[bdayIndex];
+  const currentPromoted = promotedMembers[promotedIndex];
 
   // Auto-advance whichever mode is active, pausing while managing.
   useEffect(() => {
@@ -65,10 +79,15 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
       const timer = setInterval(() => setBdayIndex((i) => (i + 1) % birthdayMembers.length), 4500);
       return () => clearInterval(timer);
     }
-  }, [managing, promoMode, images.length, birthdayMembers.length]);
+    if (promoMode === "promoted" && promotedMembers.length > 1) {
+      const timer = setInterval(() => setPromotedIndex((i) => (i + 1) % promotedMembers.length), 4500);
+      return () => clearInterval(timer);
+    }
+  }, [managing, promoMode, images.length, birthdayMembers.length, promotedMembers.length]);
 
   if (promoMode === "promo" && images.length === 0 && !isAdmin) return null;
   if (promoMode === "birthday" && birthdayMembers.length === 0 && !isAdmin) return null;
+  if (promoMode === "promoted" && promotedMembers.length === 0 && !isAdmin) return null;
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -233,6 +252,69 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
           </div>
 
           <div className="hero-promo-birthday-message">{birthdayWish}</div>
+          {currentBirthday && (
+            <div style={{ padding: "0 16px 12px" }}>
+              <RideBadgeStrip rideCount={currentBirthday.ride_count} variant="promo-slider" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {promoMode === "promoted" && (
+        <div className="hero-promo-frame hero-promo-birthday-frame">
+          <div className="hero-promo-birthday-title-row">&#127942; Just Leveled Up!</div>
+
+          <div className="hero-promo-birthday-profile-row">
+            {promotedMembers.length > 1 && (
+              <button
+                type="button"
+                aria-label="Previous member"
+                className="hero-promo-birthday-nav hero-promo-birthday-prev"
+                onClick={() => setPromotedIndex((i) => (i - 1 + promotedMembers.length) % promotedMembers.length)}
+              >
+                &#8249;
+              </button>
+            )}
+
+            {currentPromoted ? (
+              <a
+                href={currentPromoted.handle ? `/@${currentPromoted.handle}` : `/members/${currentPromoted.id}`}
+                className="hero-promo-birthday-profile"
+              >
+                {currentPromoted.profile_photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={currentPromoted.profile_photo_url} alt="" />
+                ) : (
+                  <div className="hero-promo-birthday-noimg">
+                    {(currentPromoted.full_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="hero-promo-birthday-name">{currentPromoted.full_name ?? "Knight Ryder"}</span>
+              </a>
+            ) : (
+              isAdmin && <div className="hero-promo-empty">No recent promotions</div>
+            )}
+
+            {promotedMembers.length > 1 && (
+              <button
+                type="button"
+                aria-label="Next member"
+                className="hero-promo-birthday-nav hero-promo-birthday-next"
+                onClick={() => setPromotedIndex((i) => (i + 1) % promotedMembers.length)}
+              >
+                &#8250;
+              </button>
+            )}
+          </div>
+
+          <div className="hero-promo-birthday-message">
+            Congrats on the new badge -- keep the wheels turning!
+          </div>
+          {currentPromoted && (
+            <div style={{ padding: "0 16px 12px" }}>
+              <RideBadgeStrip rideCount={currentPromoted.ride_count} variant="promo-slider" />
+            </div>
+          )}
         </div>
       )}
 

@@ -34,6 +34,10 @@ export default async function HomePage() {
   // instead of waiting on each one in turn. This is the single biggest
   // lever for homepage load time, since it was previously ~14 sequential
   // database round-trips.
+  // Lazy check for tier promotions -- cheap, must complete before we read
+  // get_recently_promoted_members below.
+  await supabase.rpc("check_tier_promotions");
+
   const [
     authResult,
     isAdminResult,
@@ -45,6 +49,7 @@ export default async function HomePage() {
     promoTitleResult,
     birthdayMembersResult,
     birthdayWishResult,
+    promotedMembersResult,
     milestone,
     rideForCause,
     awards,
@@ -70,6 +75,7 @@ export default async function HomePage() {
     supabase.from("homepage_content").select("title").eq("section_key", "hero_promo").maybeSingle(),
     supabase.rpc("get_members_with_birthday_offset"),
     supabase.rpc("get_random_birthday_wish"),
+    supabase.rpc("get_recently_promoted_members"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -93,8 +99,11 @@ export default async function HomePage() {
     handle: string | null;
     profile_photo_url: string | null;
     days_diff: number;
+    ride_count: number;
   };
-  const allBirthdayOffsets: BirthdayOffset[] = birthdayMembersResult.data ?? [];
+  const allBirthdayOffsets: BirthdayOffset[] = (birthdayMembersResult.data ?? []).filter(
+    (m: BirthdayOffset) => !!m.profile_photo_url
+  );
 
   const todaysBirthdays = allBirthdayOffsets.filter((m) => m.days_diff === 0);
   const upcoming = allBirthdayOffsets
@@ -113,7 +122,18 @@ export default async function HomePage() {
     birthdayMembers = passed.filter((m) => m.days_diff === passed[0].days_diff);
   }
 
-  const promoMode: "promo" | "birthday" = birthdayMembers.length > 0 ? "birthday" : "promo";
+  type PromotedMember = {
+    id: string;
+    full_name: string | null;
+    handle: string | null;
+    profile_photo_url: string | null;
+    ride_count: number;
+    tier_promoted_at: string;
+  };
+  const promotedMembers: PromotedMember[] = promotedMembersResult.data ?? [];
+
+  const promoMode: "promo" | "birthday" | "promoted" =
+    birthdayMembers.length > 0 ? "birthday" : promotedMembers.length > 0 ? "promoted" : "promo";
   const birthdayWish =
     birthdayWishResult.data ?? "Wish you all the success and happiest life as we have on the road ;)";
 
@@ -186,6 +206,7 @@ export default async function HomePage() {
             promoTitle={promoTitle}
             birthdayMembers={birthdayMembers}
             birthdayWish={birthdayWish}
+            promotedMembers={promotedMembers}
           />
         </div>
         </div>

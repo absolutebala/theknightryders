@@ -80,8 +80,8 @@ nav li.has-dropdown:hover .dropdown{display:block;}
 .hero-promo-birthday-profile-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 8px;min-height:200px;}
 .hero-promo-birthday-nav{width:28px;height:28px;border-radius:50%;border:1px solid rgba(240,194,78,.5);background:rgba(0,0,0,.4);color:var(--amber);font-size:15px;cursor:pointer;flex-shrink:0;}
 .hero-promo-birthday-profile{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;text-decoration:none;cursor:pointer;}
-.hero-promo-birthday-profile img{width:84px;height:84px;border-radius:50%;object-fit:cover;border:2px solid var(--amber);}
-.hero-promo-birthday-noimg{width:84px;height:84px;border-radius:50%;background:var(--amber);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;}
+.hero-promo-birthday-profile img{width:112px;height:112px;border-radius:50%;object-fit:cover;border:2px solid var(--amber);}
+.hero-promo-birthday-noimg{width:112px;height:112px;border-radius:50%;background:var(--amber);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:36px;}
 .hero-promo-birthday-name{color:#fff;font-size:14px;font-weight:700;}
 .hero-promo-birthday-date{color:rgba(255,255,255,.65);font-size:11.5px;}
 
@@ -183,6 +183,7 @@ section{padding:70px 0;}
 .ride-badge-strip-elite-co-rider{background:rgba(255,255,255,.06);border-top:1px solid rgba(212,175,55,.25);border-radius:0 0 9px 9px;width:calc(100% + 28px);margin:10px -14px -14px;padding:8px 6px 6px;font-size:11px;}
 .ride-badge-strip-elite-co-rider .ride-badge-strip-progress{color:rgba(255,255,255,.5);font-size:9px;}
 .ride-badge-strip-ride-participant{width:calc(100% + 20px);margin:10px -10px -16px;border-radius:0 0 9px 9px;background:var(--white);font-size:11px;}
+.ride-badge-strip-promo-slider{background:rgba(255,255,255,.08);border-top:none;border-radius:10px;margin:0;padding:8px 12px;}
 .ride-badge-strip-progress{margin-top:4px;font-size:11px;font-weight:600;color:var(--grey);letter-spacing:0;}
 
 /* ELITE PROFILE TEMPLATE -- ported directly from the approved reference design */
