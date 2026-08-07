@@ -8,11 +8,6 @@ import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
 import RideStatsEditor from "@/components/admin/RideStatsEditor";
 import { cleanRideTitle, findTerrainMentions, formatList } from "@/lib/journeyNarrative";
 
-function parseRideNumber(title: string): string | null {
-  const match = title.match(/ride\s*#\s*(\d+)/i);
-  return match ? `#${match[1]}` : null;
-}
-
 export default async function RideDetailPage({
   params,
 }: {
@@ -26,7 +21,7 @@ export default async function RideDetailPage({
   const [rideResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("rides")
-      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state, destination")
+      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state, destination, ride_number")
       .eq("slug", slug)
       .maybeSingle(),
     supabase.auth.getUser(),
@@ -74,7 +69,7 @@ export default async function RideDetailPage({
   // every participant row so aggregate stats elsewhere stay correct.
   const totalKm = ride.total_km ?? participants[0]?.km_covered ?? 0;
   const riderCount = participants.length;
-  const rideNumber = parseRideNumber(ride.title);
+  const rideNumber = ride.ride_number ? `#${ride.ride_number}` : null;
   const destination = ride.destination || cleanRideTitle(ride.title);
   const detectedTerrain = findTerrainMentions([{ title: ride.title, ride_date: ride.ride_date }]);
   const autoTerrain = detectedTerrain.length > 0 ? detectedTerrain[0] : "Open Road";

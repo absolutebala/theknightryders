@@ -33,7 +33,7 @@ export default async function PastRidesPage() {
     supabase.rpc("is_admin"),
     supabase
       .from("rides")
-      .select("id, slug, title, ride_date, hero_image_url, is_published, state, destination")
+      .select("id, slug, title, ride_date, hero_image_url, is_published, state, destination, ride_number")
       .order("ride_date", { ascending: false, nullsFirst: false }),
     supabase
       .from("ride_leaderboard")
@@ -131,8 +131,8 @@ export default async function PastRidesPage() {
                     ) : (
                       <div className="no-image">{ride.title}</div>
                     )}
-                    {getOrdinalRideLabel(ride.title) && (
-                      <div className="past-rides-destination-label">{getOrdinalRideLabel(ride.title)}</div>
+                    {getOrdinalRideLabel(ride.ride_number) && (
+                      <div className="past-rides-destination-label">{getOrdinalRideLabel(ride.ride_number)}</div>
                     )}
                     <figcaption>
                       {ride.title}

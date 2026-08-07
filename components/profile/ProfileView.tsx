@@ -77,7 +77,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
   const [participationResult, coRidersRawResult, extraResult] = await Promise.all([
     supabase
       .from("ride_participants")
-      .select("km_covered, rides(id, slug, title, ride_date, hero_image_url, hero_image_position)")
+      .select("km_covered, rides(id, slug, title, ride_date, hero_image_url, hero_image_position, ride_number)")
       .eq("member_id", memberId),
     supabase.rpc("get_frequent_co_riders", {
       target_member_id: memberId,
@@ -112,6 +112,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       ride_date: string | null;
       hero_image_url: string | null;
       hero_image_position: number | null;
+      ride_number: number | null;
     } | null;
   };
 

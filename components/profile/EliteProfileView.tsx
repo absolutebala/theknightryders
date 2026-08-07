@@ -19,6 +19,7 @@ type Ride = {
   title: string;
   ride_date: string | null;
   hero_image_url: string | null;
+  ride_number: number | null;
 };
 
 type CoRider = {

@@ -41,14 +41,12 @@ function pick<T>(options: T[], seed: number, salt: number): T {
  * ordinal label, e.g. "96th Ride". Returns null if the title doesn't
  * contain a recognizable ride number.
  */
-export function getOrdinalRideLabel(title: string): string | null {
-  const match = title.match(/ride\s*#\s*(\d+)/i);
-  if (!match) return null;
-  const n = parseInt(match[1], 10);
+export function getOrdinalRideLabel(rideNumber: number | null): string | null {
+  if (rideNumber === null || rideNumber === undefined) return null;
   const suffixes = ["th", "st", "nd", "rd"];
-  const v = n % 100;
+  const v = rideNumber % 100;
   const suffix = suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
-  return `${n}${suffix} Ride`;
+  return `${rideNumber}${suffix} Ride`;
 }
 
 export function cleanRideTitle(title: string): string {

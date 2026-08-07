@@ -8,14 +8,10 @@ type Ride = {
   title: string;
   ride_date: string | null;
   hero_image_url: string | null;
+  ride_number: number | null;
 };
 
 const PAGE_SIZE = 15;
-
-function parseRideNumber(title: string): string | null {
-  const match = title.match(/ride\s*#\s*(\d+)/i);
-  return match ? `#${match[1]}` : null;
-}
 
 export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
   const [page, setPage] = useState(0);
@@ -41,7 +37,7 @@ export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
         <>
           <div className="elite-rides-grid-v2">
             {visible.map((ride) => {
-              const rideNumber = parseRideNumber(ride.title);
+              const rideNumber = ride.ride_number ? `#${ride.ride_number}` : null;
               return (
                 <a key={ride.id} href={`/rides/${ride.slug}`} className="elite-ride-card-v2">
                   <div className="elite-ride-thumb">
