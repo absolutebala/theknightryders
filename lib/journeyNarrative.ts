@@ -36,6 +36,21 @@ function pick<T>(options: T[], seed: number, salt: number): T {
 
 // Strips a leading "Ride #83 :" / "Ride #83:" style prefix, leaving just
 // the destination/description part of the title.
+/**
+ * Parses a "Ride #96" style number out of a title and formats it as an
+ * ordinal label, e.g. "96th Ride". Returns null if the title doesn't
+ * contain a recognizable ride number.
+ */
+export function getOrdinalRideLabel(title: string): string | null {
+  const match = title.match(/ride\s*#\s*(\d+)/i);
+  if (!match) return null;
+  const n = parseInt(match[1], 10);
+  const suffixes = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  const suffix = suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
+  return `${n}${suffix} Ride`;
+}
+
 export function cleanRideTitle(title: string): string {
   return title.replace(/^ride\s*#\s*\d+\s*[:\-]\s*/i, "").trim() || title;
 }

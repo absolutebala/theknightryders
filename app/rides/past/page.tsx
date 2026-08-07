@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateRideButton from "@/components/admin/CreateRideButton";
 import RidePublishToggle from "@/components/admin/RidePublishToggle";
-import RideDestinationBadge from "@/components/admin/RideDestinationBadge";
+import { getOrdinalRideLabel } from "@/lib/journeyNarrative";
 import { getRideBadgeTier } from "@/lib/rideBadges";
 
 function LeaderboardBadgeLine({ rideCount }: { rideCount: number }) {
@@ -131,11 +131,9 @@ export default async function PastRidesPage() {
                     ) : (
                       <div className="no-image">{ride.title}</div>
                     )}
-                    <RideDestinationBadge
-                      rideId={ride.id}
-                      destination={ride.destination}
-                      isAdmin={isAdmin}
-                    />
+                    {getOrdinalRideLabel(ride.title) && (
+                      <div className="past-rides-destination-label">{getOrdinalRideLabel(ride.title)}</div>
+                    )}
                     <figcaption>
                       {ride.title}
                       {ride.ride_date && (
