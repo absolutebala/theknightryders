@@ -354,12 +354,13 @@ footer nav a:hover{color:var(--amber);}
   .hero-lines-mobile{display:block;}
   .stats{gap:28px;}
   .ride-stats-row{grid-template-columns:1fr;}
-  .ride-riders-grid{grid-template-columns:repeat(2,1fr);}
+  .ride-riders-grid{grid-template-columns:1fr;}
   .ride-hero-title{font-size:28px!important;}
   .ride-hero-frame{height:420px!important;}
   .gallery-grid{grid-template-columns:repeat(2,1fr);}
   .gallery-grid.small{grid-template-columns:repeat(2,1fr);}
   .rides-grid{grid-template-columns:repeat(2,1fr);}
-  .past-rides-grid{grid-template-columns:repeat(2,1fr);}
+  .past-rides-grid{grid-template-columns:1fr;}
+  .past-rides-grid-2col{grid-template-columns:1fr;}
   .riders-grid{grid-template-columns:1fr;}
 }
