@@ -65,7 +65,7 @@ export default async function RidersPage() {
       const aHasPhoto = a.profile_photo_url ? 1 : 0;
       const bHasPhoto = b.profile_photo_url ? 1 : 0;
       if (aHasPhoto !== bHasPhoto) return bHasPhoto - aHasPhoto; // photo members first
-      return (b.total_km ?? 0) - (a.total_km ?? 0); // then by distance, descending
+      return (b.ride_count ?? 0) - (a.ride_count ?? 0); // then by number of rides, descending
     });
 
   // Admin-only: for each rider, how many club rides have happened since
