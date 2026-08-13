@@ -76,6 +76,16 @@ export default function UpcomingRideParticipantsManager({
     router.refresh();
   }
 
+  async function handleRemove(id: string) {
+    if (!window.confirm("Remove this rider from the participant list?")) return;
+    setBusyId(id);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("remove_upcoming_ride_participant", { participant_id: id });
+    setBusyId(null);
+    if (error) return alert(error.message);
+    router.refresh();
+  }
+
   async function handleManualAdd(memberId: string) {
     setBusyId(memberId);
     const supabase = createClient();
@@ -101,7 +111,7 @@ export default function UpcomingRideParticipantsManager({
       ) : (
         <div className="ride-riders-grid">
           {approved.map((p) => (
-            <div key={p.id} className="ride-rider-card">
+            <div key={p.id} className="ride-rider-card" style={{ position: "relative" }}>
               {p.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={p.profile_photo_url} alt="" className="ride-rider-avatar" />
@@ -111,6 +121,29 @@ export default function UpcomingRideParticipantsManager({
                 </div>
               )}
               <span className="ride-rider-name">{p.full_name ?? "Knight Ryder"}</span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  aria-label="Remove rider"
+                  onClick={() => handleRemove(p.id)}
+                  disabled={busyId === p.id}
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    border: "none",
+                    background: "#a3312a",
+                    color: "#fff",
+                    fontSize: 10,
+                    cursor: "pointer",
+                  }}
+                >
+                  &#10005;
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -175,7 +208,30 @@ export default function UpcomingRideParticipantsManager({
                   disabled={busyId === m.id}
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "var(--mint)", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13.5, textAlign: "left" }}
                 >
-                  <span>{m.full_name ?? "Knight Ryder"}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {m.profile_photo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={m.profile_photo_url} alt="" style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <span
+                        style={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          background: "var(--navy)",
+                          color: "var(--mint-text)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 11,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {(m.full_name ?? "?").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    {m.full_name ?? "Knight Ryder"}
+                  </span>
                   <span style={{ color: "var(--cta-blue)", fontSize: 11, fontWeight: 700 }}>
                     {busyId === m.id ? "…" : "Add"}
                   </span>

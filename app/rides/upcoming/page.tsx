@@ -4,6 +4,7 @@ import CreateUpcomingRideButton from "@/components/admin/CreateUpcomingRideButto
 
 export default async function UpcomingRidesPage() {
   const supabase = await createClient();
+  await supabase.rpc("convert_ended_upcoming_rides");
   const cookieStore = await cookies();
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
 

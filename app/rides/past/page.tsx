@@ -27,6 +27,7 @@ export default async function PastRidesPage() {
   const supabase = await createClient();
 
   await supabase.rpc("expire_stale_elite_members");
+  await supabase.rpc("convert_ended_upcoming_rides");
 
   const [authResult, isAdminResult, { data: rides }, { data: leaderboard }] = await Promise.all([
     supabase.auth.getUser(),
