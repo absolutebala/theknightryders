@@ -67,7 +67,7 @@ export default async function MediaPage() {
         </div>
       </section>
 
-      <section style={{ paddingBottom: 40 }}>
+      <section style={{ paddingTop: 0, paddingBottom: 40 }}>
         <div className="container" style={{ textAlign: "center" }}>
           <a
             href="https://www.youtube.com/@TheKnightRyders1"
@@ -81,7 +81,7 @@ export default async function MediaPage() {
         </div>
       </section>
 
-      <section style={{ paddingBottom: 80 }}>
+      <section style={{ paddingTop: 0, paddingBottom: 80 }}>
         <div className="container">
           <EditableGallery
             sectionKey={SECTION_KEY}

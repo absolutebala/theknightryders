@@ -77,7 +77,7 @@ export default async function PastRidesPage() {
       </section>
 
       {statesVisited.length > 0 && (
-        <section style={{ paddingBottom: 30 }}>
+        <section style={{ paddingTop: 0, paddingBottom: 30 }}>
           <div className="container">
             <div
               style={{
@@ -193,7 +193,7 @@ export default async function PastRidesPage() {
                   })}
                 </div>
                 <a
-                  href="/riders"
+                  href="/members-directory"
                   style={{
                     display: "block",
                     textAlign: "center",

@@ -19,7 +19,7 @@ export default function NotFound() {
           <a href="/rides/past" className="btn btn-outline" style={{ padding: "12px 26px" }}>
             Past Rides
           </a>
-          <a href="/riders" className="btn btn-outline" style={{ padding: "12px 26px" }}>
+          <a href="/members-directory" className="btn btn-outline" style={{ padding: "12px 26px" }}>
             Members
           </a>
         </div>

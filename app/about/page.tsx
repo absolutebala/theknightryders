@@ -66,7 +66,7 @@ export default async function AboutPage() {
           </div>
         </div>
 
-        <a href="/riders" className="btn btn-amber">
+        <a href="/members-directory" className="btn btn-amber">
           Meet the Riders
         </a>
       </div>

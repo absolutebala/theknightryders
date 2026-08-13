@@ -5,6 +5,7 @@ import RideHeroEditor from "@/components/admin/RideHeroEditor";
 import RideGalleryEditor from "@/components/admin/RideGalleryEditor";
 import RideDescriptionEditor from "@/components/admin/RideDescriptionEditor";
 import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
+import AddMeToRideButton from "@/components/AddMeToRideButton";
 import RideStatsEditor from "@/components/admin/RideStatsEditor";
 import { cleanRideTitle, findTerrainMentions, formatList } from "@/lib/journeyNarrative";
 
@@ -40,6 +41,10 @@ export default async function RideDetailPage({
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
 
+  const { data: viewerMember } = user
+    ? await supabase.from("members").select("id").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+
   const { data: participantsRaw } = await supabase
     .from("ride_participants")
     .select("id, member_id, rider_name, km_covered")
@@ -47,6 +52,17 @@ export default async function RideDetailPage({
     .order("rider_name", { ascending: true });
 
   const participants = participantsRaw ?? [];
+
+  const viewerIsParticipant = !!viewerMember && participants.some((p) => p.member_id === viewerMember.id);
+  const { data: viewerJoinRequest } =
+    viewerMember && !viewerIsParticipant
+      ? await supabase
+          .from("ride_join_requests")
+          .select("status")
+          .eq("ride_id", ride.id)
+          .eq("member_id", viewerMember.id)
+          .maybeSingle()
+      : { data: null };
   const memberIds = participants.map((p) => p.member_id).filter((id): id is string => !!id);
 
   const [{ data: memberProfiles }, { data: liveCounts }] =
@@ -174,7 +190,7 @@ export default async function RideDetailPage({
         />
       </section>
 
-      <section style={{ paddingBottom: 20 }}>
+      <section style={{ paddingTop: 0, paddingBottom: 20 }}>
         <div className="container" style={{ maxWidth: 780 }}>
           <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14, marginTop: 40 }}>The Ride</h2>
           <RideDescriptionEditor
@@ -186,7 +202,7 @@ export default async function RideDetailPage({
         </div>
       </section>
 
-      <section style={{ paddingBottom: 40 }}>
+      <section style={{ paddingTop: 0, paddingBottom: 40 }}>
         <div className="container" style={{ maxWidth: 780 }}>
           <div
             style={{
@@ -207,10 +223,18 @@ export default async function RideDetailPage({
               }))}
             />
           </div>
+          {viewerMember && !viewerIsParticipant && (
+            <div style={{ textAlign: "center", marginTop: 16 }}>
+              <AddMeToRideButton
+                rideId={ride.id}
+                initialStatus={(viewerJoinRequest?.status as "pending" | "rejected" | undefined) ?? null}
+              />
+            </div>
+          )}
         </div>
       </section>
 
-      <section style={{ paddingBottom: 60 }}>
+      <section style={{ paddingTop: 0, paddingBottom: 60 }}>
         <div className="container" style={{ maxWidth: 900 }}>
           <RideGalleryEditor rideId={ride.id} gallery={(ride.gallery as string[]) ?? []} isAdmin={isAdmin} />
         </div>

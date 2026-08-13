@@ -62,6 +62,7 @@ export default async function RidersPage() {
       ride_count: statsByMember.get(m.id)?.ride_count ?? 0,
     }))
     .filter((m) => m.ride_count > 0)
+    .filter((m) => !!m.profile_photo_url)
     .filter((m) => isAdmin || !m.is_hidden)
     .sort((a, b) => {
       const aHasPhoto = a.profile_photo_url ? 1 : 0;

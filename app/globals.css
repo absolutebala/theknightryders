@@ -169,6 +169,18 @@ section{padding:70px 0;}
 .riders-badge-legend-item{display:flex;align-items:flex-start;gap:6px;font-size:10.5px;color:var(--grey);font-weight:600;white-space:nowrap;}
 .riders-badge-legend-range{font-size:9px;font-weight:500;color:var(--grey);opacity:.75;margin-top:1px;}
 .rider-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:var(--mint);border-radius:14px;padding:26px 18px;transition:transform .2s ease;overflow:hidden;}
+.upcoming-ride-card{display:flex;align-items:stretch;gap:0;background:var(--mint);border-radius:14px;overflow:hidden;text-decoration:none;transition:transform .2s ease;}
+.upcoming-ride-card:hover{transform:translateY(-2px);}
+.upcoming-ride-card-img{width:140px;flex-shrink:0;object-fit:cover;}
+.upcoming-ride-card-noimg{display:flex;align-items:center;justify-content:center;background:var(--navy);color:var(--mint-text);font-size:32px;font-weight:800;}
+.upcoming-ride-card-body{padding:18px 22px;display:flex;flex-direction:column;justify-content:center;text-align:left;}
+.upcoming-ride-card-title{font-size:17px;font-weight:800;color:var(--navy);margin-bottom:2px;}
+.upcoming-ride-card-place{font-size:13px;color:var(--dark);margin-bottom:6px;}
+.upcoming-ride-card-meta{font-size:12.5px;color:var(--grey);display:flex;gap:6px;flex-wrap:wrap;}
+@media(max-width:520px){
+  .upcoming-ride-card{flex-direction:column;}
+  .upcoming-ride-card-img{width:100%;height:140px;}
+}
 .rider-card:hover{transform:translateY(-4px);}
 .rider-card img{width:84px;height:84px;border-radius:50%;object-fit:cover;margin-bottom:14px;}
 .rider-card-noimg{width:84px;height:84px;border-radius:50%;background:var(--navy);color:var(--mint-text);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;margin-bottom:14px;}
