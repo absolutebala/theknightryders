@@ -53,7 +53,7 @@ export default function UpcomingRidePhotoEditor({
   }
 
   return (
-    <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
+    <div style={{ position: "relative" }}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

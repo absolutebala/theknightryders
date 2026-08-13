@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import JoinUpcomingRideButton from "@/components/JoinUpcomingRideButton";
 import UpcomingRideParticipantsManager from "@/components/admin/UpcomingRideParticipantsManager";
 import UpcomingRidePhotoEditor from "@/components/admin/UpcomingRidePhotoEditor";
+import EditUpcomingRideButton from "@/components/admin/EditUpcomingRideButton";
 
 export default async function UpcomingRideDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -90,7 +91,23 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
           }}
         />
         <div className="container" style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", paddingBottom: 32 }}>
-          {isAdmin && <UpcomingRidePhotoEditor upcomingRideId={ride.id} existingPhotos={existingPhotos} currentUrl={ride.hero_image_url} />}
+          {isAdmin && (
+            <div style={{ display: "flex", gap: 8, position: "absolute", top: 16, right: 16, zIndex: 2 }}>
+              <EditUpcomingRideButton
+                ride={{
+                  id: ride.id,
+                  title: ride.title,
+                  place: ride.place,
+                  ride_date: ride.ride_date,
+                  end_date: ride.end_date,
+                  is_multi_day: ride.is_multi_day,
+                  cost_per_person: ride.cost_per_person,
+                  summary: ride.summary,
+                }}
+              />
+              <UpcomingRidePhotoEditor upcomingRideId={ride.id} existingPhotos={existingPhotos} currentUrl={ride.hero_image_url} />
+            </div>
+          )}
           <h1 style={{ color: "#fff", fontSize: 34, fontWeight: 800, marginBottom: 6 }}>{ride.title}</h1>
           <div style={{ color: "#e8ecf5", fontSize: 15 }}>
             {ride.place && <span>{ride.place} &middot; </span>}
@@ -120,10 +137,16 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
             )}
           </div>
 
-          {ride.summary && (
+          {ride.summary ? (
             <p style={{ color: "var(--dark)", fontSize: 15, lineHeight: 1.7, marginBottom: 10, whiteSpace: "pre-wrap" }}>
               {ride.summary}
             </p>
+          ) : (
+            isAdmin && (
+              <p style={{ color: "var(--grey)", fontSize: 14, fontStyle: "italic", marginBottom: 10 }}>
+                No summary yet -- use &quot;Edit Ride Details&quot; above to add one.
+              </p>
+            )
           )}
 
           {viewerMember && !viewerParticipant && (
