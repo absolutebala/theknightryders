@@ -101,6 +101,7 @@ export default async function HomePage({
     data: { user },
   } = authResult;
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
+  const isAdminUser = !!user && !!isAdminResult.data;
 
   const stats = statsResult.data;
   const latestRide = latestRideResult.data;
@@ -221,6 +222,7 @@ export default async function HomePage({
           <HeroPromoSlider
             images={heroPromoImages}
             isAdmin={isAdmin}
+            isAdminUser={isAdminUser}
             promoMode={promoMode}
             promoTitle={promoTitle}
             birthdayMembers={birthdayMembers}

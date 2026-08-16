@@ -47,6 +47,7 @@ type UpcomingRideSummary = {
 type Props = {
   images: PromoImage[];
   isAdmin: boolean;
+  isAdminUser: boolean; // admin status regardless of the Edit Mode toggle
   promoMode: PromoMode; // decided automatically upstream, this component just renders it
   promoTitle: string; // shared across all promo images, not per-image
   birthdayMembers: BirthdayMember[]; // already filtered to whichever set qualifies
@@ -69,6 +70,7 @@ function displayDate(daysDiff: number): string {
 export default function HeroPromoSlider({
   images,
   isAdmin,
+  isAdminUser,
   promoMode,
   promoTitle,
   birthdayMembers,
@@ -181,9 +183,9 @@ export default function HeroPromoSlider({
     }
   }, [managing, promoMode, images.length, birthdayMembers.length, promotedMembers.length]);
 
-  if (promoMode === "promo" && images.length === 0 && !isAdmin) return null;
-  if (promoMode === "birthday" && birthdayMembers.length === 0 && !isAdmin) return null;
-  if (promoMode === "promoted" && promotedMembers.length === 0 && !isAdmin) return null;
+  if (promoMode === "promo" && images.length === 0 && !isAdminUser) return null;
+  if (promoMode === "birthday" && birthdayMembers.length === 0 && !isAdminUser) return null;
+  if (promoMode === "promoted" && promotedMembers.length === 0 && !isAdminUser) return null;
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -456,6 +458,22 @@ export default function HeroPromoSlider({
         </div>
       )}
 
+      {isAdminUser && (
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          <button
+            type="button"
+            className="hero-promo-manage-btn"
+            onClick={handleDownloadCurrentCard}
+            disabled={downloadingCard}
+          >
+            {downloadingCard ? "Preparing…" : "Download This Card"}
+          </button>
+          {downloadError && (
+            <div style={{ fontSize: 10, color: "#e57373", marginTop: 4, textAlign: "center" }}>{downloadError}</div>
+          )}
+        </div>
+      )}
+
       {isAdmin && (
         <div className="hero-promo-admin-panel">
           {promoMode === "birthday" && (
@@ -481,17 +499,6 @@ export default function HeroPromoSlider({
           )}
 
           <div className="hero-promo-admin">
-            <button
-              type="button"
-              className="hero-promo-manage-btn"
-              onClick={handleDownloadCurrentCard}
-              disabled={downloadingCard}
-            >
-              {downloadingCard ? "Preparing…" : "Download This Card"}
-            </button>
-            {downloadError && (
-              <div style={{ fontSize: 10, color: "#e57373", marginTop: 4, textAlign: "center" }}>{downloadError}</div>
-            )}
             <button
               type="button"
               className="hero-promo-manage-btn"

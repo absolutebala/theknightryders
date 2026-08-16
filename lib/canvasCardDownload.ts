@@ -62,7 +62,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 async function drawLogoWatermark(ctx: CanvasRenderingContext2D, x: number, y: number) {
   try {
     const logo = await loadImage(LOGO_URL);
-    const logoW = 156;
+    const logoW = 230;
     const logoH = (logo.height / logo.width) * logoW;
     ctx.save();
     ctx.globalAlpha = 0.85;
