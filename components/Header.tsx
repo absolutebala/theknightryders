@@ -110,6 +110,9 @@ export default function Header({
               <li className={isActive("/media") ? "current" : ""}>
                 <a href="/media">Media</a>
               </li>
+              <li className={isActive("/festivals") ? "current" : ""}>
+                <a href="/festivals">Festivals</a>
+              </li>
               <li className={isActive("/members-directory") ? "current" : ""}>
                 <a href="/members-directory">Members</a>
               </li>
@@ -337,6 +340,7 @@ export default function Header({
               Videos
             </a>
             <a href="/media">Media</a>
+            <a href="/festivals">Festivals</a>
             <a href="/members-directory">Members</a>
             {!authUser && <a href="/login">Login</a>}
           </nav>
