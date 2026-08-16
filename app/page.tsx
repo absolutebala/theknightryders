@@ -5,7 +5,6 @@ import EditableGallery from "@/components/admin/EditableGallery";
 import HeroBannerEditor from "@/components/admin/HeroBannerEditor";
 import HeroPromoSlider from "@/components/admin/HeroPromoSlider";
 import HolidayCardsManager from "@/components/admin/HolidayCardsManager";
-import { getTodaysHoliday } from "@/lib/holidays";
 
 async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -27,7 +26,12 @@ async function getSection(
   return { content, images: images ?? [] };
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ openHolidays?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const cookieStore = await cookies();
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
@@ -39,8 +43,6 @@ export default async function HomePage() {
   // Lazy check for tier promotions -- cheap, must complete before we read
   // get_recently_promoted_members below.
   await supabase.rpc("check_tier_promotions");
-
-  const todaysHoliday = getTodaysHoliday();
 
   const [
     authResult,
@@ -54,7 +56,6 @@ export default async function HomePage() {
     birthdayMembersResult,
     birthdayWishResult,
     promotedMembersResult,
-    holidayImageResult,
     nextUpcomingRideResult,
     allHolidayCardsResult,
     milestone,
@@ -83,16 +84,13 @@ export default async function HomePage() {
     supabase.rpc("get_members_with_birthday_offset"),
     supabase.rpc("get_random_birthday_wish"),
     supabase.rpc("get_recently_promoted_members"),
-    todaysHoliday
-      ? supabase.from("holiday_card_images").select("image_url").eq("holiday_key", todaysHoliday.key).maybeSingle()
-      : Promise.resolve({ data: null }),
     supabase
       .from("upcoming_rides")
       .select("slug, title, place, ride_date, end_date, is_multi_day, hero_image_url")
       .order("ride_date", { ascending: true })
       .limit(1)
       .maybeSingle(),
-    supabase.from("holiday_card_images").select("holiday_key, holiday_name, image_url").order("holiday_key"),
+    supabase.from("holiday_card_images").select("holiday_key, holiday_name, image_url, holiday_date, wish_text").order("holiday_key"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -123,21 +121,8 @@ export default async function HomePage() {
   );
 
   const todaysBirthdays = allBirthdayOffsets.filter((m) => m.days_diff === 0);
-  const upcoming = allBirthdayOffsets
-    .filter((m) => m.days_diff > 0)
-    .sort((a, b) => a.days_diff - b.days_diff);
-  const passed = allBirthdayOffsets
-    .filter((m) => m.days_diff < 0)
-    .sort((a, b) => b.days_diff - a.days_diff); // closest to today first
 
-  let birthdayMembers: BirthdayOffset[] = [];
-  if (todaysBirthdays.length > 0) {
-    birthdayMembers = todaysBirthdays;
-  } else if (upcoming.length > 0 && upcoming[0].days_diff <= 2) {
-    birthdayMembers = upcoming.filter((m) => m.days_diff === upcoming[0].days_diff);
-  } else if (passed.length > 0 && Math.abs(passed[0].days_diff) <= 2) {
-    birthdayMembers = passed.filter((m) => m.days_diff === passed[0].days_diff);
-  }
+  const birthdayMembers: BirthdayOffset[] = todaysBirthdays;
 
   type PromotedMember = {
     id: string;
@@ -149,11 +134,13 @@ export default async function HomePage() {
   };
   const promotedMembers: PromotedMember[] = promotedMembersResult.data ?? [];
 
-  const holidayImageUrl = (holidayImageResult as { data: { image_url: string | null } | null }).data?.image_url ?? null;
-  const hasHolidayCard = !!todaysHoliday && !!holidayImageUrl;
-
   const nextUpcomingRide = nextUpcomingRideResult.data ?? null;
   const allHolidayCards = allHolidayCardsResult.data ?? [];
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todaysHolidayCard = allHolidayCards.find((c) => c.holiday_date === todayStr) ?? null;
+  const holidayImageUrl = todaysHolidayCard?.image_url ?? null;
+  const hasHolidayCard = !!todaysHolidayCard && !!holidayImageUrl;
 
   type PromoMode = "promo" | "birthday" | "promoted" | "holiday" | "upcoming-ride" | "fallback";
   const promoMode: PromoMode =
@@ -239,7 +226,8 @@ export default async function HomePage() {
             birthdayMembers={birthdayMembers}
             birthdayWish={birthdayWish}
             promotedMembers={promotedMembers}
-            holidayName={todaysHoliday?.name ?? null}
+            holidayName={todaysHolidayCard?.holiday_name ?? null}
+            holidayWish={todaysHolidayCard?.wish_text ?? null}
             holidayImageUrl={holidayImageUrl}
             nextUpcomingRide={nextUpcomingRide}
           />
@@ -248,7 +236,7 @@ export default async function HomePage() {
       </section>
       </div>
 
-      {isAdmin && <HolidayCardsManager cards={allHolidayCards} />}
+      {isAdmin && <HolidayCardsManager cards={allHolidayCards} openByDefault={params.openHolidays === "1"} />}
       {/* MILESTONE */}
       <section className="about" id="about">
         <div className="container about-grid">

@@ -52,6 +52,7 @@ type Props = {
   birthdayWish: string;
   promotedMembers: PromotedMember[];
   holidayName: string | null;
+  holidayWish: string | null;
   holidayImageUrl: string | null;
   nextUpcomingRide: UpcomingRideSummary | null;
 };
@@ -73,6 +74,7 @@ export default function HeroPromoSlider({
   birthdayWish,
   promotedMembers,
   holidayName,
+  holidayWish,
   holidayImageUrl,
   nextUpcomingRide,
 }: Props) {
@@ -348,7 +350,7 @@ export default function HeroPromoSlider({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={holidayImageUrl} alt={holidayName ?? ""} />
           </div>
-          <div className="hero-promo-caption-row">{holidayName}</div>
+          <div className="hero-promo-caption-row">{holidayWish || `Happy ${holidayName}!`}</div>
         </div>
       )}
 

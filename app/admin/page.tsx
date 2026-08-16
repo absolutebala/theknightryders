@@ -57,10 +57,21 @@ export default async function AdminPage() {
 
   return (
     <div className="container" style={{ padding: "70px 24px", maxWidth: 860 }}>
-      <h1 style={{ color: "var(--navy)", marginBottom: 6 }}>Pending Access Requests</h1>
-      <p style={{ color: "var(--grey)", marginBottom: 30 }}>
-        {pending?.length ?? 0} request{pending?.length === 1 ? "" : "s"} waiting for review.
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h1 style={{ color: "var(--navy)", marginBottom: 6 }}>Pending Access Requests</h1>
+          <p style={{ color: "var(--grey)", marginBottom: 30 }}>
+            {pending?.length ?? 0} request{pending?.length === 1 ? "" : "s"} waiting for review.
+          </p>
+        </div>
+        <a
+          href="/?openHolidays=1#holiday-cards"
+          className="btn btn-outline"
+          style={{ padding: "8px 18px", fontSize: 12.5, flexShrink: 0 }}
+        >
+          Manage Holiday Cards
+        </a>
+      </div>
 
       {!pending || pending.length === 0 ? (
         <p style={{ color: "var(--grey)" }}>Nothing pending right now.</p>
