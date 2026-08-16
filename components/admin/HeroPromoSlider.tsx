@@ -458,21 +458,19 @@ export default function HeroPromoSlider({
         </div>
       )}
 
-      {isAdminUser && (
-        <div style={{ textAlign: "center", marginTop: 10 }}>
-          <button
-            type="button"
-            className="hero-promo-manage-btn"
-            onClick={handleDownloadCurrentCard}
-            disabled={downloadingCard}
-          >
-            {downloadingCard ? "Preparing…" : "Download This Card"}
-          </button>
-          {downloadError && (
-            <div style={{ fontSize: 10, color: "#e57373", marginTop: 4, textAlign: "center" }}>{downloadError}</div>
-          )}
-        </div>
-      )}
+      <div style={{ textAlign: "center", marginTop: 10 }}>
+        <button
+          type="button"
+          className="hero-promo-manage-btn"
+          onClick={handleDownloadCurrentCard}
+          disabled={downloadingCard}
+        >
+          {downloadingCard ? "Preparing…" : "Download This Card"}
+        </button>
+        {downloadError && (
+          <div style={{ fontSize: 10, color: "#e57373", marginTop: 4, textAlign: "center" }}>{downloadError}</div>
+        )}
+      </div>
 
       {isAdmin && (
         <div className="hero-promo-admin-panel">
