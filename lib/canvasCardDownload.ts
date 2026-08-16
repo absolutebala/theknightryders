@@ -79,6 +79,7 @@ async function drawLogoWatermark(ctx: CanvasRenderingContext2D, x: number, y: nu
 export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void> {
   const W = 800;
   const TITLE_H = opts.title ? 110 : 0;
+  const FRAME = 34; // width of the outer dark mat / gold frame
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -89,10 +90,26 @@ export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void
   const messageLines = opts.message ? wrapText(ctx, opts.message, W - 80) : [];
   const MESSAGE_H = opts.message ? Math.max(140, messageLines.length * 36 + 60) : 0;
 
+  const contentH =
+    opts.imageShape === "rect"
+      ? TITLE_H + Math.round((W * 4) / 3) + MESSAGE_H
+      : TITLE_H + 480 + MESSAGE_H;
+
+  canvas.width = W + FRAME * 2;
+  canvas.height = contentH + FRAME * 2;
+
+  // Dark mat background behind everything, then the actual card content
+  // offset inward by the frame width -- all the drawing below is
+  // unchanged from before, just shifted via translate() rather than
+  // rewriting every coordinate.
+  ctx.fillStyle = "#0c0e12";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.translate(FRAME, FRAME);
+
   if (opts.imageShape === "rect") {
     const IMG_H = Math.round((W * 4) / 3);
-    canvas.width = W;
-    canvas.height = TITLE_H + IMG_H + MESSAGE_H;
 
     if (opts.title) {
       ctx.fillStyle = "#000";
@@ -125,11 +142,9 @@ export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void
     // Circular photo layout: dark card, title bar, centered circular
     // photo with the person's name beneath it, then the message bar.
     const PHOTO_AREA_H = 480;
-    canvas.width = W;
-    canvas.height = TITLE_H + PHOTO_AREA_H + MESSAGE_H;
 
     ctx.fillStyle = "#0c0e12";
-    ctx.fillRect(0, 0, W, canvas.height);
+    ctx.fillRect(0, 0, W, contentH);
 
     if (opts.title) {
       ctx.fillStyle = "#000";
@@ -183,6 +198,24 @@ export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void
 
     await drawLogoWatermark(ctx, W, TITLE_H + PHOTO_AREA_H);
   }
+
+  ctx.restore();
+
+  // Premium gold double-frame: a thick metallic-gold outer line near the
+  // canvas edge, a thin gold line further in, with the dark mat showing
+  // between them -- same double-border language as a museum picture frame.
+  const goldGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  goldGradient.addColorStop(0, "#b8892a");
+  goldGradient.addColorStop(0.5, "#f0d98c");
+  goldGradient.addColorStop(1, "#b8892a");
+
+  ctx.strokeStyle = goldGradient;
+  ctx.lineWidth = 8;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+  ctx.strokeStyle = "#f0c24e";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(FRAME - 10, FRAME - 10, canvas.width - (FRAME - 10) * 2, canvas.height - (FRAME - 10) * 2);
 
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("Could not generate image");
