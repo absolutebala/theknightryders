@@ -58,8 +58,45 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
     }
   }
 
+  async function handleDeleteCard() {
+    if (!window.confirm(`Delete "${card.holiday_name}" entirely? This removes it from the calendar, not just the image.`)) return;
+    setBusy(true);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("delete_holiday_card", { target_key: card.holiday_key });
+    setBusy(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    router.refresh();
+  }
+
   return (
-    <div style={{ background: "var(--white)", border: "1px solid #e3ebe7", borderRadius: 10, padding: 12 }}>
+    <div style={{ background: "var(--white)", border: "1px solid #e3ebe7", borderRadius: 10, padding: 12, position: "relative" }}>
+      <button
+        type="button"
+        onClick={handleDeleteCard}
+        disabled={busy}
+        title="Delete this holiday"
+        aria-label="Delete this holiday"
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          border: "none",
+          background: "#a3312a",
+          color: "#fff",
+          fontSize: 9,
+          cursor: "pointer",
+          zIndex: 1,
+        }}
+      >
+        &#10005;
+      </button>
+
       <div
         style={{
           width: "100%",
@@ -96,7 +133,7 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
             disabled={busy}
             style={{ fontSize: 10.5, color: "#a3312a", background: "none", border: "none", cursor: "pointer", padding: 0 }}
           >
-            Remove
+            Remove Photo
           </button>
         )}
       </div>
@@ -124,6 +161,84 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
   );
 }
 
+function AddNewHolidayForm({ onDone }: { onDone: () => void }) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [date, setDate] = useState("");
+  const [wish, setWish] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !date) {
+      setError("Name and date are required.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("create_holiday_card", {
+      p_name: name.trim(),
+      p_date: date,
+      p_wish: wish.trim() || null,
+    });
+    setSaving(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setName("");
+    setDate("");
+    setWish("");
+    onDone();
+    router.refresh();
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{ background: "var(--mint)", borderRadius: 10, padding: 14, marginBottom: 14, maxWidth: 380 }}
+    >
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--navy)", marginBottom: 10 }}>Add New Holiday</div>
+      {error && <div style={{ color: "#a3312a", fontSize: 11.5, marginBottom: 8 }}>{error}</div>}
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Holiday name"
+        style={{ width: "100%", padding: "7px 10px", fontSize: 12.5, border: "1px solid #c7d3cf", borderRadius: 5, marginBottom: 8 }}
+      />
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        style={{ width: "100%", padding: "7px 10px", fontSize: 12.5, border: "1px solid #c7d3cf", borderRadius: 5, marginBottom: 8 }}
+      />
+      <textarea
+        value={wish}
+        onChange={(e) => setWish(e.target.value)}
+        placeholder="Wish text (optional, can add later)"
+        rows={2}
+        style={{ width: "100%", padding: "7px 10px", fontSize: 12, border: "1px solid #c7d3cf", borderRadius: 5, marginBottom: 10, resize: "vertical" }}
+      />
+      <div style={{ display: "flex", gap: 8 }}>
+        <button type="submit" className="btn btn-amber" disabled={saving} style={{ padding: "6px 16px", fontSize: 12 }}>
+          {saving ? "Adding…" : "Add Holiday"}
+        </button>
+        <button
+          type="button"
+          onClick={onDone}
+          disabled={saving}
+          style={{ padding: "6px 16px", fontSize: 12, background: "transparent", border: "1px solid #c7d3cf", borderRadius: 6, cursor: "pointer" }}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function HolidayCardsManager({
   cards,
   openByDefault = false,
@@ -132,6 +247,7 @@ export default function HolidayCardsManager({
   openByDefault?: boolean;
 }) {
   const [open, setOpen] = useState(openByDefault);
+  const [addingNew, setAddingNew] = useState(false);
 
   return (
     <section id="holiday-cards" style={{ paddingTop: 0, paddingBottom: 40 }}>
@@ -150,8 +266,22 @@ export default function HolidayCardsManager({
               Upload an image, set this year&apos;s date, and write a wish for each holiday --
               everything here (except the image) is saved as soon as you click away from the field.
               Holidays with no image just won&apos;t show a card. Dates for lunar/regional festivals
-              shift every year, so you&apos;ll want to update those annually.
+              shift every year, so you&apos;ll want to update those annually. Sorted by date.
             </p>
+
+            {addingNew ? (
+              <AddNewHolidayForm onDone={() => setAddingNew(false)} />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddingNew(true)}
+                className="btn btn-outline"
+                style={{ padding: "7px 16px", fontSize: 12.5, marginBottom: 16 }}
+              >
+                + Add New Holiday
+              </button>
+            )}
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14 }}>
               {cards.map((c) => (
                 <HolidayCardEditor key={c.holiday_key} card={c} />

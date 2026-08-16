@@ -90,7 +90,7 @@ export default async function HomePage({
       .order("ride_date", { ascending: true })
       .limit(1)
       .maybeSingle(),
-    supabase.from("holiday_card_images").select("holiday_key, holiday_name, image_url, holiday_date, wish_text").order("holiday_key"),
+    supabase.from("holiday_card_images").select("holiday_key, holiday_name, image_url, holiday_date, wish_text").order("holiday_date", { ascending: true, nullsFirst: false }),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
