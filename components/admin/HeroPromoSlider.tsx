@@ -288,7 +288,7 @@ export default function HeroPromoSlider({
 
       {promoMode === "promoted" && (
         <div className="hero-promo-frame hero-promo-birthday-frame">
-          <div className="hero-promo-birthday-title-row">&#127942; Just Leveled Up!</div>
+          <div className="hero-promo-birthday-title-row">&#127942; Recently Promoted To</div>
 
           <div className="hero-promo-birthday-profile-row">
             {promotedMembers.length > 1 && (
@@ -346,16 +346,18 @@ export default function HeroPromoSlider({
 
       {promoMode === "holiday" && holidayImageUrl && (
         <div className="hero-promo-frame">
+          <div className="hero-promo-birthday-title-row">{holidayName}</div>
           <div className="hero-promo-image-area">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={holidayImageUrl} alt={holidayName ?? ""} />
           </div>
-          <div className="hero-promo-caption-row">{holidayWish || `Happy ${holidayName}!`}</div>
+          <div className="hero-promo-birthday-message">{holidayWish || `Happy ${holidayName}!`}</div>
         </div>
       )}
 
       {promoMode === "upcoming-ride" && nextUpcomingRide && (
         <a href={`/rides/upcoming/${nextUpcomingRide.slug}`} className="hero-promo-frame" style={{ display: "block", textDecoration: "none" }}>
+          <div className="hero-promo-birthday-title-row">Upcoming Rides</div>
           <div className="hero-promo-image-area">
             {nextUpcomingRide.hero_image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -364,7 +366,7 @@ export default function HeroPromoSlider({
               <div className="hero-promo-empty">{nextUpcomingRide.title}</div>
             )}
           </div>
-          <div className="hero-promo-caption-row">
+          <div className="hero-promo-birthday-message">
             {nextUpcomingRide.title}
             {nextUpcomingRide.place && ` -- ${nextUpcomingRide.place}`}
             {" -- "}
