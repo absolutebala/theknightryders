@@ -4,6 +4,8 @@ import EditableField from "@/components/admin/EditableField";
 import EditableGallery from "@/components/admin/EditableGallery";
 import HeroBannerEditor from "@/components/admin/HeroBannerEditor";
 import HeroPromoSlider from "@/components/admin/HeroPromoSlider";
+import HolidayCardsManager from "@/components/admin/HolidayCardsManager";
+import { getTodaysHoliday } from "@/lib/holidays";
 
 async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -38,6 +40,8 @@ export default async function HomePage() {
   // get_recently_promoted_members below.
   await supabase.rpc("check_tier_promotions");
 
+  const todaysHoliday = getTodaysHoliday();
+
   const [
     authResult,
     isAdminResult,
@@ -50,6 +54,9 @@ export default async function HomePage() {
     birthdayMembersResult,
     birthdayWishResult,
     promotedMembersResult,
+    holidayImageResult,
+    nextUpcomingRideResult,
+    allHolidayCardsResult,
     milestone,
     rideForCause,
     awards,
@@ -76,6 +83,16 @@ export default async function HomePage() {
     supabase.rpc("get_members_with_birthday_offset"),
     supabase.rpc("get_random_birthday_wish"),
     supabase.rpc("get_recently_promoted_members"),
+    todaysHoliday
+      ? supabase.from("holiday_card_images").select("image_url").eq("holiday_key", todaysHoliday.key).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("upcoming_rides")
+      .select("slug, title, place, ride_date, end_date, is_multi_day, hero_image_url")
+      .order("ride_date", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("holiday_card_images").select("holiday_key, holiday_name, image_url").order("holiday_key"),
     getSection(supabase, "milestone"),
     getSection(supabase, "ride_for_cause"),
     getSection(supabase, "awards"),
@@ -132,8 +149,23 @@ export default async function HomePage() {
   };
   const promotedMembers: PromotedMember[] = promotedMembersResult.data ?? [];
 
-  const promoMode: "promo" | "birthday" | "promoted" =
-    birthdayMembers.length > 0 ? "birthday" : promotedMembers.length > 0 ? "promoted" : "promo";
+  const holidayImageUrl = (holidayImageResult as { data: { image_url: string | null } | null }).data?.image_url ?? null;
+  const hasHolidayCard = !!todaysHoliday && !!holidayImageUrl;
+
+  const nextUpcomingRide = nextUpcomingRideResult.data ?? null;
+  const allHolidayCards = allHolidayCardsResult.data ?? [];
+
+  type PromoMode = "promo" | "birthday" | "promoted" | "holiday" | "upcoming-ride" | "fallback";
+  const promoMode: PromoMode =
+    birthdayMembers.length > 0
+      ? "birthday"
+      : hasHolidayCard
+        ? "holiday"
+        : promotedMembers.length > 0
+          ? "promoted"
+          : nextUpcomingRide
+            ? "upcoming-ride"
+            : "fallback";
   const birthdayWish =
     birthdayWishResult.data ?? "Wish you all the success and happiest life as we have on the road ;)";
 
@@ -207,12 +239,16 @@ export default async function HomePage() {
             birthdayMembers={birthdayMembers}
             birthdayWish={birthdayWish}
             promotedMembers={promotedMembers}
+            holidayName={todaysHoliday?.name ?? null}
+            holidayImageUrl={holidayImageUrl}
+            nextUpcomingRide={nextUpcomingRide}
           />
         </div>
         </div>
       </section>
       </div>
 
+      {isAdmin && <HolidayCardsManager cards={allHolidayCards} />}
       {/* MILESTONE */}
       <section className="about" id="about">
         <div className="container about-grid">

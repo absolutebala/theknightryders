@@ -31,7 +31,17 @@ export type PromotedMember = {
   tier_promoted_at: string;
 };
 
-type PromoMode = "promo" | "birthday" | "promoted";
+type PromoMode = "promo" | "birthday" | "promoted" | "holiday" | "upcoming-ride" | "fallback";
+
+type UpcomingRideSummary = {
+  slug: string;
+  title: string;
+  place: string | null;
+  ride_date: string;
+  end_date: string | null;
+  is_multi_day: boolean;
+  hero_image_url: string | null;
+};
 
 type Props = {
   images: PromoImage[];
@@ -41,6 +51,9 @@ type Props = {
   birthdayMembers: BirthdayMember[]; // already filtered to whichever set qualifies
   birthdayWish: string;
   promotedMembers: PromotedMember[];
+  holidayName: string | null;
+  holidayImageUrl: string | null;
+  nextUpcomingRide: UpcomingRideSummary | null;
 };
 
 const SECTION_KEY = "hero_promo";
@@ -51,7 +64,18 @@ function displayDate(daysDiff: number): string {
   return d.toLocaleDateString("en-IN", { month: "long", day: "numeric" });
 }
 
-export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle, birthdayMembers, birthdayWish, promotedMembers }: Props) {
+export default function HeroPromoSlider({
+  images,
+  isAdmin,
+  promoMode,
+  promoTitle,
+  birthdayMembers,
+  birthdayWish,
+  promotedMembers,
+  holidayName,
+  holidayImageUrl,
+  nextUpcomingRide,
+}: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imgIndex, setImgIndex] = useState(0);
@@ -318,12 +342,67 @@ export default function HeroPromoSlider({ images, isAdmin, promoMode, promoTitle
         </div>
       )}
 
+      {promoMode === "holiday" && holidayImageUrl && (
+        <div className="hero-promo-frame">
+          <div className="hero-promo-image-area">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={holidayImageUrl} alt={holidayName ?? ""} />
+          </div>
+          <div className="hero-promo-caption-row">{holidayName}</div>
+        </div>
+      )}
+
+      {promoMode === "upcoming-ride" && nextUpcomingRide && (
+        <a href={`/rides/upcoming/${nextUpcomingRide.slug}`} className="hero-promo-frame" style={{ display: "block", textDecoration: "none" }}>
+          <div className="hero-promo-image-area">
+            {nextUpcomingRide.hero_image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={nextUpcomingRide.hero_image_url} alt={nextUpcomingRide.title} />
+            ) : (
+              <div className="hero-promo-empty">{nextUpcomingRide.title}</div>
+            )}
+          </div>
+          <div className="hero-promo-caption-row">
+            {nextUpcomingRide.title}
+            {nextUpcomingRide.place && ` -- ${nextUpcomingRide.place}`}
+            {" -- "}
+            {nextUpcomingRide.is_multi_day && nextUpcomingRide.end_date
+              ? `${new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} - ${new Date(nextUpcomingRide.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+              : new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+          </div>
+        </a>
+      )}
+
+      {promoMode === "fallback" && (
+        <div className="hero-promo-frame">
+          <div className="hero-promo-image-area">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/fallback/manivannan.jpeg" alt="Club milestone" />
+          </div>
+        </div>
+      )}
+
       {isAdmin && (
         <div className="hero-promo-admin-panel">
           {promoMode === "birthday" && (
             <div style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)", textAlign: "center" }}>
               Birthday slide showing automatically right now (a member&apos;s birthday is today or
               within 2 days). You can still manage promo images below for when it's not active.
+            </div>
+          )}
+          {promoMode === "holiday" && (
+            <div style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)", textAlign: "center" }}>
+              Showing today&apos;s holiday card ({holidayName}). Manage holiday images further down the homepage.
+            </div>
+          )}
+          {promoMode === "upcoming-ride" && (
+            <div style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)", textAlign: "center" }}>
+              No birthday, holiday, or recent promotion today -- showing the nearest upcoming ride instead.
+            </div>
+          )}
+          {promoMode === "fallback" && (
+            <div style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)", textAlign: "center" }}>
+              Nothing else to show right now -- falling back to the default club milestone image.
             </div>
           )}
 
