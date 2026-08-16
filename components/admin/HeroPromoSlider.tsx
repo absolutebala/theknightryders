@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
+import { downloadPromoCard } from "@/lib/canvasCardDownload";
 
 export type PromoImage = {
   id: string;
@@ -93,6 +94,75 @@ export default function HeroPromoSlider({
   const currentImage = images[imgIndex];
   const currentBirthday = birthdayMembers[bdayIndex];
   const currentPromoted = promotedMembers[promotedIndex];
+
+  const [downloadingCard, setDownloadingCard] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  async function handleDownloadCurrentCard() {
+    setDownloadingCard(true);
+    setDownloadError(null);
+    try {
+      if (promoMode === "birthday" && currentBirthday) {
+        await downloadPromoCard({
+          title: "Happy Birthday",
+          imageUrl: currentBirthday.profile_photo_url,
+          imageShape: "circle",
+          subtitle: currentBirthday.full_name,
+          message: birthdayWish,
+          filenameBase: `${currentBirthday.full_name ?? "member"}_birthday`,
+        });
+      } else if (promoMode === "promoted" && currentPromoted) {
+        await downloadPromoCard({
+          title: "Recently Promoted To",
+          imageUrl: currentPromoted.profile_photo_url,
+          imageShape: "circle",
+          subtitle: currentPromoted.full_name,
+          message: "Congrats on the new badge -- keep the wheels turning!",
+          filenameBase: `${currentPromoted.full_name ?? "member"}_promoted`,
+        });
+      } else if (promoMode === "holiday" && holidayImageUrl) {
+        await downloadPromoCard({
+          title: holidayName,
+          imageUrl: holidayImageUrl,
+          imageShape: "rect",
+          message: holidayWish || (holidayName ? `Happy ${holidayName}!` : null),
+          filenameBase: holidayName ?? "festival",
+        });
+      } else if (promoMode === "upcoming-ride" && nextUpcomingRide) {
+        const dateLabel =
+          nextUpcomingRide.is_multi_day && nextUpcomingRide.end_date
+            ? `${new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} - ${new Date(nextUpcomingRide.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+            : new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        await downloadPromoCard({
+          title: "Upcoming Rides",
+          imageUrl: nextUpcomingRide.hero_image_url,
+          imageShape: "rect",
+          message: `${nextUpcomingRide.title}${nextUpcomingRide.place ? ` -- ${nextUpcomingRide.place}` : ""} -- ${dateLabel}`,
+          filenameBase: nextUpcomingRide.title,
+        });
+      } else if (promoMode === "fallback") {
+        await downloadPromoCard({
+          title: null,
+          imageUrl: "/fallback/manivannan.jpeg",
+          imageShape: "rect",
+          message: null,
+          filenameBase: "club_milestone",
+        });
+      } else if (promoMode === "promo" && currentImage) {
+        await downloadPromoCard({
+          title: null,
+          imageUrl: currentImage.image_url,
+          imageShape: "rect",
+          message: promoTitle,
+          filenameBase: "promo",
+        });
+      }
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : "Download failed -- please try again.");
+    } finally {
+      setDownloadingCard(false);
+    }
+  }
 
   // Auto-advance whichever mode is active, pausing while managing.
   useEffect(() => {
@@ -411,6 +481,17 @@ export default function HeroPromoSlider({
           )}
 
           <div className="hero-promo-admin">
+            <button
+              type="button"
+              className="hero-promo-manage-btn"
+              onClick={handleDownloadCurrentCard}
+              disabled={downloadingCard}
+            >
+              {downloadingCard ? "Preparing…" : "Download This Card"}
+            </button>
+            {downloadError && (
+              <div style={{ fontSize: 10, color: "#e57373", marginTop: 4, textAlign: "center" }}>{downloadError}</div>
+            )}
             <button
               type="button"
               className="hero-promo-manage-btn"
