@@ -5,7 +5,7 @@ import { getPremiumCardDataUrl, downloadPremiumCard, type PremiumCardOptions } f
 
 export default function HomepagePremiumCard({
   options,
-  width = 220,
+  width = 275,
   linkHref,
 }: {
   options: PremiumCardOptions;

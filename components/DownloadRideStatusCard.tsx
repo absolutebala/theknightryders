@@ -70,7 +70,7 @@ export default function DownloadRideStatusCard({
   }
 
   return (
-    <div style={{ width: 200, textAlign: "center" }}>
+    <div style={{ width: "100%", textAlign: "center" }}>
       {previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={previewUrl} alt={rideDisplayName} style={{ width: "100%", display: "block" }} />
