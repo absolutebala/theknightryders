@@ -363,7 +363,7 @@ export type PremiumCardOptions = {
  * single gold border.
  */
 async function buildPremiumCard(opts: PremiumCardOptions): Promise<HTMLCanvasElement> {
-  const SCALE = 1.3;
+  const SCALE = 1.3 * 1.25; // 1.625x -- another 25% on top of the earlier 30% increase
   const FONT_SCALE = SCALE * 1.2;
   const s = (n: number) => Math.round(n * SCALE);
   const f = (n: number) => Math.round(n * FONT_SCALE);
