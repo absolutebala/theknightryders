@@ -1,3 +1,5 @@
+import { getRideBadgeTier } from "./rideBadges";
+
 const LOGO_URL =
   "https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png";
 
@@ -84,18 +86,18 @@ function ensureGoogleFontLink(href: string) {
   }
 }
 
-/** Loads Poppins (stats/labels) and Dancing Script (signature-style rider name). */
+/** Loads Poppins (stats/labels) and Caveat (signature-style rider name). */
 async function loadRideCardFonts(): Promise<{ body: string; signature: string }> {
   try {
     ensureGoogleFontLink(
-      "https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Dancing+Script:wght@700&display=swap"
+      "https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Caveat:wght@700&display=swap"
     );
     await Promise.all([
       document.fonts.load('800 40px "Poppins"'),
-      document.fonts.load('700 40px "Dancing Script"'),
+      document.fonts.load('700 40px "Caveat"'),
     ]);
     await document.fonts.ready;
-    return { body: "Poppins", signature: "Dancing Script" };
+    return { body: "Poppins", signature: "Caveat" };
   } catch {
     return { body: "Arial", signature: "cursive" };
   }
@@ -109,6 +111,54 @@ async function loadBrandFont(): Promise<string> {
   } catch {
     return "Arial";
   }
+}
+
+/**
+ * Draws the same glossy tier-crown medallion shown elsewhere on the site
+ * (member cards, leaderboard), centered at (cx, cy) with the given
+ * diameter. Replicates the crown glyph from RideBadge.tsx via Path2D so
+ * it's visually consistent rather than a generic icon.
+ */
+function drawCrownBadge(ctx: CanvasRenderingContext2D, cx: number, cy: number, diameter: number, rideCount: number) {
+  const tier = getRideBadgeTier(rideCount);
+  if (!tier) return;
+
+  const r = diameter / 2;
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = tier.colors.edge;
+  ctx.fill();
+
+  const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.35, 0, 0, 0, r * 0.95);
+  grad.addColorStop(0, tier.colors.shine);
+  grad.addColorStop(0.55, tier.colors.base);
+  grad.addColorStop(1, tier.colors.edge);
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.88, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Crown glyph (same path as RideBadge.tsx), scaled and centered.
+  const scale = (r * 0.85) / 12;
+  ctx.save();
+  ctx.translate(-12 * scale, -12 * scale);
+  ctx.scale(scale, scale);
+  const crownPath = new Path2D("M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z");
+  ctx.fillStyle = "#fff";
+  ctx.fill(crownPath);
+  ctx.fillRect(2, 16.5, 20, 2.5);
+  ctx.fillStyle = tier.colors.base;
+  [6.5, 12, 17.5].forEach((gx) => {
+    ctx.beginPath();
+    ctx.arc(gx, gx === 12 ? 12 : 12.5, 1.3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+
+  ctx.restore();
 }
 
 export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void> {
@@ -268,6 +318,7 @@ export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void
 export type RideStatusCardOptions = {
   imageUrl: string;
   riderName: string | null; // only set when the viewer was actually on this ride
+  riderRideCount: number | null; // drives the tier crown shown next to the name
   stats: { label: string; value: string }[];
   filenameBase: string;
 };
@@ -282,8 +333,8 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   const W = 800;
   const FRAME = 34;
   const TITLE_H = 130;
-  const SIGNATURE_GAP = 90; // room reserved at the bottom of the photo for the rider's name overlay
-  const STAT_LINE_H = 56;
+  const SIGNATURE_GAP = 150; // widened to fit the crown badge above the name
+  const STAT_LINE_H = 84; // generous spacing between the three stat groups
   const { body: bodyFont, signature: signatureFont } = await loadRideCardFonts();
 
   const img = await loadImage(opts.imageUrl);
@@ -291,7 +342,7 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
 
   // Terrain/State dropped per request -- just KM Covered, Destination, Riders now.
   const statLines = opts.stats;
-  const STATS_GAP_TOP = 40; // "enough spacing" between the photo/signature and the stats box
+  const STATS_GAP_TOP = 46; // "enough spacing" between the photo/signature and the stats box
   const STATS_H = STATS_GAP_TOP + statLines.length * STAT_LINE_H + 40;
 
   const contentH = TITLE_H + IMG_H + STATS_H;
@@ -331,13 +382,8 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   // Photo, uncropped -- drawn at its natural aspect ratio.
   ctx.drawImage(img, 0, TITLE_H, W, IMG_H);
 
-  // Logo watermark near the top-right of the photo, out of the way of
-  // the rider's signature which sits at the bottom.
-  await drawLogoWatermark(ctx, W, TITLE_H + 210, 220);
-
-  // Rider name as a signature-style overlay across the bottom of the
-  // photo -- 80% of the photo's width, centered, with a dark scrim
-  // behind it so it stays legible over any photo.
+  // Rider name (signature-style) with their tier crown above it, both
+  // centered in a scrim band across the bottom of the photo.
   if (opts.riderName) {
     const scrimY = TITLE_H + IMG_H - SIGNATURE_GAP;
     const scrim = ctx.createLinearGradient(0, scrimY, 0, TITLE_H + IMG_H);
@@ -346,7 +392,10 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
     ctx.fillStyle = scrim;
     ctx.fillRect(0, scrimY, W, SIGNATURE_GAP);
 
-    ctx.font = `700 52px "${signatureFont}"`;
+    if (opts.riderRideCount) {
+      drawCrownBadge(ctx, W / 2, TITLE_H + IMG_H - SIGNATURE_GAP + 42, 52, opts.riderRideCount);
+    }
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#fff";
@@ -360,8 +409,26 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
       fontSize -= 2;
       ctx.font = `700 ${fontSize}px "${signatureFont}"`;
     }
-    ctx.fillText(opts.riderName, W / 2, TITLE_H + IMG_H - SIGNATURE_GAP / 2 - 4);
+    ctx.fillText(opts.riderName, W / 2, TITLE_H + IMG_H - SIGNATURE_GAP / 2 + 30);
     ctx.shadowBlur = 0;
+  }
+
+  // Logo watermark, bottom-left of the photo.
+  {
+    try {
+      const logo = await loadImage(LOGO_URL);
+      const logoW = 180;
+      const logoH = (logo.height / logo.width) * logoW;
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.shadowColor = "rgba(0,0,0,.6)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
+      ctx.drawImage(logo, 14, TITLE_H + IMG_H - logoH - 14, logoW, logoH);
+      ctx.restore();
+    } catch {
+      // Logo failing to load shouldn't block the whole download.
+    }
   }
 
   // Glossy stats block, right-aligned.
