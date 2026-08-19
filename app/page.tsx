@@ -86,7 +86,7 @@ export default async function HomePage({
     supabase.rpc("get_recently_promoted_members"),
     supabase
       .from("upcoming_rides")
-      .select("slug, title, place, ride_date, end_date, is_multi_day, hero_image_url")
+      .select("slug, title, place, ride_date, end_date, is_multi_day, hero_image_url, cost_per_person")
       .order("ride_date", { ascending: true })
       .limit(1)
       .maybeSingle(),
@@ -231,6 +231,7 @@ export default async function HomePage({
             holidayName={todaysHolidayCard?.holiday_name ?? null}
             holidayWish={todaysHolidayCard?.wish_text ?? null}
             holidayImageUrl={holidayImageUrl}
+            holidayDate={todaysHolidayCard?.holiday_date ?? null}
             nextUpcomingRide={nextUpcomingRide}
           />
         </div>

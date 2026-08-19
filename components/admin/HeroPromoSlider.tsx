@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
-import RideBadgeStrip from "@/components/RideBadgeStrip";
-import { downloadPromoCard } from "@/lib/canvasCardDownload";
+import HomepagePremiumCard from "@/components/HomepagePremiumCard";
+import { type PremiumCardOptions } from "@/lib/canvasCardDownload";
+import { getRideBadgeTier } from "@/lib/rideBadges";
 
 export type PromoImage = {
   id: string;
@@ -42,6 +43,7 @@ type UpcomingRideSummary = {
   end_date: string | null;
   is_multi_day: boolean;
   hero_image_url: string | null;
+  cost_per_person: number | null;
 };
 
 type Props = {
@@ -56,6 +58,7 @@ type Props = {
   holidayName: string | null;
   holidayWish: string | null;
   holidayImageUrl: string | null;
+  holidayDate: string | null;
   nextUpcomingRide: UpcomingRideSummary | null;
 };
 
@@ -79,6 +82,7 @@ export default function HeroPromoSlider({
   holidayName,
   holidayWish,
   holidayImageUrl,
+  holidayDate,
   nextUpcomingRide,
 }: Props) {
   const router = useRouter();
@@ -97,73 +101,81 @@ export default function HeroPromoSlider({
   const currentBirthday = birthdayMembers[bdayIndex];
   const currentPromoted = promotedMembers[promotedIndex];
 
-  const [downloadingCard, setDownloadingCard] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  function displayFullDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString("en-IN", { month: "short", day: "numeric" }).toUpperCase();
+  }
 
-  async function handleDownloadCurrentCard() {
-    setDownloadingCard(true);
-    setDownloadError(null);
-    try {
-      if (promoMode === "birthday" && currentBirthday) {
-        await downloadPromoCard({
-          title: "Happy Birthday",
-          imageUrl: currentBirthday.profile_photo_url,
-          imageShape: "circle",
-          subtitle: currentBirthday.full_name,
-          message: birthdayWish,
-          filenameBase: `${currentBirthday.full_name ?? "member"}_birthday`,
-        });
-      } else if (promoMode === "promoted" && currentPromoted) {
-        await downloadPromoCard({
-          title: "Recently Promoted To",
-          imageUrl: currentPromoted.profile_photo_url,
-          imageShape: "circle",
-          subtitle: currentPromoted.full_name,
-          message: "Congrats on the new badge -- keep the wheels turning!",
-          filenameBase: `${currentPromoted.full_name ?? "member"}_promoted`,
-        });
-      } else if (promoMode === "holiday" && holidayImageUrl) {
-        await downloadPromoCard({
-          title: holidayName,
-          imageUrl: holidayImageUrl,
-          imageShape: "rect",
-          message: holidayWish || (holidayName ? `Happy ${holidayName}!` : null),
-          filenameBase: holidayName ?? "festival",
-        });
-      } else if (promoMode === "upcoming-ride" && nextUpcomingRide) {
-        const dateLabel =
-          nextUpcomingRide.is_multi_day && nextUpcomingRide.end_date
-            ? `${new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} - ${new Date(nextUpcomingRide.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-            : new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-        await downloadPromoCard({
-          title: "Upcoming Rides",
-          imageUrl: nextUpcomingRide.hero_image_url,
-          imageShape: "rect",
-          message: `${nextUpcomingRide.title}${nextUpcomingRide.place ? ` -- ${nextUpcomingRide.place}` : ""} -- ${dateLabel}`,
-          filenameBase: nextUpcomingRide.title,
-        });
-      } else if (promoMode === "fallback") {
-        await downloadPromoCard({
-          title: null,
-          imageUrl: "/fallback/manivannan.jpeg",
-          imageShape: "rect",
-          message: null,
-          filenameBase: "club_milestone",
-        });
-      } else if (promoMode === "promo" && currentImage) {
-        await downloadPromoCard({
-          title: null,
-          imageUrl: currentImage.image_url,
-          imageShape: "rect",
-          message: promoTitle,
-          filenameBase: "promo",
-        });
-      }
-    } catch (err) {
-      setDownloadError(err instanceof Error ? err.message : "Download failed -- please try again.");
-    } finally {
-      setDownloadingCard(false);
+  function getCardOptions(): PremiumCardOptions | null {
+    if (promoMode === "birthday" && currentBirthday) {
+      return {
+        subtitle: "Happy Birthday",
+        title: currentBirthday.full_name ?? "Knight Ryder",
+        pillText: displayDate(currentBirthday.days_diff).toUpperCase(),
+        imageUrl: currentBirthday.profile_photo_url ?? "/fallback/manivannan.jpeg",
+        creditRow: { name: currentBirthday.full_name ?? "Knight Ryder", rideCount: currentBirthday.ride_count },
+        bottomPills: null,
+        bottomMessage: birthdayWish,
+        filenameBase: `${currentBirthday.full_name ?? "member"}_birthday`,
+      };
     }
+    if (promoMode === "promoted" && currentPromoted) {
+      const tier = getRideBadgeTier(currentPromoted.ride_count);
+      return {
+        subtitle: "Recently Promoted To",
+        title: tier?.name ?? "Knight Ryder",
+        pillText: displayFullDate(currentPromoted.tier_promoted_at),
+        imageUrl: currentPromoted.profile_photo_url ?? "/fallback/manivannan.jpeg",
+        creditRow: { name: currentPromoted.full_name ?? "Knight Ryder", rideCount: currentPromoted.ride_count },
+        bottomPills: [{ label: "Rides Completed", value: String(currentPromoted.ride_count) }],
+        bottomMessage: null,
+        filenameBase: `${currentPromoted.full_name ?? "member"}_promoted`,
+      };
+    }
+    if (promoMode === "holiday" && holidayImageUrl) {
+      return {
+        subtitle: "Celebrating",
+        title: holidayName ?? "",
+        pillText: holidayDate ? displayFullDate(holidayDate) : null,
+        imageUrl: holidayImageUrl,
+        creditRow: null,
+        bottomPills: null,
+        bottomMessage: holidayWish || (holidayName ? `Happy ${holidayName}!` : null),
+        filenameBase: holidayName ?? "festival",
+      };
+    }
+    if (promoMode === "upcoming-ride" && nextUpcomingRide) {
+      const dateLabel =
+        nextUpcomingRide.is_multi_day && nextUpcomingRide.end_date
+          ? `${new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} - ${new Date(nextUpcomingRide.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+          : new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      return {
+        subtitle: "Our Upcoming Ride",
+        title: nextUpcomingRide.title,
+        pillText: displayFullDate(nextUpcomingRide.ride_date),
+        imageUrl: nextUpcomingRide.hero_image_url ?? "/fallback/manivannan.jpeg",
+        creditRow: null,
+        bottomPills: [
+          { label: "Place", value: nextUpcomingRide.place ?? "--" },
+          { label: "Date", value: dateLabel },
+          { label: "Cost", value: nextUpcomingRide.cost_per_person ? `₹${nextUpcomingRide.cost_per_person}` : "--" },
+        ],
+        bottomMessage: null,
+        filenameBase: nextUpcomingRide.title,
+      };
+    }
+    if (promoMode === "fallback") {
+      return {
+        subtitle: null,
+        title: "The Journey Continues",
+        pillText: null,
+        imageUrl: "/fallback/manivannan.jpeg",
+        creditRow: null,
+        bottomPills: null,
+        bottomMessage: null,
+        filenameBase: "club_milestone",
+      };
+    }
+    return null;
   }
 
   // Auto-advance whichever mode is active, pausing while managing.
@@ -301,176 +313,71 @@ export default function HeroPromoSlider({
         </div>
       )}
 
-      {promoMode === "birthday" && (
-        <div className="hero-promo-frame hero-promo-birthday-frame">
-          <div className="hero-promo-birthday-title-row">&#127881; Happy Birthday</div>
-
-          <div className="hero-promo-birthday-profile-row">
-            {birthdayMembers.length > 1 && (
-              <button
-                type="button"
-                aria-label="Previous member"
-                className="hero-promo-birthday-nav hero-promo-birthday-prev"
-                onClick={() => setBdayIndex((i) => (i - 1 + birthdayMembers.length) % birthdayMembers.length)}
-              >
-                &#8249;
-              </button>
-            )}
-
-            {currentBirthday ? (
-              <a
-                href={currentBirthday.handle ? `/@${currentBirthday.handle}` : `/members/${currentBirthday.id}`}
-                className="hero-promo-birthday-profile"
-              >
-                {currentBirthday.profile_photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={currentBirthday.profile_photo_url} alt="" />
-                ) : (
-                  <div className="hero-promo-birthday-noimg">
-                    {(currentBirthday.full_name ?? "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <span className="hero-promo-birthday-name">{currentBirthday.full_name ?? "Knight Ryder"}</span>
-                <span className="hero-promo-birthday-date">{displayDate(currentBirthday.days_diff)}</span>
-              </a>
-            ) : (
-              isAdmin && <div className="hero-promo-empty">No birthdays nearby</div>
-            )}
-
-            {birthdayMembers.length > 1 && (
-              <button
-                type="button"
-                aria-label="Next member"
-                className="hero-promo-birthday-nav hero-promo-birthday-next"
-                onClick={() => setBdayIndex((i) => (i + 1) % birthdayMembers.length)}
-              >
-                &#8250;
-              </button>
-            )}
-          </div>
-
-          <div className="hero-promo-birthday-message">{birthdayWish}</div>
-          {currentBirthday && (
-            <div style={{ padding: "0 16px 12px" }}>
-              <RideBadgeStrip rideCount={currentBirthday.ride_count} variant="promo-slider" />
-            </div>
+      {promoMode === "birthday" && getCardOptions() && (
+        <div style={{ position: "relative" }}>
+          {birthdayMembers.length > 1 && (
+            <button
+              type="button"
+              aria-label="Previous member"
+              className="hero-promo-birthday-nav hero-promo-birthday-prev"
+              onClick={() => setBdayIndex((i) => (i - 1 + birthdayMembers.length) % birthdayMembers.length)}
+            >
+              &#8249;
+            </button>
+          )}
+          <HomepagePremiumCard
+            options={getCardOptions()!}
+            linkHref={currentBirthday ? (currentBirthday.handle ? `/@${currentBirthday.handle}` : `/members/${currentBirthday.id}`) : undefined}
+          />
+          {birthdayMembers.length > 1 && (
+            <button
+              type="button"
+              aria-label="Next member"
+              className="hero-promo-birthday-nav hero-promo-birthday-next"
+              onClick={() => setBdayIndex((i) => (i + 1) % birthdayMembers.length)}
+            >
+              &#8250;
+            </button>
           )}
         </div>
       )}
 
-      {promoMode === "promoted" && (
-        <div className="hero-promo-frame hero-promo-birthday-frame">
-          <div className="hero-promo-birthday-title-row">&#127942; Recently Promoted To</div>
-
-          <div className="hero-promo-birthday-profile-row">
-            {promotedMembers.length > 1 && (
-              <button
-                type="button"
-                aria-label="Previous member"
-                className="hero-promo-birthday-nav hero-promo-birthday-prev"
-                onClick={() => setPromotedIndex((i) => (i - 1 + promotedMembers.length) % promotedMembers.length)}
-              >
-                &#8249;
-              </button>
-            )}
-
-            {currentPromoted ? (
-              <a
-                href={currentPromoted.handle ? `/@${currentPromoted.handle}` : `/members/${currentPromoted.id}`}
-                className="hero-promo-birthday-profile"
-              >
-                {currentPromoted.profile_photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={currentPromoted.profile_photo_url} alt="" />
-                ) : (
-                  <div className="hero-promo-birthday-noimg">
-                    {(currentPromoted.full_name ?? "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <span className="hero-promo-birthday-name">{currentPromoted.full_name ?? "Knight Ryder"}</span>
-              </a>
-            ) : (
-              isAdmin && <div className="hero-promo-empty">No recent promotions</div>
-            )}
-
-            {promotedMembers.length > 1 && (
-              <button
-                type="button"
-                aria-label="Next member"
-                className="hero-promo-birthday-nav hero-promo-birthday-next"
-                onClick={() => setPromotedIndex((i) => (i + 1) % promotedMembers.length)}
-              >
-                &#8250;
-              </button>
-            )}
-          </div>
-
-          <div className="hero-promo-birthday-message">
-            Congrats on the new badge -- keep the wheels turning!
-          </div>
-          {currentPromoted && (
-            <div style={{ padding: "0 16px 12px" }}>
-              <RideBadgeStrip rideCount={currentPromoted.ride_count} variant="promo-slider" />
-            </div>
+      {promoMode === "promoted" && getCardOptions() && (
+        <div style={{ position: "relative" }}>
+          {promotedMembers.length > 1 && (
+            <button
+              type="button"
+              aria-label="Previous member"
+              className="hero-promo-birthday-nav hero-promo-birthday-prev"
+              onClick={() => setPromotedIndex((i) => (i - 1 + promotedMembers.length) % promotedMembers.length)}
+            >
+              &#8249;
+            </button>
+          )}
+          <HomepagePremiumCard
+            options={getCardOptions()!}
+            linkHref={currentPromoted ? (currentPromoted.handle ? `/@${currentPromoted.handle}` : `/members/${currentPromoted.id}`) : undefined}
+          />
+          {promotedMembers.length > 1 && (
+            <button
+              type="button"
+              aria-label="Next member"
+              className="hero-promo-birthday-nav hero-promo-birthday-next"
+              onClick={() => setPromotedIndex((i) => (i + 1) % promotedMembers.length)}
+            >
+              &#8250;
+            </button>
           )}
         </div>
       )}
 
-      {promoMode === "holiday" && holidayImageUrl && (
-        <div className="hero-promo-frame">
-          <div className="hero-promo-birthday-title-row">{holidayName}</div>
-          <div className="hero-promo-image-area">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={holidayImageUrl} alt={holidayName ?? ""} />
-          </div>
-          <div className="hero-promo-birthday-message">{holidayWish || `Happy ${holidayName}!`}</div>
-        </div>
+      {promoMode === "holiday" && getCardOptions() && <HomepagePremiumCard options={getCardOptions()!} />}
+
+      {promoMode === "upcoming-ride" && getCardOptions() && (
+        <HomepagePremiumCard options={getCardOptions()!} linkHref={`/rides/upcoming/${nextUpcomingRide!.slug}`} />
       )}
 
-      {promoMode === "upcoming-ride" && nextUpcomingRide && (
-        <a href={`/rides/upcoming/${nextUpcomingRide.slug}`} className="hero-promo-frame" style={{ display: "block", textDecoration: "none" }}>
-          <div className="hero-promo-birthday-title-row">Upcoming Rides</div>
-          <div className="hero-promo-image-area">
-            {nextUpcomingRide.hero_image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={nextUpcomingRide.hero_image_url} alt={nextUpcomingRide.title} />
-            ) : (
-              <div className="hero-promo-empty">{nextUpcomingRide.title}</div>
-            )}
-          </div>
-          <div className="hero-promo-birthday-message">
-            {nextUpcomingRide.title}
-            {nextUpcomingRide.place && ` -- ${nextUpcomingRide.place}`}
-            {" -- "}
-            {nextUpcomingRide.is_multi_day && nextUpcomingRide.end_date
-              ? `${new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} - ${new Date(nextUpcomingRide.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-              : new Date(nextUpcomingRide.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-          </div>
-        </a>
-      )}
-
-      {promoMode === "fallback" && (
-        <div className="hero-promo-frame">
-          <div className="hero-promo-image-area">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/fallback/manivannan.jpeg" alt="Club milestone" />
-          </div>
-        </div>
-      )}
-
-      <div style={{ textAlign: "center", marginTop: 10 }}>
-        <button
-          type="button"
-          className="hero-promo-manage-btn"
-          onClick={handleDownloadCurrentCard}
-          disabled={downloadingCard}
-        >
-          {downloadingCard ? "Preparing…" : "Download This Card"}
-        </button>
-        {downloadError && (
-          <div style={{ fontSize: 10, color: "#e57373", marginTop: 4, textAlign: "center" }}>{downloadError}</div>
-        )}
-      </div>
+      {promoMode === "fallback" && getCardOptions() && <HomepagePremiumCard options={getCardOptions()!} />}
 
       {isAdmin && (
         <div className="hero-promo-admin-panel">

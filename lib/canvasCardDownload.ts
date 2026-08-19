@@ -341,28 +341,28 @@ function fillTextTracked(ctx: CanvasRenderingContext2D, text: string, cx: number
   ctx.textAlign = prevAlign;
 }
 
-export type RideStatusCardOptions = {
+export type PremiumCardOptions = {
+  subtitle: string | null; // small tracked label above the title, e.g. "MY RECENT RIDE" / "HAPPY BIRTHDAY"
+  title: string; // big gold heading -- ride name, member name, festival name, tier name
+  pillText: string | null; // small top-right pill, e.g. a date or "RIDE #82"
   imageUrl: string;
-  rideDisplayName: string; // cleaned ride name, e.g. "Thekkady Ride" -- shown as the big title
-  rideNumber: number | null; // shown as a small "RIDE #82" pill
-  riderName: string | null; // only set when the viewer was actually on this ride
-  riderRideCount: number | null; // drives the tier crown + tier name shown in the credit row
-  stats: { label: string; value: string }[]; // exactly 3: Distance, Destination, Riders
+  creditRow: { name: string; rideCount: number } | null; // name / crown / tier row, only for birthday & promoted
+  bottomPills: { label: string; value: string }[] | null; // up to 3, mutually exclusive with bottomMessage
+  bottomMessage: string | null; // wish / congrats text, mutually exclusive with bottomPills
   filenameBase: string;
 };
 
 /**
- * WhatsApp Status card, redesigned to match the reference template: a
- * branded header (logo + wordmark), title section with a ride-number
- * pill, a gold-framed uncropped photo with a glossy highlight, a rider
- * credit row (name / crown / tier), three stat pills, and a tagline --
- * all inside a rounded card with a single elegant gold border.
+ * The one shared "premium card" renderer used for every downloadable card
+ * on the site -- past-ride WhatsApp status cards, and all five homepage
+ * promo card types (birthday, holiday, promoted, upcoming ride,
+ * fallback). Layout: branded header (logo + wordmark) -> subtitle + title
+ * + optional pill -> gold-framed uncropped photo with glossy highlight ->
+ * optional credit row (name/crown/tier) -> optional stat pills OR a
+ * single message -> tagline footer. All inside a rounded card with a
+ * single gold border.
  */
-async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<HTMLCanvasElement> {
-  // Overall card is 30% bigger than the original design. Fonts and the
-  // logo get an ADDITIONAL 20% on top of that (so they're proportionally
-  // larger than everything else), since small text was hard to read when
-  // the downloaded PNG is viewed on a phone screen.
+async function buildPremiumCard(opts: PremiumCardOptions): Promise<HTMLCanvasElement> {
   const SCALE = 1.3;
   const FONT_SCALE = SCALE * 1.2;
   const s = (n: number) => Math.round(n * SCALE);
@@ -381,11 +381,23 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   const HEADER_H = s(176);
   const TITLE_H = s(128);
   const PHOTO_SECTION_H = photoH + PHOTO_PAD * 2;
-  const RIDER_ROW_H = s(74);
-  const STATS_ROW_H = s(118);
+  const RIDER_ROW_H = opts.creditRow ? s(74) : 0;
   const FOOTER_H = s(60);
 
-  const contentH = HEADER_H + TITLE_H + PHOTO_SECTION_H + RIDER_ROW_H + STATS_ROW_H + FOOTER_H;
+  // Bottom section: either 3 stat pills (fixed height) or a wrapped
+  // message (height depends on how many lines it wraps to).
+  const measureCtx = document.createElement("canvas").getContext("2d")!;
+  let bottomMessageLines: string[] = [];
+  let BOTTOM_H = 0;
+  if (opts.bottomPills && opts.bottomPills.length > 0) {
+    BOTTOM_H = s(118);
+  } else if (opts.bottomMessage) {
+    measureCtx.font = `600 ${f(18)}px "${bodyFont}"`;
+    bottomMessageLines = wrapText(measureCtx, opts.bottomMessage, W - s(90));
+    BOTTOM_H = Math.max(s(90), bottomMessageLines.length * f(28) + s(50));
+  }
+
+  const contentH = HEADER_H + TITLE_H + PHOTO_SECTION_H + RIDER_ROW_H + BOTTOM_H + FOOTER_H;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not supported");
@@ -393,7 +405,7 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   canvas.width = W + FRAME * 2;
   canvas.height = contentH + FRAME * 2;
 
-  const tier = opts.riderRideCount ? getRideBadgeTier(opts.riderRideCount) : null;
+  const tier = opts.creditRow ? getRideBadgeTier(opts.creditRow.rideCount) : null;
 
   // Rounded-card clip so the corners come out transparent in the PNG.
   ctx.save();
@@ -433,7 +445,6 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   fillTextTracked(ctx, "THE KNIGHT RYDERS", W / 2, cursorY + s(20), s(3));
   cursorY += s(46);
 
-  // divider
   const divider = ctx.createLinearGradient(0, 0, W, 0);
   divider.addColorStop(0, "rgba(233,201,122,0)");
   divider.addColorStop(0.5, "rgba(233,201,122,.6)");
@@ -443,11 +454,10 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
 
   cursorY = HEADER_H;
 
-  // --- Title section: "MY RECENT RIDE" + destination name + ride# pill ---
-  if (opts.rideNumber) {
-    const pillText = `RIDE #${opts.rideNumber}`;
+  // --- Title section: subtitle + big title + optional pill ---
+  if (opts.pillText) {
     ctx.font = `700 ${f(13)}px "${bodyFont}"`;
-    const pillTextW = ctx.measureText(pillText).width;
+    const pillTextW = ctx.measureText(opts.pillText).width;
     const pillW = pillTextW + s(28);
     const pillH = s(28);
     const pillX = W - pillW - s(4);
@@ -460,18 +470,20 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
     ctx.stroke();
     ctx.fillStyle = "#e9c97a";
     ctx.textAlign = "center";
-    ctx.fillText(pillText, pillX + pillW / 2, pillY + pillH / 2 + 1);
+    ctx.fillText(opts.pillText, pillX + pillW / 2, pillY + pillH / 2 + 1);
   }
 
-  ctx.font = `600 ${f(18)}px "${bodyFont}"`;
-  ctx.fillStyle = "rgba(255,255,255,.85)";
-  ctx.textAlign = "center";
-  fillTextTracked(ctx, "MY RECENT RIDE", W / 2, cursorY + s(26), s(3));
+  if (opts.subtitle) {
+    ctx.font = `600 ${f(18)}px "${bodyFont}"`;
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.textAlign = "center";
+    fillTextTracked(ctx, opts.subtitle.toUpperCase(), W / 2, cursorY + s(26), s(3));
+  }
 
   let titleFontSize = f(40);
   ctx.font = `800 ${titleFontSize}px "${bodyFont}"`;
   ctx.fillStyle = "#f0c24e";
-  const titleText = opts.rideDisplayName.toUpperCase();
+  const titleText = opts.title.toUpperCase();
   const maxTitleW = W - s(60);
   while (ctx.measureText(titleText).width > maxTitleW && titleFontSize > f(22)) {
     titleFontSize -= 2;
@@ -507,8 +519,8 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
 
   cursorY += PHOTO_SECTION_H;
 
-  // --- Rider credit row: name (left) / crown (center) / tier (right) ---
-  if (opts.riderName && tier) {
+  // --- Credit row: name (left) / crown (center) / tier (right) ---
+  if (opts.creditRow && tier) {
     const rowY = cursorY + s(10);
     const rowH = RIDER_ROW_H - s(20);
     roundRectPath(ctx, 0, rowY, W, rowH, rowH / 2);
@@ -521,9 +533,9 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
     ctx.font = `700 ${f(19)}px "${bodyFont}"`;
     ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
-    ctx.fillText(opts.riderName, s(26), rowY + rowH / 2 + 1);
+    ctx.fillText(opts.creditRow.name, s(26), rowY + rowH / 2 + 1);
 
-    drawCrownBadge(ctx, W / 2, rowY + rowH / 2, f(38), opts.riderRideCount!);
+    drawCrownBadge(ctx, W / 2, rowY + rowH / 2, f(38), opts.creditRow.rideCount);
 
     ctx.font = `700 ${f(15)}px "${bodyFont}"`;
     ctx.fillStyle = "#e9c97a";
@@ -533,14 +545,35 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
 
   cursorY += RIDER_ROW_H;
 
-  // --- Three stat pills: Distance / Destination / Riders ---
-  const gap = s(14);
-  const pillW = (W - gap * 2) / 3;
-  const statsPillH = STATS_ROW_H - s(14);
-  opts.stats.slice(0, 3).forEach((stat, i) => {
-    const px = i * (pillW + gap);
+  // --- Bottom: either 3 stat pills, or a single wrapped message ---
+  if (opts.bottomPills && opts.bottomPills.length > 0) {
+    const gap = s(14);
+    const items = opts.bottomPills.slice(0, 3);
+    const pillW = (W - gap * (items.length - 1)) / items.length;
+    const statsPillH = BOTTOM_H - s(14);
+    items.forEach((stat, i) => {
+      const px = i * (pillW + gap);
+      const py = cursorY;
+      roundRectPath(ctx, px, py, pillW, statsPillH, s(12));
+      ctx.fillStyle = "rgba(255,255,255,.05)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(233,201,122,.3)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.font = `600 ${f(12)}px "${bodyFont}"`;
+      ctx.fillStyle = "rgba(255,255,255,.55)";
+      fillTextTracked(ctx, stat.label.toUpperCase(), px + pillW / 2, py + statsPillH * 0.36, s(1));
+
+      ctx.font = `800 ${stat.value.length > 9 ? f(17) : f(21)}px "${bodyFont}"`;
+      ctx.fillStyle = "#f0c24e";
+      ctx.fillText(stat.value, px + pillW / 2, py + statsPillH * 0.68);
+    });
+  } else if (opts.bottomMessage) {
     const py = cursorY;
-    roundRectPath(ctx, px, py, pillW, statsPillH, s(12));
+    const boxH = BOTTOM_H - s(14);
+    roundRectPath(ctx, 0, py, W, boxH, s(14));
     ctx.fillStyle = "rgba(255,255,255,.05)";
     ctx.fill();
     ctx.strokeStyle = "rgba(233,201,122,.3)";
@@ -548,16 +581,15 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
     ctx.stroke();
 
     ctx.textAlign = "center";
-    ctx.font = `600 ${f(12)}px "${bodyFont}"`;
-    ctx.fillStyle = "rgba(255,255,255,.55)";
-    fillTextTracked(ctx, stat.label.toUpperCase(), px + pillW / 2, py + statsPillH * 0.36, s(1));
-
-    ctx.font = `800 ${stat.value.length > 9 ? f(17) : f(21)}px "${bodyFont}"`;
+    ctx.textBaseline = "middle";
+    ctx.font = `600 ${f(18)}px "${bodyFont}"`;
     ctx.fillStyle = "#f0c24e";
-    ctx.fillText(stat.value, px + pillW / 2, py + statsPillH * 0.68);
-  });
+    const lineH = f(28);
+    const startY = py + boxH / 2 - ((bottomMessageLines.length - 1) * lineH) / 2;
+    bottomMessageLines.forEach((line, i) => ctx.fillText(line, W / 2, startY + i * lineH));
+  }
 
-  cursorY += STATS_ROW_H;
+  cursorY += BOTTOM_H;
 
   // --- Footer tagline ---
   const footDivider = ctx.createLinearGradient(0, 0, W, 0);
@@ -574,7 +606,6 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
 
   ctx.restore(); // end rounded-card clip
 
-  // Single elegant gold border tracing the rounded card edge.
   const borderGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   borderGrad.addColorStop(0, "#b8892a");
   borderGrad.addColorStop(0.5, "#f0d98c");
@@ -587,16 +618,13 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   return canvas;
 }
 
-/** Renders the card and returns a data URL, for showing a live preview that's pixel-identical to the download. */
-export async function getRideStatusCardDataUrl(opts: RideStatusCardOptions): Promise<string> {
-  const canvas = await buildRideStatusCardCanvas(opts);
+export async function getPremiumCardDataUrl(opts: PremiumCardOptions): Promise<string> {
+  const canvas = await buildPremiumCard(opts);
   return canvas.toDataURL("image/png");
 }
 
-/** Renders the card and triggers a file download -- shares the exact same drawing code as the preview. */
-export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promise<void> {
-  const canvas = await buildRideStatusCardCanvas(opts);
-
+export async function downloadPremiumCard(opts: PremiumCardOptions): Promise<void> {
+  const canvas = await buildPremiumCard(opts);
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("Could not generate image");
 
@@ -608,4 +636,37 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// --- Backward-compatible ride-status-card API, now a thin adapter over the shared premium card renderer ---
+
+export type RideStatusCardOptions = {
+  imageUrl: string;
+  rideDisplayName: string;
+  rideNumber: number | null;
+  riderName: string | null;
+  riderRideCount: number | null;
+  stats: { label: string; value: string }[];
+  filenameBase: string;
+};
+
+function toPremiumCardOptions(opts: RideStatusCardOptions): PremiumCardOptions {
+  return {
+    subtitle: "My Recent Ride",
+    title: opts.rideDisplayName,
+    pillText: opts.rideNumber ? `RIDE #${opts.rideNumber}` : null,
+    imageUrl: opts.imageUrl,
+    creditRow: opts.riderName && opts.riderRideCount ? { name: opts.riderName, rideCount: opts.riderRideCount } : null,
+    bottomPills: opts.stats,
+    bottomMessage: null,
+    filenameBase: opts.filenameBase,
+  };
+}
+
+export async function getRideStatusCardDataUrl(opts: RideStatusCardOptions): Promise<string> {
+  return getPremiumCardDataUrl(toPremiumCardOptions(opts));
+}
+
+export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promise<void> {
+  return downloadPremiumCard(toPremiumCardOptions(opts));
 }
