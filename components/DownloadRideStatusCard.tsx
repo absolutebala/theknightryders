@@ -31,8 +31,6 @@ export default function DownloadRideStatusCard({
     try {
       const stats = [
         { label: "KM Covered", value: totalKm ? `${totalKm.toLocaleString("en-IN")} km` : "--" },
-        { label: "Terrain", value: terrain || "--" },
-        { label: "State", value: state || "--" },
         { label: "Destination", value: destination || "--" },
         { label: "Riders", value: String(riderCount) },
       ];

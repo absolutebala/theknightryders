@@ -75,6 +75,32 @@ async function drawLogoWatermark(ctx: CanvasRenderingContext2D, x: number, y: nu
   }
 }
 
+function ensureGoogleFontLink(href: string) {
+  if (!document.querySelector(`link[href="${href}"]`)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+}
+
+/** Loads Poppins (stats/labels) and Dancing Script (signature-style rider name). */
+async function loadRideCardFonts(): Promise<{ body: string; signature: string }> {
+  try {
+    ensureGoogleFontLink(
+      "https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Dancing+Script:wght@700&display=swap"
+    );
+    await Promise.all([
+      document.fonts.load('800 40px "Poppins"'),
+      document.fonts.load('700 40px "Dancing Script"'),
+    ]);
+    await document.fonts.ready;
+    return { body: "Poppins", signature: "Dancing Script" };
+  } catch {
+    return { body: "Arial", signature: "cursive" };
+  }
+}
+
 async function loadBrandFont(): Promise<string> {
   try {
     await document.fonts.load('800 40px "Montserrat"');
@@ -256,14 +282,17 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   const W = 800;
   const FRAME = 34;
   const TITLE_H = 130;
-  const STAT_LINE_H = 58;
-  const font = await loadBrandFont();
+  const SIGNATURE_GAP = 90; // room reserved at the bottom of the photo for the rider's name overlay
+  const STAT_LINE_H = 56;
+  const { body: bodyFont, signature: signatureFont } = await loadRideCardFonts();
 
   const img = await loadImage(opts.imageUrl);
   const IMG_H = Math.round(W * (img.height / img.width));
 
-  const statLines = opts.riderName ? [{ label: "Rider", value: opts.riderName }, ...opts.stats] : opts.stats;
-  const STATS_H = statLines.length * STAT_LINE_H + 50;
+  // Terrain/State dropped per request -- just KM Covered, Destination, Riders now.
+  const statLines = opts.stats;
+  const STATS_GAP_TOP = 40; // "enough spacing" between the photo/signature and the stats box
+  const STATS_H = STATS_GAP_TOP + statLines.length * STAT_LINE_H + 40;
 
   const contentH = TITLE_H + IMG_H + STATS_H;
 
@@ -280,8 +309,7 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   ctx.save();
   ctx.translate(FRAME, FRAME);
 
-  // Glossy title bar -- a top-to-bottom gradient plus a soft highlight
-  // band near the top gives the "shiny button" look rather than a flat fill.
+  // Glossy title bar.
   const titleGloss = ctx.createLinearGradient(0, 0, 0, TITLE_H);
   titleGloss.addColorStop(0, "#2a1f45");
   titleGloss.addColorStop(0.45, "#150f28");
@@ -292,7 +320,7 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   ctx.fillRect(0, 0, W, TITLE_H * 0.4);
 
   ctx.fillStyle = "#f0c24e";
-  ctx.font = `800 44px "${font}"`;
+  ctx.font = `800 44px "${bodyFont}"`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.shadowColor = "rgba(0,0,0,.5)";
@@ -303,12 +331,40 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   // Photo, uncropped -- drawn at its natural aspect ratio.
   ctx.drawImage(img, 0, TITLE_H, W, IMG_H);
 
-  // Logo watermark on the photo itself (a 260px logo won't fit in the
-  // slim outer frame margin, so it goes here instead, same corner
-  // treatment as the other cards).
-  await drawLogoWatermark(ctx, W, TITLE_H + IMG_H, 260);
+  // Logo watermark near the top-right of the photo, out of the way of
+  // the rider's signature which sits at the bottom.
+  await drawLogoWatermark(ctx, W, TITLE_H + 210, 220);
 
-  // Glossy stats block.
+  // Rider name as a signature-style overlay across the bottom of the
+  // photo -- 80% of the photo's width, centered, with a dark scrim
+  // behind it so it stays legible over any photo.
+  if (opts.riderName) {
+    const scrimY = TITLE_H + IMG_H - SIGNATURE_GAP;
+    const scrim = ctx.createLinearGradient(0, scrimY, 0, TITLE_H + IMG_H);
+    scrim.addColorStop(0, "rgba(0,0,0,0)");
+    scrim.addColorStop(1, "rgba(0,0,0,.55)");
+    ctx.fillStyle = scrim;
+    ctx.fillRect(0, scrimY, W, SIGNATURE_GAP);
+
+    ctx.font = `700 52px "${signatureFont}"`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#fff";
+    ctx.shadowColor = "rgba(0,0,0,.6)";
+    ctx.shadowBlur = 6;
+    // Constrain to 80% of the photo width, shrinking the font if a long name would overflow.
+    const maxW = W * 0.8;
+    let fontSize = 52;
+    ctx.font = `700 ${fontSize}px "${signatureFont}"`;
+    while (ctx.measureText(opts.riderName).width > maxW && fontSize > 24) {
+      fontSize -= 2;
+      ctx.font = `700 ${fontSize}px "${signatureFont}"`;
+    }
+    ctx.fillText(opts.riderName, W / 2, TITLE_H + IMG_H - SIGNATURE_GAP / 2 - 4);
+    ctx.shadowBlur = 0;
+  }
+
+  // Glossy stats block, right-aligned.
   const statsY = TITLE_H + IMG_H;
   const statsGloss = ctx.createLinearGradient(0, statsY, 0, statsY + STATS_H);
   statsGloss.addColorStop(0, "#000");
@@ -319,16 +375,17 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   ctx.fillStyle = "rgba(255,255,255,.06)";
   ctx.fillRect(0, statsY, W, 6);
 
-  ctx.textAlign = "center";
+  const rightEdge = W - 40;
+  ctx.textAlign = "right";
   ctx.textBaseline = "middle";
   statLines.forEach((stat, i) => {
-    const lineY = statsY + 30 + i * STAT_LINE_H + STAT_LINE_H / 2;
-    ctx.font = `600 20px "${font}"`;
+    const lineY = statsY + STATS_GAP_TOP + i * STAT_LINE_H + STAT_LINE_H / 2;
+    ctx.font = `600 19px "${bodyFont}"`;
     ctx.fillStyle = "rgba(240,194,78,.75)";
-    ctx.fillText(stat.label.toUpperCase(), W / 2, lineY - 14);
-    ctx.font = `800 28px "${font}"`;
+    ctx.fillText(stat.label.toUpperCase(), rightEdge, lineY - 14);
+    ctx.font = `800 27px "${bodyFont}"`;
     ctx.fillStyle = "#f0c24e";
-    ctx.fillText(stat.value, W / 2, lineY + 12);
+    ctx.fillText(stat.value, rightEdge, lineY + 12);
   });
 
   ctx.restore();
