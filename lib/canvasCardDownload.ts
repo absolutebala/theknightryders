@@ -358,7 +358,7 @@ export type RideStatusCardOptions = {
  * credit row (name / crown / tier), three stat pills, and a tagline --
  * all inside a rounded card with a single elegant gold border.
  */
-export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promise<void> {
+async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<HTMLCanvasElement> {
   const W = 700;
   const FRAME = 30;
   const CORNER_RADIUS = 26;
@@ -575,6 +575,19 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   ctx.lineWidth = 2.5;
   roundRectPath(ctx, 3, 3, canvas.width - 6, canvas.height - 6, CORNER_RADIUS + FRAME * 0.4);
   ctx.stroke();
+
+  return canvas;
+}
+
+/** Renders the card and returns a data URL, for showing a live preview that's pixel-identical to the download. */
+export async function getRideStatusCardDataUrl(opts: RideStatusCardOptions): Promise<string> {
+  const canvas = await buildRideStatusCardCanvas(opts);
+  return canvas.toDataURL("image/png");
+}
+
+/** Renders the card and triggers a file download -- shares the exact same drawing code as the preview. */
+export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promise<void> {
+  const canvas = await buildRideStatusCardCanvas(opts);
 
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("Could not generate image");
