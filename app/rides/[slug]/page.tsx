@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import RideHeroEditor from "@/components/admin/RideHeroEditor";
 import RideGalleryEditor from "@/components/admin/RideGalleryEditor";
+import RideWhatsAppCardPicker from "@/components/admin/RideWhatsAppCardPicker";
+import DownloadRideStatusCard from "@/components/DownloadRideStatusCard";
 import RideDescriptionEditor from "@/components/admin/RideDescriptionEditor";
 import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
 import AddMeToRideButton from "@/components/AddMeToRideButton";
@@ -22,7 +24,7 @@ export default async function RideDetailPage({
   const [rideResult, authResult, isAdminResult] = await Promise.all([
     supabase
       .from("rides")
-      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state, destination, ride_number")
+      .select("id, title, ride_date, hero_image_url, hero_image_position, description, gallery, terrain, total_km, state, destination, ride_number, whatsapp_card_photo_url")
       .eq("slug", slug)
       .maybeSingle(),
     supabase.auth.getUser(),
@@ -42,7 +44,7 @@ export default async function RideDetailPage({
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
 
   const { data: viewerMember } = user
-    ? await supabase.from("members").select("id").eq("user_id", user.id).maybeSingle()
+    ? await supabase.from("members").select("id, full_name").eq("user_id", user.id).maybeSingle()
     : { data: null };
 
   const { data: participantsRaw } = await supabase
@@ -237,6 +239,27 @@ export default async function RideDetailPage({
       <section style={{ paddingTop: 0, paddingBottom: 60 }}>
         <div className="container" style={{ maxWidth: 900 }}>
           <RideGalleryEditor rideId={ride.id} gallery={(ride.gallery as string[]) ?? []} isAdmin={isAdmin} />
+
+          {isAdmin && (
+            <RideWhatsAppCardPicker
+              rideId={ride.id}
+              gallery={(ride.gallery as string[]) ?? []}
+              currentUrl={ride.whatsapp_card_photo_url}
+            />
+          )}
+
+          {ride.whatsapp_card_photo_url && (
+            <DownloadRideStatusCard
+              imageUrl={ride.whatsapp_card_photo_url}
+              riderName={viewerIsParticipant ? viewerMember?.full_name ?? null : null}
+              totalKm={ride.total_km}
+              terrain={ride.terrain}
+              state={ride.state}
+              destination={destination}
+              riderCount={participants.length}
+              rideTitle={ride.title}
+            />
+          )}
         </div>
       </section>
     </>

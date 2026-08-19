@@ -59,10 +59,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines;
 }
 
-async function drawLogoWatermark(ctx: CanvasRenderingContext2D, x: number, y: number) {
+async function drawLogoWatermark(ctx: CanvasRenderingContext2D, x: number, y: number, logoW = 300) {
   try {
     const logo = await loadImage(LOGO_URL);
-    const logoW = 300;
     const logoH = (logo.height / logo.width) * logoW;
     ctx.save();
     ctx.globalAlpha = 0.85;
@@ -73,6 +72,16 @@ async function drawLogoWatermark(ctx: CanvasRenderingContext2D, x: number, y: nu
     ctx.restore();
   } catch {
     // Logo failing to load shouldn't block the whole download.
+  }
+}
+
+async function loadBrandFont(): Promise<string> {
+  try {
+    await document.fonts.load('800 40px "Montserrat"');
+    await document.fonts.ready;
+    return "Montserrat";
+  } catch {
+    return "Arial";
   }
 }
 
@@ -213,6 +222,125 @@ export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void
   ctx.lineWidth = 8;
   ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
 
+  ctx.strokeStyle = "#f0c24e";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(FRAME - 10, FRAME - 10, canvas.width - (FRAME - 10) * 2, canvas.height - (FRAME - 10) * 2);
+
+  const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!blob) throw new Error("Could not generate image");
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${sanitizeFilename(opts.filenameBase)}_the_knight_ryders.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export type RideStatusCardOptions = {
+  imageUrl: string;
+  riderName: string | null; // only set when the viewer was actually on this ride
+  stats: { label: string; value: string }[];
+  filenameBase: string;
+};
+
+/**
+ * WhatsApp Status card: the photo is shown at its own natural aspect ratio
+ * (not cropped to fit a fixed box, unlike the homepage promo cards), with
+ * a glossy title bar above and a glossy stats block below, each stat on
+ * its own line.
+ */
+export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promise<void> {
+  const W = 800;
+  const FRAME = 34;
+  const TITLE_H = 130;
+  const STAT_LINE_H = 58;
+  const font = await loadBrandFont();
+
+  const img = await loadImage(opts.imageUrl);
+  const IMG_H = Math.round(W * (img.height / img.width));
+
+  const statLines = opts.riderName ? [{ label: "Rider", value: opts.riderName }, ...opts.stats] : opts.stats;
+  const STATS_H = statLines.length * STAT_LINE_H + 50;
+
+  const contentH = TITLE_H + IMG_H + STATS_H;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported");
+
+  canvas.width = W + FRAME * 2;
+  canvas.height = contentH + FRAME * 2;
+
+  ctx.fillStyle = "#0c0e12";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.translate(FRAME, FRAME);
+
+  // Glossy title bar -- a top-to-bottom gradient plus a soft highlight
+  // band near the top gives the "shiny button" look rather than a flat fill.
+  const titleGloss = ctx.createLinearGradient(0, 0, 0, TITLE_H);
+  titleGloss.addColorStop(0, "#2a1f45");
+  titleGloss.addColorStop(0.45, "#150f28");
+  titleGloss.addColorStop(1, "#000");
+  ctx.fillStyle = titleGloss;
+  ctx.fillRect(0, 0, W, TITLE_H);
+  ctx.fillStyle = "rgba(255,255,255,.08)";
+  ctx.fillRect(0, 0, W, TITLE_H * 0.4);
+
+  ctx.fillStyle = "#f0c24e";
+  ctx.font = `800 44px "${font}"`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0,0,0,.5)";
+  ctx.shadowBlur = 4;
+  ctx.fillText("My Recent Ride", W / 2, TITLE_H / 2);
+  ctx.shadowBlur = 0;
+
+  // Photo, uncropped -- drawn at its natural aspect ratio.
+  ctx.drawImage(img, 0, TITLE_H, W, IMG_H);
+
+  // Logo watermark on the photo itself (a 260px logo won't fit in the
+  // slim outer frame margin, so it goes here instead, same corner
+  // treatment as the other cards).
+  await drawLogoWatermark(ctx, W, TITLE_H + IMG_H, 260);
+
+  // Glossy stats block.
+  const statsY = TITLE_H + IMG_H;
+  const statsGloss = ctx.createLinearGradient(0, statsY, 0, statsY + STATS_H);
+  statsGloss.addColorStop(0, "#000");
+  statsGloss.addColorStop(0.5, "#1a1032");
+  statsGloss.addColorStop(1, "#000");
+  ctx.fillStyle = statsGloss;
+  ctx.fillRect(0, statsY, W, STATS_H);
+  ctx.fillStyle = "rgba(255,255,255,.06)";
+  ctx.fillRect(0, statsY, W, 6);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  statLines.forEach((stat, i) => {
+    const lineY = statsY + 30 + i * STAT_LINE_H + STAT_LINE_H / 2;
+    ctx.font = `600 20px "${font}"`;
+    ctx.fillStyle = "rgba(240,194,78,.75)";
+    ctx.fillText(stat.label.toUpperCase(), W / 2, lineY - 14);
+    ctx.font = `800 28px "${font}"`;
+    ctx.fillStyle = "#f0c24e";
+    ctx.fillText(stat.value, W / 2, lineY + 12);
+  });
+
+  ctx.restore();
+
+  // Same premium gold double-frame as the other cards.
+  const goldGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  goldGradient.addColorStop(0, "#b8892a");
+  goldGradient.addColorStop(0.5, "#f0d98c");
+  goldGradient.addColorStop(1, "#b8892a");
+  ctx.strokeStyle = goldGradient;
+  ctx.lineWidth = 8;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
   ctx.strokeStyle = "#f0c24e";
   ctx.lineWidth = 1.5;
   ctx.strokeRect(FRAME - 10, FRAME - 10, canvas.width - (FRAME - 10) * 2, canvas.height - (FRAME - 10) * 2);
