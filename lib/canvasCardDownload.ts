@@ -359,22 +359,31 @@ export type RideStatusCardOptions = {
  * all inside a rounded card with a single elegant gold border.
  */
 async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<HTMLCanvasElement> {
-  const W = 700;
-  const FRAME = 30;
-  const CORNER_RADIUS = 26;
+  // Overall card is 30% bigger than the original design. Fonts and the
+  // logo get an ADDITIONAL 20% on top of that (so they're proportionally
+  // larger than everything else), since small text was hard to read when
+  // the downloaded PNG is viewed on a phone screen.
+  const SCALE = 1.3;
+  const FONT_SCALE = SCALE * 1.2;
+  const s = (n: number) => Math.round(n * SCALE);
+  const f = (n: number) => Math.round(n * FONT_SCALE);
+
+  const W = s(700);
+  const FRAME = s(30);
+  const CORNER_RADIUS = s(26);
   const { body: bodyFont } = await loadRideCardFonts();
 
   const img = await loadImage(opts.imageUrl);
-  const PHOTO_PAD = 20;
+  const PHOTO_PAD = s(20);
   const photoW = W - PHOTO_PAD * 2;
   const photoH = Math.round(photoW * (img.height / img.width));
 
-  const HEADER_H = 176;
-  const TITLE_H = 128;
+  const HEADER_H = s(176);
+  const TITLE_H = s(128);
   const PHOTO_SECTION_H = photoH + PHOTO_PAD * 2;
-  const RIDER_ROW_H = 74;
-  const STATS_ROW_H = 118;
-  const FOOTER_H = 60;
+  const RIDER_ROW_H = s(74);
+  const STATS_ROW_H = s(118);
+  const FOOTER_H = s(60);
 
   const contentH = HEADER_H + TITLE_H + PHOTO_SECTION_H + RIDER_ROW_H + STATS_ROW_H + FOOTER_H;
   const canvas = document.createElement("canvas");
@@ -399,7 +408,7 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const glow = ctx.createRadialGradient(canvas.width / 2, FRAME + 80, 10, canvas.width / 2, FRAME + 80, 260);
+  const glow = ctx.createRadialGradient(canvas.width / 2, FRAME + s(80), 10, canvas.width / 2, FRAME + s(80), s(260));
   glow.addColorStop(0, "rgba(176,141,87,.35)");
   glow.addColorStop(1, "rgba(176,141,87,0)");
   ctx.fillStyle = glow;
@@ -411,18 +420,18 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   // --- Header: logo emblem + wordmark ---
   try {
     const logo = await loadImage(LOGO_URL);
-    const logoW = 110;
+    const logoW = f(110);
     const logoH = (logo.height / logo.width) * logoW;
-    ctx.drawImage(logo, W / 2 - logoW / 2, cursorY + 14, logoW, logoH);
-    cursorY += logoH + 14;
+    ctx.drawImage(logo, W / 2 - logoW / 2, cursorY + s(14), logoW, logoH);
+    cursorY += logoH + s(14);
   } catch {
-    cursorY += 60;
+    cursorY += s(60);
   }
-  ctx.font = `700 20px "${bodyFont}"`;
+  ctx.font = `700 ${f(20)}px "${bodyFont}"`;
   ctx.fillStyle = "#e9c97a";
   ctx.textBaseline = "middle";
-  fillTextTracked(ctx, "THE KNIGHT RYDERS", W / 2, cursorY + 20, 3);
-  cursorY += 46;
+  fillTextTracked(ctx, "THE KNIGHT RYDERS", W / 2, cursorY + s(20), s(3));
+  cursorY += s(46);
 
   // divider
   const divider = ctx.createLinearGradient(0, 0, W, 0);
@@ -430,19 +439,19 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   divider.addColorStop(0.5, "rgba(233,201,122,.6)");
   divider.addColorStop(1, "rgba(233,201,122,0)");
   ctx.fillStyle = divider;
-  ctx.fillRect(30, cursorY, W - 60, 1.5);
+  ctx.fillRect(s(30), cursorY, W - s(60), s(1.5));
 
   cursorY = HEADER_H;
 
   // --- Title section: "MY RECENT RIDE" + destination name + ride# pill ---
   if (opts.rideNumber) {
     const pillText = `RIDE #${opts.rideNumber}`;
-    ctx.font = `700 13px "${bodyFont}"`;
+    ctx.font = `700 ${f(13)}px "${bodyFont}"`;
     const pillTextW = ctx.measureText(pillText).width;
-    const pillW = pillTextW + 28;
-    const pillH = 28;
-    const pillX = W - pillW - 4;
-    const pillY = 8;
+    const pillW = pillTextW + s(28);
+    const pillH = s(28);
+    const pillX = W - pillW - s(4);
+    const pillY = s(8);
     roundRectPath(ctx, pillX, pillY, pillW, pillH, pillH / 2);
     ctx.fillStyle = "rgba(255,255,255,.08)";
     ctx.fill();
@@ -454,22 +463,21 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
     ctx.fillText(pillText, pillX + pillW / 2, pillY + pillH / 2 + 1);
   }
 
-  ctx.font = `600 18px "${bodyFont}"`;
+  ctx.font = `600 ${f(18)}px "${bodyFont}"`;
   ctx.fillStyle = "rgba(255,255,255,.85)";
   ctx.textAlign = "center";
-  fillTextTracked(ctx, "MY RECENT RIDE", W / 2, cursorY + 26, 3);
+  fillTextTracked(ctx, "MY RECENT RIDE", W / 2, cursorY + s(26), s(3));
 
-  ctx.font = `800 40px "${bodyFont}"`;
-  ctx.fillStyle = "#f0c24e";
-  let titleText = opts.rideDisplayName.toUpperCase();
-  const maxTitleW = W - 60;
-  let titleFontSize = 40;
+  let titleFontSize = f(40);
   ctx.font = `800 ${titleFontSize}px "${bodyFont}"`;
-  while (ctx.measureText(titleText).width > maxTitleW && titleFontSize > 22) {
+  ctx.fillStyle = "#f0c24e";
+  const titleText = opts.rideDisplayName.toUpperCase();
+  const maxTitleW = W - s(60);
+  while (ctx.measureText(titleText).width > maxTitleW && titleFontSize > f(22)) {
     titleFontSize -= 2;
     ctx.font = `800 ${titleFontSize}px "${bodyFont}"`;
   }
-  ctx.fillText(titleText, W / 2, cursorY + 76);
+  ctx.fillText(titleText, W / 2, cursorY + s(76));
 
   cursorY = HEADER_H + TITLE_H;
 
@@ -482,12 +490,12 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   goldFrame.addColorStop(0.5, "#f0d98c");
   goldFrame.addColorStop(1, "#b8892a");
   ctx.strokeStyle = goldFrame;
-  ctx.lineWidth = 3;
-  roundRectPath(ctx, photoX - 4, photoY - 4, photoW + 8, photoH + 8, 10);
+  ctx.lineWidth = s(3);
+  roundRectPath(ctx, photoX - s(4), photoY - s(4), photoW + s(8), photoH + s(8), s(10));
   ctx.stroke();
 
   ctx.save();
-  roundRectPath(ctx, photoX, photoY, photoW, photoH, 6);
+  roundRectPath(ctx, photoX, photoY, photoW, photoH, s(6));
   ctx.clip();
   ctx.drawImage(img, photoX, photoY, photoW, photoH);
   const gloss = ctx.createLinearGradient(photoX, photoY, photoX + photoW * 0.55, photoY + photoH * 0.55);
@@ -501,8 +509,8 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
 
   // --- Rider credit row: name (left) / crown (center) / tier (right) ---
   if (opts.riderName && tier) {
-    const rowY = cursorY + 10;
-    const rowH = RIDER_ROW_H - 20;
+    const rowY = cursorY + s(10);
+    const rowH = RIDER_ROW_H - s(20);
     roundRectPath(ctx, 0, rowY, W, rowH, rowH / 2);
     ctx.fillStyle = "rgba(255,255,255,.06)";
     ctx.fill();
@@ -510,29 +518,29 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.font = `700 19px "${bodyFont}"`;
+    ctx.font = `700 ${f(19)}px "${bodyFont}"`;
     ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
-    ctx.fillText(opts.riderName, 26, rowY + rowH / 2 + 1);
+    ctx.fillText(opts.riderName, s(26), rowY + rowH / 2 + 1);
 
-    drawCrownBadge(ctx, W / 2, rowY + rowH / 2, 38, opts.riderRideCount!);
+    drawCrownBadge(ctx, W / 2, rowY + rowH / 2, f(38), opts.riderRideCount!);
 
-    ctx.font = `700 15px "${bodyFont}"`;
+    ctx.font = `700 ${f(15)}px "${bodyFont}"`;
     ctx.fillStyle = "#e9c97a";
     ctx.textAlign = "right";
-    ctx.fillText(tier.name.toUpperCase(), W - 26, rowY + rowH / 2 + 1);
+    ctx.fillText(tier.name.toUpperCase(), W - s(26), rowY + rowH / 2 + 1);
   }
 
   cursorY += RIDER_ROW_H;
 
   // --- Three stat pills: Distance / Destination / Riders ---
-  const gap = 14;
+  const gap = s(14);
   const pillW = (W - gap * 2) / 3;
-  const statsPillH = STATS_ROW_H - 14;
+  const statsPillH = STATS_ROW_H - s(14);
   opts.stats.slice(0, 3).forEach((stat, i) => {
     const px = i * (pillW + gap);
     const py = cursorY;
-    roundRectPath(ctx, px, py, pillW, statsPillH, 12);
+    roundRectPath(ctx, px, py, pillW, statsPillH, s(12));
     ctx.fillStyle = "rgba(255,255,255,.05)";
     ctx.fill();
     ctx.strokeStyle = "rgba(233,201,122,.3)";
@@ -540,11 +548,11 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
     ctx.stroke();
 
     ctx.textAlign = "center";
-    ctx.font = `600 12px "${bodyFont}"`;
+    ctx.font = `600 ${f(12)}px "${bodyFont}"`;
     ctx.fillStyle = "rgba(255,255,255,.55)";
-    fillTextTracked(ctx, stat.label.toUpperCase(), px + pillW / 2, py + statsPillH * 0.36, 1);
+    fillTextTracked(ctx, stat.label.toUpperCase(), px + pillW / 2, py + statsPillH * 0.36, s(1));
 
-    ctx.font = `800 ${stat.value.length > 9 ? 17 : 21}px "${bodyFont}"`;
+    ctx.font = `800 ${stat.value.length > 9 ? f(17) : f(21)}px "${bodyFont}"`;
     ctx.fillStyle = "#f0c24e";
     ctx.fillText(stat.value, px + pillW / 2, py + statsPillH * 0.68);
   });
@@ -557,12 +565,12 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   footDivider.addColorStop(0.5, "rgba(233,201,122,.4)");
   footDivider.addColorStop(1, "rgba(233,201,122,0)");
   ctx.fillStyle = footDivider;
-  ctx.fillRect(30, cursorY, W - 60, 1);
+  ctx.fillRect(s(30), cursorY, W - s(60), 1);
 
-  ctx.font = `600 13px "${bodyFont}"`;
+  ctx.font = `600 ${f(13)}px "${bodyFont}"`;
   ctx.fillStyle = "rgba(233,201,122,.8)";
   ctx.textAlign = "center";
-  fillTextTracked(ctx, "EVERY RIDE. A STORY.", W / 2, cursorY + FOOTER_H / 2 + 6, 3);
+  fillTextTracked(ctx, "EVERY RIDE. A STORY.", W / 2, cursorY + FOOTER_H / 2 + s(6), s(3));
 
   ctx.restore(); // end rounded-card clip
 
@@ -572,7 +580,7 @@ async function buildRideStatusCardCanvas(opts: RideStatusCardOptions): Promise<H
   borderGrad.addColorStop(0.5, "#f0d98c");
   borderGrad.addColorStop(1, "#b8892a");
   ctx.strokeStyle = borderGrad;
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = s(2.5);
   roundRectPath(ctx, 3, 3, canvas.width - 6, canvas.height - 6, CORNER_RADIUS + FRAME * 0.4);
   ctx.stroke();
 
