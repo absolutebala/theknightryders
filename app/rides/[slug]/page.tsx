@@ -134,24 +134,6 @@ export default async function RideDetailPage({
           imagePosition={ride.hero_image_position ?? 50}
         />
 
-        {ride.whatsapp_card_photo_url && (
-          <div style={{ position: "absolute", top: 24, right: 24, zIndex: 2 }}>
-            <DownloadRideStatusCard
-              imageUrl={ride.whatsapp_card_photo_url}
-              riderName={viewerIsParticipant ? viewerMember?.full_name ?? null : null}
-              riderRideCount={
-                viewerIsParticipant && viewerMember ? memberById.get(viewerMember.id)?.ride_count ?? null : null
-              }
-              totalKm={ride.total_km}
-              destination={destination}
-              riderCount={participants.length}
-              rideTitle={ride.title}
-              rideDisplayName={destination}
-              rideNumber={ride.ride_number}
-            />
-          </div>
-        )}
-
         <div className="container" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 36, width: "100%" }}>
           <a
             href="/rides/past"
@@ -195,19 +177,50 @@ export default async function RideDetailPage({
         </div>
       </div>
 
-      {/* STATS ROW */}
+      {/* WHATSAPP CARD + STATS, TWO COLUMNS */}
       <section style={{ background: "var(--mint)" }}>
-        <RideStatsEditor
-          rideId={ride.id}
-          totalKm={ride.total_km}
-          riderCount={riderCount}
-          terrain={ride.terrain}
-          autoTerrain={autoTerrain}
-          state={ride.state}
-          destination={ride.destination}
-          autoDestination={cleanRideTitle(ride.title)}
-          isAdmin={isAdmin}
-        />
+        <div className="container" style={{ paddingTop: 40, paddingBottom: 40 }}>
+          <div
+            className={ride.whatsapp_card_photo_url ? "ride-card-stats-grid" : ""}
+            style={
+              ride.whatsapp_card_photo_url
+                ? undefined
+                : { display: "flex", justifyContent: "center" }
+            }
+          >
+            {ride.whatsapp_card_photo_url && (
+              <div className="ride-whatsapp-card-col">
+                <DownloadRideStatusCard
+                  imageUrl={ride.whatsapp_card_photo_url}
+                  riderName={viewerIsParticipant ? viewerMember?.full_name ?? null : null}
+                  riderRideCount={
+                    viewerIsParticipant && viewerMember ? memberById.get(viewerMember.id)?.ride_count ?? null : null
+                  }
+                  totalKm={ride.total_km}
+                  destination={destination}
+                  riderCount={participants.length}
+                  rideTitle={ride.title}
+                  rideDisplayName={destination}
+                  rideNumber={ride.ride_number}
+                />
+              </div>
+            )}
+
+            <div className="ride-stats-two-col">
+              <RideStatsEditor
+                rideId={ride.id}
+                totalKm={ride.total_km}
+                riderCount={riderCount}
+                terrain={ride.terrain}
+                autoTerrain={autoTerrain}
+                state={ride.state}
+                destination={ride.destination}
+                autoDestination={cleanRideTitle(ride.title)}
+                isAdmin={isAdmin}
+              />
+            </div>
+          </div>
+        </div>
       </section>
 
       <section style={{ paddingTop: 0, paddingBottom: 20 }}>

@@ -138,6 +138,13 @@ section{padding:70px 0;}
 
 /* RIDE DETAIL PAGE */
 .ride-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;padding:32px 24px;}
+.ride-stats-two-col .ride-stats-row{grid-template-columns:repeat(2,1fr);}
+.ride-card-stats-grid{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:start;justify-content:center;}
+.ride-whatsapp-card-col{width:260px;flex-shrink:0;}
+@media(max-width:820px){
+  .ride-card-stats-grid{grid-template-columns:1fr;justify-items:center;}
+  .ride-whatsapp-card-col{width:260px;}
+}
 .ride-stat-card{background:var(--white);border-radius:12px;padding:22px 16px;text-align:center;box-shadow:0 4px 14px rgba(23,37,42,.08);}
 .ride-stat-num{font-size:30px;font-weight:800;color:var(--navy);line-height:1.15;}
 .ride-stat-label{font-size:12px;color:var(--grey);text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
