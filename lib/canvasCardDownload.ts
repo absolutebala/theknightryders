@@ -315,38 +315,68 @@ export async function downloadPromoCard(opts: CardDownloadOptions): Promise<void
   URL.revokeObjectURL(url);
 }
 
+function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+}
+
+/** Draws text with manual letter-spacing (more reliable across browsers than ctx.letterSpacing). */
+function fillTextTracked(ctx: CanvasRenderingContext2D, text: string, cx: number, y: number, spacing: number) {
+  const chars = text.split("");
+  const widths = chars.map((c) => ctx.measureText(c).width);
+  const totalWidth = widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
+  let x = cx - totalWidth / 2;
+  const prevAlign = ctx.textAlign;
+  ctx.textAlign = "left";
+  chars.forEach((c, i) => {
+    ctx.fillText(c, x, y);
+    x += widths[i] + spacing;
+  });
+  ctx.textAlign = prevAlign;
+}
+
 export type RideStatusCardOptions = {
   imageUrl: string;
+  rideDisplayName: string; // cleaned ride name, e.g. "Thekkady Ride" -- shown as the big title
+  rideNumber: number | null; // shown as a small "RIDE #82" pill
   riderName: string | null; // only set when the viewer was actually on this ride
-  riderRideCount: number | null; // drives the tier crown shown next to the name
-  stats: { label: string; value: string }[];
+  riderRideCount: number | null; // drives the tier crown + tier name shown in the credit row
+  stats: { label: string; value: string }[]; // exactly 3: Distance, Destination, Riders
   filenameBase: string;
 };
 
 /**
- * WhatsApp Status card: the photo is shown at its own natural aspect ratio
- * (not cropped to fit a fixed box, unlike the homepage promo cards), with
- * a glossy title bar above and a glossy stats block below, each stat on
- * its own line.
+ * WhatsApp Status card, redesigned to match the reference template: a
+ * branded header (logo + wordmark), title section with a ride-number
+ * pill, a gold-framed uncropped photo with a glossy highlight, a rider
+ * credit row (name / crown / tier), three stat pills, and a tagline --
+ * all inside a rounded card with a single elegant gold border.
  */
 export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promise<void> {
-  const W = 800;
-  const FRAME = 34;
-  const TITLE_H = 130;
-  const SIGNATURE_GAP = 150; // widened to fit the crown badge above the name
-  const STAT_LINE_H = 84; // generous spacing between the three stat groups
-  const { body: bodyFont, signature: signatureFont } = await loadRideCardFonts();
+  const W = 700;
+  const FRAME = 30;
+  const CORNER_RADIUS = 26;
+  const { body: bodyFont } = await loadRideCardFonts();
 
   const img = await loadImage(opts.imageUrl);
-  const IMG_H = Math.round(W * (img.height / img.width));
+  const PHOTO_PAD = 20;
+  const photoW = W - PHOTO_PAD * 2;
+  const photoH = Math.round(photoW * (img.height / img.width));
 
-  // Terrain/State dropped per request -- just KM Covered, Destination, Riders now.
-  const statLines = opts.stats;
-  const STATS_GAP_TOP = 46; // "enough spacing" between the photo/signature and the stats box
-  const STATS_H = STATS_GAP_TOP + statLines.length * STAT_LINE_H + 40;
+  const HEADER_H = 176;
+  const TITLE_H = 128;
+  const PHOTO_SECTION_H = photoH + PHOTO_PAD * 2;
+  const RIDER_ROW_H = 74;
+  const STATS_ROW_H = 118;
+  const FOOTER_H = 60;
 
-  const contentH = TITLE_H + IMG_H + STATS_H;
-
+  const contentH = HEADER_H + TITLE_H + PHOTO_SECTION_H + RIDER_ROW_H + STATS_ROW_H + FOOTER_H;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not supported");
@@ -354,120 +384,197 @@ export async function downloadRideStatusCard(opts: RideStatusCardOptions): Promi
   canvas.width = W + FRAME * 2;
   canvas.height = contentH + FRAME * 2;
 
-  ctx.fillStyle = "#0c0e12";
+  const tier = opts.riderRideCount ? getRideBadgeTier(opts.riderRideCount) : null;
+
+  // Rounded-card clip so the corners come out transparent in the PNG.
+  ctx.save();
+  roundRectPath(ctx, 0, 0, canvas.width, canvas.height, CORNER_RADIUS + FRAME * 0.4);
+  ctx.clip();
+
+  // Deep purple-to-black background with a soft radial glow behind the header.
+  const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bg.addColorStop(0, "#2a1a4a");
+  bg.addColorStop(0.35, "#1a0f2e");
+  bg.addColorStop(1, "#08060f");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.save();
+  const glow = ctx.createRadialGradient(canvas.width / 2, FRAME + 80, 10, canvas.width / 2, FRAME + 80, 260);
+  glow.addColorStop(0, "rgba(176,141,87,.35)");
+  glow.addColorStop(1, "rgba(176,141,87,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   ctx.translate(FRAME, FRAME);
+  let cursorY = 0;
 
-  // Glossy title bar.
-  const titleGloss = ctx.createLinearGradient(0, 0, 0, TITLE_H);
-  titleGloss.addColorStop(0, "#2a1f45");
-  titleGloss.addColorStop(0.45, "#150f28");
-  titleGloss.addColorStop(1, "#000");
-  ctx.fillStyle = titleGloss;
-  ctx.fillRect(0, 0, W, TITLE_H);
-  ctx.fillStyle = "rgba(255,255,255,.08)";
-  ctx.fillRect(0, 0, W, TITLE_H * 0.4);
-
-  ctx.fillStyle = "#f0c24e";
-  ctx.font = `800 44px "${bodyFont}"`;
-  ctx.textAlign = "center";
+  // --- Header: logo emblem + wordmark ---
+  try {
+    const logo = await loadImage(LOGO_URL);
+    const logoW = 110;
+    const logoH = (logo.height / logo.width) * logoW;
+    ctx.drawImage(logo, W / 2 - logoW / 2, cursorY + 14, logoW, logoH);
+    cursorY += logoH + 14;
+  } catch {
+    cursorY += 60;
+  }
+  ctx.font = `700 20px "${bodyFont}"`;
+  ctx.fillStyle = "#e9c97a";
   ctx.textBaseline = "middle";
-  ctx.shadowColor = "rgba(0,0,0,.5)";
-  ctx.shadowBlur = 4;
-  ctx.fillText("My Recent Ride", W / 2, TITLE_H / 2);
-  ctx.shadowBlur = 0;
+  fillTextTracked(ctx, "THE KNIGHT RYDERS", W / 2, cursorY + 20, 3);
+  cursorY += 46;
 
-  // Photo, uncropped -- drawn at its natural aspect ratio.
-  ctx.drawImage(img, 0, TITLE_H, W, IMG_H);
+  // divider
+  const divider = ctx.createLinearGradient(0, 0, W, 0);
+  divider.addColorStop(0, "rgba(233,201,122,0)");
+  divider.addColorStop(0.5, "rgba(233,201,122,.6)");
+  divider.addColorStop(1, "rgba(233,201,122,0)");
+  ctx.fillStyle = divider;
+  ctx.fillRect(30, cursorY, W - 60, 1.5);
 
-  // Rider name (signature-style) with their tier crown above it, both
-  // centered in a scrim band across the bottom of the photo.
-  if (opts.riderName) {
-    const scrimY = TITLE_H + IMG_H - SIGNATURE_GAP;
-    const scrim = ctx.createLinearGradient(0, scrimY, 0, TITLE_H + IMG_H);
-    scrim.addColorStop(0, "rgba(0,0,0,0)");
-    scrim.addColorStop(1, "rgba(0,0,0,.55)");
-    ctx.fillStyle = scrim;
-    ctx.fillRect(0, scrimY, W, SIGNATURE_GAP);
+  cursorY = HEADER_H;
 
-    if (opts.riderRideCount) {
-      drawCrownBadge(ctx, W / 2, TITLE_H + IMG_H - SIGNATURE_GAP + 42, 52, opts.riderRideCount);
-    }
-
+  // --- Title section: "MY RECENT RIDE" + destination name + ride# pill ---
+  if (opts.rideNumber) {
+    const pillText = `RIDE #${opts.rideNumber}`;
+    ctx.font = `700 13px "${bodyFont}"`;
+    const pillTextW = ctx.measureText(pillText).width;
+    const pillW = pillTextW + 28;
+    const pillH = 28;
+    const pillX = W - pillW - 4;
+    const pillY = 8;
+    roundRectPath(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.fillStyle = "rgba(255,255,255,.08)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(233,201,122,.5)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = "#e9c97a";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#fff";
-    ctx.shadowColor = "rgba(0,0,0,.6)";
-    ctx.shadowBlur = 6;
-    // Constrain to 80% of the photo width, shrinking the font if a long name would overflow.
-    const maxW = W * 0.8;
-    let fontSize = 52;
-    ctx.font = `700 ${fontSize}px "${signatureFont}"`;
-    while (ctx.measureText(opts.riderName).width > maxW && fontSize > 24) {
-      fontSize -= 2;
-      ctx.font = `700 ${fontSize}px "${signatureFont}"`;
-    }
-    ctx.fillText(opts.riderName, W / 2, TITLE_H + IMG_H - SIGNATURE_GAP / 2 + 30);
-    ctx.shadowBlur = 0;
+    ctx.fillText(pillText, pillX + pillW / 2, pillY + pillH / 2 + 1);
   }
 
-  // Logo watermark, bottom-left of the photo.
-  {
-    try {
-      const logo = await loadImage(LOGO_URL);
-      const logoW = 180;
-      const logoH = (logo.height / logo.width) * logoW;
-      ctx.save();
-      ctx.globalAlpha = 0.85;
-      ctx.shadowColor = "rgba(0,0,0,.6)";
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetY = 2;
-      ctx.drawImage(logo, 14, TITLE_H + IMG_H - logoH - 14, logoW, logoH);
-      ctx.restore();
-    } catch {
-      // Logo failing to load shouldn't block the whole download.
-    }
+  ctx.font = `600 18px "${bodyFont}"`;
+  ctx.fillStyle = "rgba(255,255,255,.85)";
+  ctx.textAlign = "center";
+  fillTextTracked(ctx, "MY RECENT RIDE", W / 2, cursorY + 26, 3);
+
+  ctx.font = `800 40px "${bodyFont}"`;
+  ctx.fillStyle = "#f0c24e";
+  let titleText = opts.rideDisplayName.toUpperCase();
+  const maxTitleW = W - 60;
+  let titleFontSize = 40;
+  ctx.font = `800 ${titleFontSize}px "${bodyFont}"`;
+  while (ctx.measureText(titleText).width > maxTitleW && titleFontSize > 22) {
+    titleFontSize -= 2;
+    ctx.font = `800 ${titleFontSize}px "${bodyFont}"`;
   }
+  ctx.fillText(titleText, W / 2, cursorY + 76);
 
-  // Glossy stats block, right-aligned.
-  const statsY = TITLE_H + IMG_H;
-  const statsGloss = ctx.createLinearGradient(0, statsY, 0, statsY + STATS_H);
-  statsGloss.addColorStop(0, "#000");
-  statsGloss.addColorStop(0.5, "#1a1032");
-  statsGloss.addColorStop(1, "#000");
-  ctx.fillStyle = statsGloss;
-  ctx.fillRect(0, statsY, W, STATS_H);
-  ctx.fillStyle = "rgba(255,255,255,.06)";
-  ctx.fillRect(0, statsY, W, 6);
+  cursorY = HEADER_H + TITLE_H;
 
-  const rightEdge = W - 40;
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
-  statLines.forEach((stat, i) => {
-    const lineY = statsY + STATS_GAP_TOP + i * STAT_LINE_H + STAT_LINE_H / 2;
-    ctx.font = `600 19px "${bodyFont}"`;
-    ctx.fillStyle = "rgba(240,194,78,.75)";
-    ctx.fillText(stat.label.toUpperCase(), rightEdge, lineY - 14);
-    ctx.font = `800 27px "${bodyFont}"`;
-    ctx.fillStyle = "#f0c24e";
-    ctx.fillText(stat.value, rightEdge, lineY + 12);
-  });
+  // --- Framed, uncropped photo with a glossy diagonal highlight ---
+  const photoX = PHOTO_PAD;
+  const photoY = cursorY + PHOTO_PAD;
 
+  const goldFrame = ctx.createLinearGradient(photoX, photoY, photoX + photoW, photoY + photoH);
+  goldFrame.addColorStop(0, "#b8892a");
+  goldFrame.addColorStop(0.5, "#f0d98c");
+  goldFrame.addColorStop(1, "#b8892a");
+  ctx.strokeStyle = goldFrame;
+  ctx.lineWidth = 3;
+  roundRectPath(ctx, photoX - 4, photoY - 4, photoW + 8, photoH + 8, 10);
+  ctx.stroke();
+
+  ctx.save();
+  roundRectPath(ctx, photoX, photoY, photoW, photoH, 6);
+  ctx.clip();
+  ctx.drawImage(img, photoX, photoY, photoW, photoH);
+  const gloss = ctx.createLinearGradient(photoX, photoY, photoX + photoW * 0.55, photoY + photoH * 0.55);
+  gloss.addColorStop(0, "rgba(255,255,255,.22)");
+  gloss.addColorStop(0.5, "rgba(255,255,255,0)");
+  ctx.fillStyle = gloss;
+  ctx.fillRect(photoX, photoY, photoW, photoH);
   ctx.restore();
 
-  // Same premium gold double-frame as the other cards.
-  const goldGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  goldGradient.addColorStop(0, "#b8892a");
-  goldGradient.addColorStop(0.5, "#f0d98c");
-  goldGradient.addColorStop(1, "#b8892a");
-  ctx.strokeStyle = goldGradient;
-  ctx.lineWidth = 8;
-  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
-  ctx.strokeStyle = "#f0c24e";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(FRAME - 10, FRAME - 10, canvas.width - (FRAME - 10) * 2, canvas.height - (FRAME - 10) * 2);
+  cursorY += PHOTO_SECTION_H;
+
+  // --- Rider credit row: name (left) / crown (center) / tier (right) ---
+  if (opts.riderName && tier) {
+    const rowY = cursorY + 10;
+    const rowH = RIDER_ROW_H - 20;
+    roundRectPath(ctx, 0, rowY, W, rowH, rowH / 2);
+    ctx.fillStyle = "rgba(255,255,255,.06)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(233,201,122,.25)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.font = `700 19px "${bodyFont}"`;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    ctx.fillText(opts.riderName, 26, rowY + rowH / 2 + 1);
+
+    drawCrownBadge(ctx, W / 2, rowY + rowH / 2, 38, opts.riderRideCount!);
+
+    ctx.font = `700 15px "${bodyFont}"`;
+    ctx.fillStyle = "#e9c97a";
+    ctx.textAlign = "right";
+    ctx.fillText(tier.name.toUpperCase(), W - 26, rowY + rowH / 2 + 1);
+  }
+
+  cursorY += RIDER_ROW_H;
+
+  // --- Three stat pills: Distance / Destination / Riders ---
+  const gap = 14;
+  const pillW = (W - gap * 2) / 3;
+  const statsPillH = STATS_ROW_H - 14;
+  opts.stats.slice(0, 3).forEach((stat, i) => {
+    const px = i * (pillW + gap);
+    const py = cursorY;
+    roundRectPath(ctx, px, py, pillW, statsPillH, 12);
+    ctx.fillStyle = "rgba(255,255,255,.05)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(233,201,122,.3)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.font = `600 12px "${bodyFont}"`;
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    fillTextTracked(ctx, stat.label.toUpperCase(), px + pillW / 2, py + statsPillH * 0.36, 1);
+
+    ctx.font = `800 ${stat.value.length > 9 ? 17 : 21}px "${bodyFont}"`;
+    ctx.fillStyle = "#f0c24e";
+    ctx.fillText(stat.value, px + pillW / 2, py + statsPillH * 0.68);
+  });
+
+  cursorY += STATS_ROW_H;
+
+  // --- Footer tagline ---
+  const footDivider = ctx.createLinearGradient(0, 0, W, 0);
+  footDivider.addColorStop(0, "rgba(233,201,122,0)");
+  footDivider.addColorStop(0.5, "rgba(233,201,122,.4)");
+  footDivider.addColorStop(1, "rgba(233,201,122,0)");
+  ctx.fillStyle = footDivider;
+  ctx.fillRect(30, cursorY, W - 60, 1);
+
+  ctx.font = `600 13px "${bodyFont}"`;
+  ctx.fillStyle = "rgba(233,201,122,.8)";
+  ctx.textAlign = "center";
+  fillTextTracked(ctx, "EVERY RIDE. A STORY.", W / 2, cursorY + FOOTER_H / 2 + 6, 3);
+
+  ctx.restore(); // end rounded-card clip
+
+  // Single elegant gold border tracing the rounded card edge.
+  const borderGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  borderGrad.addColorStop(0, "#b8892a");
+  borderGrad.addColorStop(0.5, "#f0d98c");
+  borderGrad.addColorStop(1, "#b8892a");
+  ctx.strokeStyle = borderGrad;
+  ctx.lineWidth = 2.5;
+  roundRectPath(ctx, 3, 3, canvas.width - 6, canvas.height - 6, CORNER_RADIUS + FRAME * 0.4);
+  ctx.stroke();
 
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("Could not generate image");

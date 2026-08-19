@@ -143,11 +143,11 @@ export default async function RideDetailPage({
                 viewerIsParticipant && viewerMember ? memberById.get(viewerMember.id)?.ride_count ?? null : null
               }
               totalKm={ride.total_km}
-              terrain={ride.terrain}
-              state={ride.state}
               destination={destination}
               riderCount={participants.length}
               rideTitle={ride.title}
+              rideDisplayName={destination}
+              rideNumber={ride.ride_number}
             />
           </div>
         )}

@@ -8,21 +8,21 @@ export default function DownloadRideStatusCard({
   riderName,
   riderRideCount,
   totalKm,
-  terrain,
-  state,
   destination,
   riderCount,
   rideTitle,
+  rideDisplayName,
+  rideNumber,
 }: {
   imageUrl: string;
   riderName: string | null;
   riderRideCount: number | null;
   totalKm: number | null;
-  terrain: string | null;
-  state: string | null;
   destination: string | null;
   riderCount: number;
   rideTitle: string;
+  rideDisplayName: string;
+  rideNumber: number | null;
 }) {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +32,14 @@ export default function DownloadRideStatusCard({
     setError(null);
     try {
       const stats = [
-        { label: "KM Covered", value: totalKm ? `${totalKm.toLocaleString("en-IN")} km` : "--" },
-        { label: "Destination", value: destination || "--" },
+        { label: "Distance", value: totalKm ? `${totalKm.toLocaleString("en-IN")} KM` : "--" },
+        { label: "Destination", value: (destination || "--").toUpperCase() },
         { label: "Riders", value: String(riderCount) },
       ];
       await downloadRideStatusCard({
         imageUrl,
+        rideDisplayName,
+        rideNumber,
         riderName,
         riderRideCount,
         stats,
