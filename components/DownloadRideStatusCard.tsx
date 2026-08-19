@@ -6,6 +6,7 @@ import { downloadRideStatusCard } from "@/lib/canvasCardDownload";
 export default function DownloadRideStatusCard({
   imageUrl,
   riderName,
+  riderRideCount,
   totalKm,
   terrain,
   state,
@@ -15,6 +16,7 @@ export default function DownloadRideStatusCard({
 }: {
   imageUrl: string;
   riderName: string | null;
+  riderRideCount: number | null;
   totalKm: number | null;
   terrain: string | null;
   state: string | null;
@@ -37,6 +39,7 @@ export default function DownloadRideStatusCard({
       await downloadRideStatusCard({
         imageUrl,
         riderName,
+        riderRideCount,
         stats,
         filenameBase: `${rideTitle}_whatsapp_status`,
       });
@@ -48,11 +51,26 @@ export default function DownloadRideStatusCard({
   }
 
   return (
-    <div style={{ textAlign: "center", marginTop: 20 }}>
-      <button type="button" className="btn btn-outline" onClick={handleDownload} disabled={downloading}>
-        {downloading ? "Preparing…" : "Download for WhatsApp Status"}
-      </button>
-      {error && <div style={{ color: "#a3312a", fontSize: 12.5, marginTop: 8 }}>{error}</div>}
+    <div className="hero-promo-frame" style={{ width: 200 }}>
+      <div className="hero-promo-birthday-title-row" style={{ fontSize: 14, lineHeight: 1.25 }}>
+        Download for WhatsApp Status
+      </div>
+      <div className="hero-promo-image-area">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt={rideTitle} />
+      </div>
+      <div style={{ padding: "10px 10px 12px", textAlign: "center", background: "rgba(255,255,255,.04)" }}>
+        <button
+          type="button"
+          className="btn btn-amber"
+          onClick={handleDownload}
+          disabled={downloading}
+          style={{ padding: "7px 16px", fontSize: 12, width: "100%" }}
+        >
+          {downloading ? "Preparing…" : "Download"}
+        </button>
+        {error && <div style={{ color: "#e57373", fontSize: 10.5, marginTop: 6 }}>{error}</div>}
+      </div>
     </div>
   );
 }

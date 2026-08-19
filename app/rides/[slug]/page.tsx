@@ -134,6 +134,24 @@ export default async function RideDetailPage({
           imagePosition={ride.hero_image_position ?? 50}
         />
 
+        {ride.whatsapp_card_photo_url && (
+          <div style={{ position: "absolute", top: 24, right: 24, zIndex: 2 }}>
+            <DownloadRideStatusCard
+              imageUrl={ride.whatsapp_card_photo_url}
+              riderName={viewerIsParticipant ? viewerMember?.full_name ?? null : null}
+              riderRideCount={
+                viewerIsParticipant && viewerMember ? memberById.get(viewerMember.id)?.ride_count ?? null : null
+              }
+              totalKm={ride.total_km}
+              terrain={ride.terrain}
+              state={ride.state}
+              destination={destination}
+              riderCount={participants.length}
+              rideTitle={ride.title}
+            />
+          </div>
+        )}
+
         <div className="container" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 36, width: "100%" }}>
           <a
             href="/rides/past"
@@ -245,19 +263,6 @@ export default async function RideDetailPage({
               rideId={ride.id}
               gallery={(ride.gallery as string[]) ?? []}
               currentUrl={ride.whatsapp_card_photo_url}
-            />
-          )}
-
-          {ride.whatsapp_card_photo_url && (
-            <DownloadRideStatusCard
-              imageUrl={ride.whatsapp_card_photo_url}
-              riderName={viewerIsParticipant ? viewerMember?.full_name ?? null : null}
-              totalKm={ride.total_km}
-              terrain={ride.terrain}
-              state={ride.state}
-              destination={destination}
-              riderCount={participants.length}
-              rideTitle={ride.title}
             />
           )}
         </div>
