@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import ApprovalActions from "./ApprovalActions";
+import AdminRequestTabs from "@/components/admin/AdminRequestTabs";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -18,9 +18,7 @@ export default async function AdminPage() {
     return (
       <div className="container" style={{ padding: "70px 24px", maxWidth: 640 }}>
         <h1 style={{ color: "var(--navy)", marginBottom: 12 }}>Not authorized</h1>
-        <p style={{ color: "var(--grey)" }}>
-          This page is for club admins only.
-        </p>
+        <p style={{ color: "var(--grey)" }}>This page is for club admins only.</p>
       </div>
     );
   }
@@ -30,6 +28,9 @@ export default async function AdminPage() {
     { data: recentlyReviewed },
     { data: templateRequests },
     { data: recentlyReviewedTemplates },
+    { data: reactivationRequests },
+    { data: pastRideRequestsRaw },
+    { data: upcomingRideRequestsRaw },
   ] = await Promise.all([
     supabase
       .from("pending_requests")
@@ -41,7 +42,7 @@ export default async function AdminPage() {
       .select("id, email, full_name, status, requested_at, reviewed_at, reviewed_by")
       .neq("status", "pending")
       .order("reviewed_at", { ascending: false })
-      .limit(15),
+      .limit(30),
     supabase
       .from("template_requests")
       .select("id, requested_at, member_id, members(full_name, handle)")
@@ -52,202 +53,88 @@ export default async function AdminPage() {
       .select("id, requested_at, reviewed_at, reviewed_by, status, member_id, members(full_name, handle)")
       .neq("status", "pending")
       .order("reviewed_at", { ascending: false })
-      .limit(15),
+      .limit(30),
+    supabase
+      .from("members")
+      .select("id, full_name, reactivation_requested_at")
+      .not("reactivation_requested_at", "is", null)
+      .order("reactivation_requested_at", { ascending: true }),
+    supabase.rpc("get_all_ride_join_requests"),
+    supabase.rpc("get_all_upcoming_ride_requests"),
   ]);
 
+  type TemplateRow = {
+    id: string;
+    requested_at: string;
+    reviewed_at?: string | null;
+    reviewed_by?: string | null;
+    status?: string;
+    member_id: string;
+    members: { full_name: string | null; handle: string | null } | { full_name: string | null; handle: string | null }[] | null;
+  };
+
+  function flattenTemplate(req: TemplateRow) {
+    const m = Array.isArray(req.members) ? req.members[0] : req.members;
+    return {
+      id: req.id,
+      requested_at: req.requested_at,
+      reviewed_at: req.reviewed_at,
+      reviewed_by: req.reviewed_by,
+      status: req.status,
+      member_id: req.member_id,
+      memberName: m?.full_name ?? null,
+      memberHandle: m?.handle ?? null,
+    };
+  }
+
+  type RideRequestRow = {
+    id: string;
+    ride_title: string;
+    ride_slug: string;
+    member_name: string | null;
+    status: string;
+    requested_at: string;
+  };
+
+  const pastRideRequests = ((pastRideRequestsRaw ?? []) as RideRequestRow[]).map((r) => ({
+    id: r.id,
+    ride_title: r.ride_title,
+    ride_slug: r.ride_slug,
+    member_name: r.member_name,
+    status: r.status as "pending" | "approved" | "rejected",
+    requested_at: r.requested_at,
+  }));
+
+  const upcomingRideRequests = ((upcomingRideRequestsRaw ?? []) as RideRequestRow[]).map((r) => ({
+    id: r.id,
+    ride_title: r.ride_title,
+    ride_slug: r.ride_slug,
+    member_name: r.member_name,
+    status: r.status as "pending" | "approved" | "rejected",
+    requested_at: r.requested_at,
+  }));
+
   return (
-    <div className="container" style={{ padding: "70px 24px", maxWidth: 860 }}>
+    <div className="container" style={{ padding: "70px 24px", maxWidth: 900 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ color: "var(--navy)", marginBottom: 6 }}>Pending Access Requests</h1>
-          <p style={{ color: "var(--grey)", marginBottom: 30 }}>
-            {pending?.length ?? 0} request{pending?.length === 1 ? "" : "s"} waiting for review.
-          </p>
+          <h1 style={{ color: "var(--navy)", marginBottom: 6 }}>Admin Requests</h1>
+          <p style={{ color: "var(--grey)", marginBottom: 30 }}>Everything waiting on your review, organized by category.</p>
         </div>
-        <a
-          href="/?openHolidays=1#holiday-cards"
-          className="btn btn-outline"
-          style={{ padding: "8px 18px", fontSize: 12.5, flexShrink: 0 }}
-        >
+        <a href="/?openHolidays=1#holiday-cards" className="btn btn-outline" style={{ padding: "8px 18px", fontSize: 12.5, flexShrink: 0 }}>
           Manage Holiday Cards
         </a>
       </div>
 
-      {!pending || pending.length === 0 ? (
-        <p style={{ color: "var(--grey)" }}>Nothing pending right now.</p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 50 }}>
-          {pending.map((req) => (
-            <div
-              key={req.id}
-              style={{
-                background: "var(--mint)",
-                borderRadius: 12,
-                padding: "16px 20px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 14,
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: 700, color: "var(--navy)" }}>
-                  {req.full_name || "(no name provided)"}
-                </div>
-                <div style={{ fontSize: 13.5, color: "var(--grey)" }}>{req.email}</div>
-                <div style={{ fontSize: 12, color: "var(--grey)", marginTop: 2 }}>
-                  Requested {new Date(req.requested_at).toLocaleString("en-IN")}
-                </div>
-              </div>
-              <ApprovalActions requestId={req.id} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {templateRequests && templateRequests.length > 0 && (
-        <>
-          <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14 }}>
-            Elite Template Requests
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 50 }}>
-            {templateRequests.map((req) => {
-              const memberInfo = (
-                Array.isArray(req.members) ? req.members[0] : req.members
-              ) as { full_name: string | null; handle: string | null } | null;
-
-              return (
-                <div
-                  key={req.id}
-                  style={{
-                    background: "var(--mint)",
-                    borderRadius: 12,
-                    padding: "16px 20px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: 14,
-                  }}
-                >
-                  <div>
-                    <a
-                      href={memberInfo?.handle ? `/@${memberInfo.handle}` : `/members/${req.member_id}`}
-                      target="_blank"
-                      rel="noopener"
-                      style={{ fontWeight: 700, color: "var(--navy)", textDecoration: "underline" }}
-                    >
-                      {memberInfo?.full_name || "(unnamed member)"}
-                      {memberInfo?.handle && (
-                        <span style={{ color: "var(--grey)", fontWeight: 500 }}> @{memberInfo.handle}</span>
-                      )}
-                    </a>
-                    <div style={{ fontSize: 12, color: "var(--grey)", marginTop: 2 }}>
-                      Requested {new Date(req.requested_at).toLocaleString("en-IN")}
-                    </div>
-                  </div>
-                  <ApprovalActions
-                    requestId={req.id}
-                    approveFn="approve_template_request"
-                    rejectFn="reject_template_request"
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {recentlyReviewedTemplates && recentlyReviewedTemplates.length > 0 && (
-        <>
-          <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14 }}>
-            Recently Reviewed &mdash; Elite Requests
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 50 }}>
-            {recentlyReviewedTemplates.map((req) => {
-              const memberInfo = (
-                Array.isArray(req.members) ? req.members[0] : req.members
-              ) as { full_name: string | null; handle: string | null } | null;
-
-              return (
-                <div
-                  key={req.id}
-                  style={{
-                    fontSize: 13.5,
-                    color: "var(--grey)",
-                    padding: "8px 0",
-                    borderBottom: "1px solid #e4e4e4",
-                  }}
-                >
-                  <a
-                    href={memberInfo?.handle ? `/@${memberInfo.handle}` : `/members/${req.member_id}`}
-                    target="_blank"
-                    rel="noopener"
-                    style={{ color: "var(--dark)", fontWeight: 700, textDecoration: "underline" }}
-                  >
-                    {memberInfo?.full_name || "(unnamed member)"}
-                  </a>{" "}
-                  &mdash;{" "}
-                  <span
-                    style={{
-                      color: req.status === "approved" ? "#1e6b3a" : "#a3312a",
-                      fontWeight: 600,
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    {req.status}
-                  </span>{" "}
-                  by {req.reviewed_by ?? "—"}
-                  <br />
-                  Requested {new Date(req.requested_at).toLocaleString("en-IN")}
-                  {req.reviewed_at && (
-                    <> &middot; Reviewed {new Date(req.reviewed_at).toLocaleString("en-IN")}</>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {recentlyReviewed && recentlyReviewed.length > 0 && (
-        <>
-          <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14 }}>
-            Recently Reviewed &mdash; Member Access
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {recentlyReviewed.map((req) => (
-              <div
-                key={req.id}
-                style={{
-                  fontSize: 13.5,
-                  color: "var(--grey)",
-                  padding: "8px 0",
-                  borderBottom: "1px solid #e4e4e4",
-                }}
-              >
-                <strong style={{ color: "var(--dark)" }}>{req.email}</strong> —{" "}
-                <span
-                  style={{
-                    color: req.status === "approved" ? "#1e6b3a" : "#a3312a",
-                    fontWeight: 600,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {req.status}
-                </span>{" "}
-                by {req.reviewed_by}
-                <br />
-                Requested {new Date(req.requested_at).toLocaleString("en-IN")}
-                {req.reviewed_at && (
-                  <> &middot; Reviewed {new Date(req.reviewed_at).toLocaleString("en-IN")}</>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      <AdminRequestTabs
+        accessPending={pending ?? []}
+        accessReviewed={recentlyReviewed ?? []}
+        templatePending={(templateRequests ?? []).map(flattenTemplate)}
+        templateReviewed={(recentlyReviewedTemplates ?? []).map(flattenTemplate)}
+        reactivationPending={reactivationRequests ?? []}
+        pastRideRequests={pastRideRequests}
+        upcomingRideRequests={upcomingRideRequests}
+      />
     </div>
   );
 }

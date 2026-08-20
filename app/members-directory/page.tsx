@@ -2,8 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
 import RiderRemoveButton from "@/components/admin/RiderRemoveButton";
-import ApproveReactivationButton from "@/components/admin/ApproveReactivationButton";
-import RideJoinRequestActions from "@/components/admin/RideJoinRequestActions";
 import { RIDE_BADGE_TIERS } from "@/lib/rideBadges";
 
 export default async function RidersPage() {
@@ -195,75 +193,15 @@ export default async function RidersPage() {
           ))}
         </div>
 
-        {isAdmin && reactivationRequests.length > 0 && (
+        {isAdmin && (reactivationRequests.length > 0 || (pendingJoinRequests && pendingJoinRequests.length > 0)) && (
           <div style={{ marginTop: 60, borderTop: "1px solid #e3ebe7", paddingTop: 30 }}>
-            <h2 style={{ fontSize: 16, color: "var(--navy)", marginBottom: 4 }}>
-              Reactivation Requests <span style={{ fontWeight: 400, color: "var(--grey)", fontSize: 12.5 }}>(admin only)</span>
-            </h2>
-            <p style={{ fontSize: 12.5, color: "var(--grey)", marginBottom: 14 }}>
-              These members removed their own profile and have since logged in again, asking to come back.
+            <p style={{ fontSize: 13, color: "var(--grey)" }}>
+              You have pending Reactivation and/or Ride Join requests --{" "}
+              <a href="/admin" style={{ color: "var(--cta-blue)", fontWeight: 700 }}>
+                review them on the Admin page
+              </a>
+              .
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {reactivationRequests.map((m) => (
-                <div
-                  key={m.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    fontSize: 13,
-                    color: "var(--dark)",
-                    padding: "8px 0",
-                    borderBottom: "1px solid #f0f4f2",
-                    gap: 12,
-                  }}
-                >
-                  <span>
-                    {m.full_name ?? "Knight Ryder"}
-                    <span style={{ color: "var(--grey)", fontSize: 12, marginLeft: 8 }}>
-                      requested {new Date(m.reactivation_requested_at!).toLocaleString("en-IN")}
-                    </span>
-                  </span>
-                  <ApproveReactivationButton memberId={m.id} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isAdmin && pendingJoinRequests && pendingJoinRequests.length > 0 && (
-          <div style={{ marginTop: 60, borderTop: "1px solid #e3ebe7", paddingTop: 30 }}>
-            <h2 style={{ fontSize: 16, color: "var(--navy)", marginBottom: 4 }}>
-              Ride Join Requests <span style={{ fontWeight: 400, color: "var(--grey)", fontSize: 12.5 }}>(admin only)</span>
-            </h2>
-            <p style={{ fontSize: 12.5, color: "var(--grey)", marginBottom: 14 }}>
-              Members asking to be added to a past ride they weren&apos;t originally tagged in.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {pendingJoinRequests.map((r: { id: string; ride_title: string; ride_slug: string; member_name: string | null; requested_at: string }) => (
-                <div
-                  key={r.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    fontSize: 13,
-                    color: "var(--dark)",
-                    padding: "8px 0",
-                    borderBottom: "1px solid #f0f4f2",
-                    gap: 12,
-                  }}
-                >
-                  <span>
-                    {r.member_name ?? "Knight Ryder"} &rarr;{" "}
-                    <a href={`/rides/${r.ride_slug}`} style={{ color: "var(--cta-blue)" }}>
-                      {r.ride_title}
-                    </a>
-                  </span>
-                  <RideJoinRequestActions requestId={r.id} />
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
