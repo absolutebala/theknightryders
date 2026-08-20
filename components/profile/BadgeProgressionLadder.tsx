@@ -12,6 +12,7 @@ export default function BadgeProgressionLadder({ rideCount }: { rideCount: numbe
           display: "flex",
           alignItems: "center",
           overflowX: "auto",
+          maxWidth: "100%",
           gap: 0,
           padding: "20px 4px",
         }}
