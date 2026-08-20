@@ -60,7 +60,7 @@ nav li.has-dropdown:hover .dropdown{display:block;}
 
 /* HERO PROMO SLIDER */
 .hero-section-wrapper{position:relative;}
-.hero-promo-slider{width:276px;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+.hero-promo-slider{width:330px;display:flex;flex-direction:column;justify-content:center;align-items:center;}
 .hero-promo-frame{position:relative;width:100%;border-radius:14px;overflow:hidden;border:2px solid var(--amber);box-shadow:0 12px 30px rgba(0,0,0,.4);background:rgba(255,255,255,.06);backdrop-filter:blur(4px);}
 
 /* Promo mode */
@@ -344,7 +344,7 @@ footer nav a:hover{color:var(--amber);}
   .hero-content-row{flex-direction:column;}
   .hero-inner{flex:0 0 auto;}
   .hero-promo-zone{flex:0 0 auto;padding:20px 0 0;}
-  .hero-promo-slider{width:min(312px,84%);margin:0 auto;}
+  .hero-promo-slider{width:min(375px,90%);margin:0 auto;}
   .hero{padding-bottom:36px;padding-top:200px;}
   .about-grid{grid-template-columns:1fr;}
   .cards{grid-template-columns:1fr;}
