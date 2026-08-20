@@ -11,6 +11,9 @@ import RenewEliteButton from "./RenewEliteButton";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
 import AssignRidesButton from "@/components/admin/AssignRidesButton";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
+import BadgeProgressionLadder from "./BadgeProgressionLadder";
+import NextTierProgress from "./NextTierProgress";
+import { getRideBadgeTier } from "@/lib/rideBadges";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
 
 type Ride = {
@@ -171,6 +174,17 @@ export default function EliteProfileView({
               <AssignRidesButton memberId={memberId} memberName={fullName} />
             </div>
           )}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 26, paddingBottom: 4 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png"
+              alt="The Knight Ryders"
+              style={{ width: 56, height: "auto", opacity: 0.9, marginBottom: 8 }}
+            />
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", color: "#d4af37" }}>
+              THE KNIGHT RYDERS
+            </div>
+          </div>
           <div className="elite-dossier-header-title">
             The proud member of The Knight Ryders club
           </div>
@@ -249,35 +263,70 @@ export default function EliteProfileView({
                 </div>
                 <div className="elite-stat-label">Member Since</div>
               </div>
+              <div className="elite-stat-card">
+                <div className="elite-digital-readout" style={{ fontSize: "0.68em" }}>
+                  {getRideBadgeTier(ridesCount)?.name ?? "—"}
+                </div>
+                <div className="elite-stat-label">Club Rank</div>
+              </div>
             </div>
+
+            <BadgeProgressionLadder rideCount={ridesCount} />
 
             {coRiders.filter((r) => r.profile_photo_url).length > 0 && (
               <div>
-                <div className="elite-subsection-title">Frequently Rides With</div>
+                <div className="elite-subsection-title">Riding Circle</div>
                 <div className="elite-co-riders-row">
                   {coRiders
                     .filter((rider) => rider.profile_photo_url)
-                    .map((rider) => (
-                      <a
-                        key={rider.id}
-                        href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
-                        className="elite-co-rider-card"
-                      >
-                        <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={rider.profile_photo_url!}
-                            alt={rider.full_name ?? "Rider"}
-                            style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
-                          />
-                        </div>
-                        <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
-                        <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
-                          {rider.shared_rides} together
-                        </div>
-                        <RideBadgeStrip rideCount={rider.ride_count} variant="elite-co-rider" />
-                      </a>
-                    ))}
+                    .map((rider) => {
+                      const riderTier = getRideBadgeTier(rider.ride_count);
+                      return (
+                        <a
+                          key={rider.id}
+                          href={rider.handle ? `/@${rider.handle}` : `/members/${rider.id}`}
+                          className="elite-co-rider-card"
+                        >
+                          <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={rider.profile_photo_url!}
+                              alt={rider.full_name ?? "Rider"}
+                              style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
+                            />
+                            {riderTier && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  bottom: -2,
+                                  right: -2,
+                                  width: 18,
+                                  height: 18,
+                                  borderRadius: "50%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: `radial-gradient(circle at 35% 30%, ${riderTier.colors.shine}, ${riderTier.colors.base} 55%, ${riderTier.colors.edge})`,
+                                  border: "1.5px solid #0c0e12",
+                                }}
+                                title={riderTier.name}
+                              >
+                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+                                  <path
+                                    d="M2 18 L2 9 L6.5 13 L9.5 5 L12 13 L14.5 5 L17.5 13 L22 9 L22 18 Z"
+                                    fill="#fff"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ color: "#f0f0f0", fontSize: 12, fontWeight: 700 }}>{rider.full_name}</div>
+                          <div style={{ color: "#64748b", fontSize: 10.5, marginTop: 3 }}>
+                            {rider.shared_rides} together
+                          </div>
+                        </a>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -298,6 +347,11 @@ export default function EliteProfileView({
 
         {/* MY RIDES */}
         <EliteRidesCarousel rides={rides} />
+
+        {/* WHAT'S NEXT */}
+        <div style={{ marginTop: 40 }}>
+          <NextTierProgress rideCount={ridesCount} />
+        </div>
       </div>
 
       <RequestEliteBanner
