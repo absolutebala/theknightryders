@@ -138,7 +138,7 @@ export default async function HomePage({
   const nextUpcomingRide = nextUpcomingRideResult.data ?? null;
   const allHolidayCards = allHolidayCardsResult.data ?? [];
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   const todaysHolidayCard = allHolidayCards.find((c) => c.holiday_date === todayStr) ?? null;
   const holidayImageUrl = todaysHolidayCard?.image_url ?? null;
   const hasHolidayCard = !!todaysHolidayCard && !!holidayImageUrl;

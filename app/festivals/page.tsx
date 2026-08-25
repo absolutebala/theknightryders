@@ -4,7 +4,7 @@ import FestivalCard from "@/components/FestivalCard";
 export default async function FestivalsPage() {
   const supabase = await createClient();
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 
   const { data: cards } = await supabase
     .from("holiday_card_images")

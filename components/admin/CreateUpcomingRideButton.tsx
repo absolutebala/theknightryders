@@ -15,7 +15,7 @@ export default function CreateUpcomingRideButton({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 
   const [title, setTitle] = useState("");
   const [place, setPlace] = useState("");

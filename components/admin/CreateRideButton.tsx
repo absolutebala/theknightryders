@@ -16,7 +16,7 @@ export default function CreateRideButton() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   const [rideDate, setRideDate] = useState(todayStr);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
