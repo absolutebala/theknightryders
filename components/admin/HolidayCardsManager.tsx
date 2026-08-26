@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import ImageCropModal from "./ImageCropModal";
 
 type HolidayCard = {
   holiday_key: string;
@@ -19,6 +20,8 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState(card.holiday_date ?? "");
   const [wish, setWish] = useState(card.wish_text ?? "");
+  const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null);
+  const [pendingFileName, setPendingFileName] = useState<string>("photo.jpg");
 
   async function save(overrides: { url?: string | null; date?: string; wish?: string }) {
     setBusy(true);
@@ -38,15 +41,23 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
     router.refresh();
   }
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPendingFileName(file.name);
+    setPendingImageSrc(URL.createObjectURL(file));
+    e.target.value = ""; // allow re-selecting the same file later
+  }
+
+  async function handleCroppedUpload(blob: Blob) {
+    setPendingImageSrc(null);
     setBusy(true);
     setError(null);
     try {
       const supabase = createClient();
+      const file = new File([blob], pendingFileName, { type: "image/jpeg" });
       const compressed = await compressImage(file);
-      const path = `holidays/${card.holiday_key}-${jpegFilename(file.name)}`;
+      const path = `holidays/${card.holiday_key}-${jpegFilename(pendingFileName)}`;
       const { error: uploadError } = await supabase.storage.from("homepage").upload(path, compressed, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);
@@ -124,7 +135,7 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <label style={{ fontSize: 10.5, color: "var(--cta-blue)", cursor: "pointer" }}>
           {busy ? "Working…" : card.image_url ? "Change Photo" : "Upload"}
-          <input type="file" accept="image/*" onChange={handleUpload} disabled={busy} style={{ display: "none" }} />
+          <input type="file" accept="image/*" onChange={handleFileSelected} disabled={busy} style={{ display: "none" }} />
         </label>
         {card.image_url && (
           <button
@@ -157,6 +168,15 @@ function HolidayCardEditor({ card }: { card: HolidayCard }) {
         rows={3}
         style={{ width: "100%", padding: "5px 8px", fontSize: 11, border: "1px solid #c7d3cf", borderRadius: 5, resize: "vertical" }}
       />
+
+      {pendingImageSrc && (
+        <ImageCropModal
+          imageSrc={pendingImageSrc}
+          aspect={3 / 4}
+          onCancel={() => setPendingImageSrc(null)}
+          onDone={handleCroppedUpload}
+        />
+      )}
     </div>
   );
 }
