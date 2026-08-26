@@ -369,7 +369,7 @@ async function buildPremiumCard(opts: PremiumCardOptions): Promise<HTMLCanvasEle
   const f = (n: number) => Math.round(n * FONT_SCALE);
   const bf = (n: number) => Math.round(n * FONT_SCALE * 1.2); // "below the image" text: credit row, stat pills/message, footer
 
-  const W = s(700);
+  const W = s(800);
   const FRAME = s(30);
   const CORNER_RADIUS = s(26);
   const { body: bodyFont } = await loadRideCardFonts();
@@ -379,11 +379,11 @@ async function buildPremiumCard(opts: PremiumCardOptions): Promise<HTMLCanvasEle
   const photoW = W - PHOTO_PAD * 2;
   const photoH = Math.round(photoW * (img.height / img.width));
 
-  const HEADER_H = s(176);
-  const TITLE_H = s(128);
+  const HEADER_H = s(150);
+  const TITLE_H = s(109);
   const PHOTO_SECTION_H = photoH + PHOTO_PAD * 2;
-  const RIDER_ROW_H = opts.creditRow ? s(74) : 0;
-  const FOOTER_H = s(132);
+  const RIDER_ROW_H = opts.creditRow ? s(63) : 0;
+  const FOOTER_H = s(112);
 
   // Bottom section: either 3 stat pills (fixed height) or a wrapped
   // message (height depends on how many lines it wraps to).
@@ -391,11 +391,11 @@ async function buildPremiumCard(opts: PremiumCardOptions): Promise<HTMLCanvasEle
   let bottomMessageLines: string[] = [];
   let BOTTOM_H = 0;
   if (opts.bottomPills && opts.bottomPills.length > 0) {
-    BOTTOM_H = s(118);
+    BOTTOM_H = s(100);
   } else if (opts.bottomMessage) {
     measureCtx.font = `600 ${bf(18)}px "${bodyFont}"`;
     bottomMessageLines = wrapText(measureCtx, opts.bottomMessage, W - s(90));
-    BOTTOM_H = Math.max(s(90), bottomMessageLines.length * f(28) + s(50));
+    BOTTOM_H = Math.max(s(77), bottomMessageLines.length * f(28) + s(50));
   }
 
   const contentH = HEADER_H + TITLE_H + PHOTO_SECTION_H + RIDER_ROW_H + BOTTOM_H + FOOTER_H;
