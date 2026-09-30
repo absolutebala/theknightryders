@@ -118,13 +118,13 @@ export default function UpcomingRidePhotoEditor({
             background: "#fff",
             borderRadius: 10,
             padding: 14,
-            width: 320,
+            width: 500,
             boxShadow: "0 10px 30px rgba(0,0,0,.25)",
           }}
         >
           {previewUrl && (
             <div style={{ marginBottom: 12 }}>
-              <DragPositionEditor imageUrl={previewUrl} position={position} onChange={setPosition} frameHeight={170} />
+              <DragPositionEditor imageUrl={previewUrl} position={position} onChange={setPosition} frameHeight={195} />
             </div>
           )}
 
