@@ -12,7 +12,7 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
 
   const { data: ride } = await supabase
     .from("upcoming_rides")
-    .select("id, slug, title, place, ride_date, end_date, is_multi_day, cost_per_person, summary, hero_image_url")
+    .select("id, slug, title, place, ride_date, end_date, is_multi_day, cost_per_person, summary, hero_image_url, hero_image_position")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -80,7 +80,14 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
           <img
             src={ride.hero_image_url}
             alt={ride.title}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: `center ${ride.hero_image_position ?? 50}%`,
+            }}
           />
         )}
         <div
@@ -105,7 +112,12 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
                   summary: ride.summary,
                 }}
               />
-              <UpcomingRidePhotoEditor upcomingRideId={ride.id} existingPhotos={existingPhotos} currentUrl={ride.hero_image_url} />
+              <UpcomingRidePhotoEditor
+                upcomingRideId={ride.id}
+                existingPhotos={existingPhotos}
+                currentUrl={ride.hero_image_url}
+                currentPosition={ride.hero_image_position ?? 50}
+              />
             </div>
           )}
           <h1 style={{ color: "#fff", fontSize: 34, fontWeight: 800, marginBottom: 6 }}>{ride.title}</h1>
