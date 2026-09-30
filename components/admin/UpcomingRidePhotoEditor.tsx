@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import DragPositionEditor from "./DragPositionEditor";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
+import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 
 export default function UpcomingRidePhotoEditor({
   upcomingRideId,
@@ -18,61 +19,85 @@ export default function UpcomingRidePhotoEditor({
   currentPosition: number;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentUrl);
+  const [editing, setEditing] = useState(false);
   const [position, setPosition] = useState(currentPosition);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pickedExistingUrl, setPickedExistingUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(currentUrl);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function save(url: string, pos: number) {
-    setBusy(true);
-    setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.rpc("update_upcoming_ride_photo", {
-      target_id: upcomingRideId,
-      new_url: url,
-      new_position: pos,
-    });
-    setBusy(false);
-    if (error) {
-      setError(error.message);
-      return;
-    }
-    setOpen(false);
-    router.refresh();
-  }
-
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setBusy(true);
+    setPendingFile(file);
+    setPickedExistingUrl(null);
+    setPreviewUrl(URL.createObjectURL(file));
+    setPosition(50);
+  }
+
+  function handlePickExisting(url: string) {
+    setPendingFile(null);
+    setPickedExistingUrl(url);
+    setPreviewUrl(url);
+    setPosition(50);
+  }
+
+  async function handleSave() {
+    setSaving(true);
     setError(null);
+    const supabase = createClient();
+
     try {
-      const supabase = createClient();
-      const compressed = await compressImage(file);
-      const path = `upcoming-rides/${Date.now()}-${jpegFilename(file.name)}`;
-      const { error: uploadError } = await supabase.storage.from("homepage").upload(path, compressed);
-      if (uploadError) throw uploadError;
-      const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);
-      setBusy(false);
-      setPreviewUrl(publicUrlData.publicUrl);
-      setPosition(50);
+      let finalUrl = currentUrl;
+
+      if (pendingFile) {
+        const compressed = await compressImage(pendingFile);
+        const path = `upcoming-rides/${Date.now()}-${jpegFilename(pendingFile.name)}`;
+        const { error: uploadError } = await supabase.storage.from("homepage").upload(path, compressed);
+        if (uploadError) throw uploadError;
+        const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);
+        finalUrl = publicUrlData.publicUrl;
+      } else if (pickedExistingUrl) {
+        finalUrl = pickedExistingUrl;
+      }
+
+      const { error: rpcError } = await supabase.rpc("update_upcoming_ride_photo", {
+        target_id: upcomingRideId,
+        new_url: finalUrl,
+        new_position: position,
+      });
+      if (rpcError) throw rpcError;
+
+      if (pendingFile && currentUrl) {
+        await deleteStorageFileFromUrl(supabase, currentUrl);
+      }
+
+      setEditing(false);
+      setPendingFile(null);
+      setPickedExistingUrl(null);
+      router.refresh();
     } catch (err) {
-      setBusy(false);
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setSaving(false);
     }
   }
 
-  function pickExisting(url: string) {
-    setPreviewUrl(url);
-    setPosition(50);
+  function handleCancel() {
+    setEditing(false);
+    setPosition(currentPosition);
+    setPendingFile(null);
+    setPickedExistingUrl(null);
+    setPreviewUrl(currentUrl);
+    setError(null);
   }
 
   return (
     <div style={{ position: "relative" }}>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setEditing((e) => !e)}
         style={{
           background: "rgba(255,255,255,.9)",
           border: "none",
@@ -86,7 +111,7 @@ export default function UpcomingRidePhotoEditor({
         {currentUrl ? "Change Photo" : "Add Photo"}
       </button>
 
-      {open && (
+      {editing && (
         <div
           style={{
             marginTop: 8,
@@ -97,17 +122,24 @@ export default function UpcomingRidePhotoEditor({
             boxShadow: "0 10px 30px rgba(0,0,0,.25)",
           }}
         >
-          {error && <div style={{ color: "#a3312a", fontSize: 12, marginBottom: 8 }}>{error}</div>}
-
           {previewUrl && (
             <div style={{ marginBottom: 12 }}>
               <DragPositionEditor imageUrl={previewUrl} position={position} onChange={setPosition} frameHeight={170} />
             </div>
           )}
 
-          <label style={{ display: "inline-block", fontSize: 12.5, color: "var(--cta-blue)", cursor: "pointer", marginBottom: 10 }}>
-            {busy ? "Working…" : "Upload a new photo"}
-            <input type="file" accept="image/*" onChange={handleUpload} disabled={busy} style={{ display: "none" }} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+            id="upcoming-ride-photo-upload"
+          />
+          <label
+            htmlFor="upcoming-ride-photo-upload"
+            style={{ display: "inline-block", fontSize: 12.5, color: "var(--cta-blue)", cursor: "pointer", marginBottom: 10 }}
+          >
+            {previewUrl ? "Replace Photo" : "Upload a photo"}
           </label>
 
           {existingPhotos.length > 0 && (
@@ -118,8 +150,7 @@ export default function UpcomingRidePhotoEditor({
                   <button
                     key={p.url}
                     type="button"
-                    onClick={() => pickExisting(p.url)}
-                    disabled={busy}
+                    onClick={() => handlePickExisting(p.url)}
                     title={p.title}
                     style={{
                       padding: 0,
@@ -137,24 +168,22 @@ export default function UpcomingRidePhotoEditor({
             </>
           )}
 
+          {error && <div style={{ color: "#a3312a", fontSize: 12, marginBottom: 8 }}>{error}</div>}
+
           <div style={{ display: "flex", gap: 8 }}>
             <button
               type="button"
               className="btn btn-amber"
               style={{ padding: "7px 16px", fontSize: 12 }}
-              disabled={busy || !previewUrl}
-              onClick={() => previewUrl && save(previewUrl, position)}
+              disabled={saving || !previewUrl}
+              onClick={handleSave}
             >
-              {busy ? "Saving…" : "Save"}
+              {saving ? "Saving…" : "Save"}
             </button>
             <button
               type="button"
-              onClick={() => {
-                setOpen(false);
-                setPreviewUrl(currentUrl);
-                setPosition(currentPosition);
-              }}
-              disabled={busy}
+              onClick={handleCancel}
+              disabled={saving}
               style={{ padding: "7px 16px", fontSize: 12, background: "transparent", border: "1px solid #c7d3cf", borderRadius: 4, cursor: "pointer" }}
             >
               Cancel
