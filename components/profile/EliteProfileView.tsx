@@ -113,6 +113,8 @@ export default function EliteProfileView({
   const bgUrl = useCustomBg ? customBackgroundUrl : latestRideImageUrl;
   const bgPosition = useCustomBg ? customBackgroundPosition : latestRideImagePosition;
 
+  const circleRiders = coRiders.filter((r) => r.profile_photo_url);
+
   return (
     <div
       className="elite-page"
@@ -142,7 +144,8 @@ export default function EliteProfileView({
         {isOwner && (
           <RenewEliteButton memberId={memberId} daysUntilExpiry={daysUntilExpiry} renewalPending={renewalPending} />
         )}
-        {/* DOSSIER CARD */}
+        {/* DOSSIER CARD + RIDING CIRCLE, TWO COLUMNS */}
+        <div className={circleRiders.length > 0 ? "elite-top-grid" : undefined}>
         <div className="elite-dossier-card">
           {isOwner && (
             <a
@@ -242,43 +245,11 @@ export default function EliteProfileView({
 
           <RideBadgeStrip rideCount={ridesCount} variant="elite" />
         </div>
-
-        {/* TWO COLUMN: stats+co-riders | photos */}
-        <div className="elite-two-col">
-          <div>
-            <div className="elite-telemetry-row" style={{ marginBottom: 36 }}>
-              <div className="elite-stat-card">
-                <div className="elite-digital-readout">{totalKm.toLocaleString("en-IN")}</div>
-                <div className="elite-stat-label">KMs Covered</div>
-              </div>
-              <div className="elite-stat-card">
-                <div className="elite-digital-readout">{ridesCount}</div>
-                <div className="elite-stat-label">Rides Participated</div>
-              </div>
-              <div className="elite-stat-card">
-                <div className="elite-digital-readout">
-                  {joinYear
-                    ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}`
-                    : "—"}
-                </div>
-                <div className="elite-stat-label">Member Since</div>
-              </div>
-              <div className="elite-stat-card">
-                <div className="elite-digital-readout" style={{ fontSize: "0.68em" }}>
-                  {getRideBadgeTier(ridesCount)?.name ?? "—"}
-                </div>
-                <div className="elite-stat-label">Club Rank</div>
-              </div>
-            </div>
-
-            <BadgeProgressionLadder rideCount={ridesCount} />
-
-            {coRiders.filter((r) => r.profile_photo_url).length > 0 && (
-              <div>
+        {circleRiders.length > 0 && (
+          <div className="elite-circle-panel">
                 <div className="elite-subsection-title">Riding Circle</div>
                 <div className="elite-co-riders-row">
-                  {coRiders
-                    .filter((rider) => rider.profile_photo_url)
+                  {circleRiders
                     .map((rider) => {
                       const riderTier = getRideBadgeTier(rider.ride_count);
                       return (
@@ -329,7 +300,38 @@ export default function EliteProfileView({
                     })}
                 </div>
               </div>
-            )}
+        )}
+        </div>
+
+        {/* TWO COLUMN: stats+co-riders | photos */}
+        <div className="elite-two-col">
+          <div>
+            <div className="elite-telemetry-row" style={{ marginBottom: 36 }}>
+              <div className="elite-stat-card">
+                <div className="elite-digital-readout">{totalKm.toLocaleString("en-IN")}</div>
+                <div className="elite-stat-label">KMs Covered</div>
+              </div>
+              <div className="elite-stat-card">
+                <div className="elite-digital-readout">{ridesCount}</div>
+                <div className="elite-stat-label">Rides Participated</div>
+              </div>
+              <div className="elite-stat-card">
+                <div className="elite-digital-readout">
+                  {joinYear
+                    ? `${new Date(joinDate!).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()} ${joinYear}`
+                    : "—"}
+                </div>
+                <div className="elite-stat-label">Member Since</div>
+              </div>
+              <div className="elite-stat-card">
+                <div className="elite-digital-readout" style={{ fontSize: "0.68em" }}>
+                  {getRideBadgeTier(ridesCount)?.name ?? "—"}
+                </div>
+                <div className="elite-stat-label">Club Rank</div>
+              </div>
+            </div>
+
+            <BadgeProgressionLadder rideCount={ridesCount} />
           </div>
 
           <div>

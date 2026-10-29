@@ -257,6 +257,10 @@ section{padding:70px 0;}
 .elite-co-riders-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .elite-co-rider-card{text-align:center;background:var(--elite-glass-panel);backdrop-filter:blur(8px);border:1px solid var(--elite-glass-border);border-radius:10px;padding:14px;display:block;overflow:hidden;position:relative;}
 
+.elite-top-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:30px;align-items:start;min-width:0;}
+.elite-top-grid>*{min-width:0;}
+.elite-circle-panel{background:var(--elite-glass-panel);backdrop-filter:blur(16px);border:1.5px solid var(--elite-glass-border);border-radius:20px;padding:26px 22px;box-shadow:0 20px 40px rgba(0,0,0,.6),inset 0 0 20px rgba(212,175,55,.08);}
+.elite-circle-panel .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
 .elite-two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;min-width:0;}
 .elite-two-col>div{min-width:0;}
 
@@ -287,6 +291,7 @@ section{padding:70px 0;}
   .elite-telemetry-row,.elite-rides-grid-v2{grid-template-columns:1fr;}
   .elite-gallery-grid-v2{grid-template-columns:repeat(3,1fr);}
   .elite-two-col{grid-template-columns:1fr;}
+  .elite-top-grid{grid-template-columns:1fr;}
   .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
   .elite-dossier-card{padding:26px 20px;}
   .ride-badge-strip-elite{width:calc(100% + 40px);margin:24px -20px -26px;}
