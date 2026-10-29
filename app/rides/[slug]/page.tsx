@@ -6,6 +6,7 @@ import RideGalleryEditor from "@/components/admin/RideGalleryEditor";
 import RideWhatsAppCardPicker from "@/components/admin/RideWhatsAppCardPicker";
 import DownloadRideStatusCard from "@/components/DownloadRideStatusCard";
 import RideDescriptionEditor from "@/components/admin/RideDescriptionEditor";
+import RideHighlights from "@/components/RideHighlights";
 import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
 import AddMeToRideButton from "@/components/AddMeToRideButton";
 import RideStatsEditor from "@/components/admin/RideStatsEditor";
@@ -226,6 +227,7 @@ export default async function RideDetailPage({
       <section style={{ paddingTop: 0, paddingBottom: 20 }}>
         <div className="container" style={{ maxWidth: 780 }}>
           <h2 style={{ fontSize: 18, color: "var(--navy)", marginBottom: 14, marginTop: 40 }}>The Ride</h2>
+          <RideHighlights description={ride.description} />
           <RideDescriptionEditor
             rideId={ride.id}
             description={ride.description}
