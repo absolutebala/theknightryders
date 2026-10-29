@@ -12,7 +12,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
 
   // member (public data) and the current auth session are independent --
   // fetch both at once instead of one after the other.
-  const [memberResult, authResult, isAdminResult] = await Promise.all([
+  const [memberResult, authResult, isAdminResult, suspendedResult] = await Promise.all([
     supabase
       .from("members_public")
       .select(
@@ -22,7 +22,9 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
       .maybeSingle(),
     supabase.auth.getUser(),
     supabase.rpc("is_admin"),
+    supabase.from("suspended_members").select("member_id").eq("member_id", memberId).maybeSingle(),
   ]);
+  const isSuspended = !!suspendedResult.data;
 
   const member = memberResult.data;
   if (!member) {
@@ -152,6 +154,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
         isOwner={isOwner}
         isAdmin={isAdmin}
         isHidden={!!member.is_hidden}
+        isSuspended={isSuspended}
         fullName={member.full_name}
         handle={member.handle}
         bio={member.bio}

@@ -1,4 +1,3 @@
-import { isSuspendedHandle } from "@/lib/suspendedMembers";
 import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
@@ -42,6 +41,7 @@ type Props = {
   isOwner: boolean;
   isAdmin: boolean;
   isHidden: boolean;
+  isSuspended: boolean;
   fullName: string | null;
   handle: string | null;
   bio: string | null;
@@ -73,6 +73,7 @@ export default function EliteProfileView({
   isOwner,
   isAdmin,
   isHidden,
+  isSuspended,
   fullName,
   handle,
   bio,
@@ -114,7 +115,6 @@ export default function EliteProfileView({
   const bgUrl = useCustomBg ? customBackgroundUrl : latestRideImageUrl;
   const bgPosition = useCustomBg ? customBackgroundPosition : latestRideImagePosition;
 
-  const isSuspended = isSuspendedHandle(handle);
   const circleRiders = isSuspended ? [] : coRiders.filter((r) => r.profile_photo_url);
 
   return (
