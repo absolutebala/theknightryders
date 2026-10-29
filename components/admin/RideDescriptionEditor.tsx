@@ -6,8 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { parseItinerary } from "@/lib/parseItinerary";
 import { isStoryHeading } from "@/lib/rideDetails";
 
-const DETAILS_TEMPLATE =
-  "Flag Off: 5:30 AM, <place>\nReached: 7:00 PM, <place>\nStay: <hotel name>\nRestaurant: <restaurant names>\nRoute: <roads and places covered>\nChallenges: <weather, traffic, breakdowns...>\n\n";
 
 export default function RideDescriptionEditor({
   rideId,
@@ -65,15 +63,6 @@ export default function RideDescriptionEditor({
           }}
         />
         {error && <div style={{ color: "#a3312a", fontSize: 12, marginTop: 6 }}>{error}</div>}
-        {!/^\s*flag[ -]?off\s*:/im.test(draft) && (
-          <button
-            type="button"
-            onClick={() => setDraft((d) => DETAILS_TEMPLATE + d)}
-            style={{ marginTop: 8, fontSize: 12.5, color: "var(--cta-blue)", background: "none", border: "none", cursor: "pointer", fontWeight: 700, padding: 0 }}
-          >
-            + Insert ride details template (flag off, reached, stay, food, route, challenges)
-          </button>
-        )}
         <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
           <button type="button" className="btn btn-amber" style={{ padding: "8px 18px", fontSize: 13 }} disabled={saving} onClick={save}>
             {saving ? "Saving…" : "Save"}
