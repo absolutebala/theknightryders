@@ -145,19 +145,46 @@ export default function RideDescriptionEditor({
               fontSize: 15.5,
             }}
           >
-            {(description || fallbackText).split("\n").map((line, i) => {
-              const m = line.match(/^\s*([A-Za-z][A-Za-z \-]{1,24}?)\s*:\s*(.*)$/);
-              if (description && m && isStoryHeading(m[1])) {
+            {(() => {
+              const lines = (description || fallbackText).split("\n");
+              return lines.map((line, i) => {
+                const t = line.trim();
+                if (!t) return null;
+                const m = line.match(/^\s*([A-Za-z][A-Za-z \-]{1,24}?)\s*:\s*(.*)$/);
+                if (description && m && isStoryHeading(m[1])) {
+                  return (
+                    <p key={i} style={{ margin: "0 0 6px" }}>
+                      <strong style={{ color: "var(--cta-blue)", fontWeight: 800 }}>{m[1].trim()}:</strong> {m[2]}
+                    </p>
+                  );
+                }
+                const isDay = /^Day\s*\d+\s*[\u2014\u2013\-:]/i.test(t);
+                const standalone =
+                  t.length <= 90 && !/[.,]$/.test(t) && !/\.\s/.test(t) && !lines[i - 1]?.trim() && !lines[i + 1]?.trim() && i > 0;
+                if (description && (isDay || standalone)) {
+                  return (
+                    <h3
+                      key={i}
+                      style={{
+                        margin: isDay ? "26px 0 8px" : "22px 0 8px",
+                        fontSize: isDay ? 18 : 16.5,
+                        fontWeight: 800,
+                        lineHeight: 1.35,
+                        color: isDay ? "var(--cta-blue)" : "var(--navy)",
+                        fontStyle: "normal",
+                      }}
+                    >
+                      {t}
+                    </h3>
+                  );
+                }
                 return (
-                  <p key={i} style={{ margin: "0 0 6px" }}>
-                    <strong style={{ color: "var(--cta-blue)", fontWeight: 800 }}>{m[1].trim()}:</strong> {m[2]}
+                  <p key={i} style={{ margin: "0 0 10px" }}>
+                    {line}
                   </p>
                 );
-              }
-              return line.trim() ? (
-                <p key={i} style={{ margin: "0 0 10px" }}>{line}</p>
-              ) : null;
-            })}
+              });
+            })()}
           </div>
         )}
       </div>

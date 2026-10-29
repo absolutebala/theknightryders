@@ -1,5 +1,5 @@
 import { extractHighlights } from "@/lib/rideHighlights";
-import { parseRideDetails } from "@/lib/rideDetails";
+import { parseRideDetails, parseRideDays } from "@/lib/rideDetails";
 
 /**
  * Quick-scan highlights shown above a ride's full story. If the story has
@@ -8,6 +8,49 @@ import { parseRideDetails } from "@/lib/rideDetails";
  * and reached times. Otherwise falls back to auto-picked key sentences.
  */
 export default function RideHighlights({ description }: { description: string | null }) {
+  const days = parseRideDays(description);
+  if (days) {
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: 14,
+          marginBottom: 28,
+          alignItems: "start",
+        }}
+      >
+        {days.map((d) => (
+          <div
+            key={d.label}
+            style={{
+              background: "var(--mint)",
+              border: "1px solid #dce8e3",
+              borderTop: "4px solid var(--cta-blue)",
+              borderRadius: 10,
+              padding: "14px 16px",
+            }}
+          >
+            <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cta-blue)" }}>
+              {d.label}
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--navy)", margin: "2px 0 10px" }}>{d.route}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {d.rows.map((r) => (
+                <div key={r.label} style={{ fontSize: 13.5, lineHeight: 1.45, color: "var(--navy)" }}>
+                  <span style={{ fontWeight: 800, color: "var(--cta-blue)" }}>
+                    {r.icon} {r.label}:
+                  </span>{" "}
+                  <span style={{ fontWeight: 600 }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const details = parseRideDetails(description);
 
   if (details.length > 0) {

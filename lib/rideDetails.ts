@@ -55,7 +55,7 @@ function splitSentences(text: string): string[] {
 }
 
 function cleanTime(raw: string): string {
-  return raw.replace(/([ap])\.m\.?/i, "$1m").replace(/\s+/g, " ").toUpperCase().replace(/(\d)(AM|PM)/, "$1 $2");
+  return raw.replace(/\.$/, "").replace(/([ap])\.m\.?/i, "$1m").replace(/\s+/g, " ").toUpperCase().replace(/(\d)(AM|PM)/, "$1 $2");
 }
 
 function placeAfter(sentence: string, words: string): string | null {
@@ -157,4 +157,111 @@ export function parseRideDetails(description: string | null): RideDetail[] {
 export function isStoryHeading(label: string): boolean {
   const name = label.trim().toLowerCase();
   return ALIASES.some((a) => a.names.includes(name)) || ["highlights", "summary", "day", "notes"].includes(name);
+}
+
+// ---------------------------------------------------------------------------
+// Multi-day rides: "Day 1 — Chennai to Valparai: subtitle" sections each get
+// their own card (flag off, reached, duration, stay, food, highlights,
+// challenges) so times from different days are never mixed together.
+// ---------------------------------------------------------------------------
+
+export type RideDay = {
+  label: string; // "Day 1"
+  route: string; // "Chennai to Valparai"
+  rows: Array<{ label: string; icon: string; value: string }>;
+};
+
+const DAY_HEADING = /^\s*Day\s*(\d+)\s*[—–\-:]\s*(.+?)\s*$/i;
+const START_RE = /\b(flag(?:ged)?[ -]?off|set off|kick(?:ed)? off|started|departed|left|began|rolled out|rolling out)\b/i;
+const REACH_RE = /\b(reached|arrived|reaching|made it|wrapped up|returned|returning|got back)\b/i;
+const HIGHLIGHT_GROUPS = [
+  /\b(elephants?|wildlife|leopard|deer|bison|tiger)\b/i,
+  /\bwaterfalls?\b/i,
+  /\b(sunrise|sunset|viewpoint)\b/i,
+];
+const CHALLENGE_RE = /\b(rain|fog|mist|traffic|jam|puncture|breakdown|broke down|landslide|pothole|slippery|steep|tough|difficult|delay\w*|struggle\w*|diversion|road ?block|deadline|skip(?:ped)? lunch|soaked|wet)\b/i;
+
+function clip(s: string): string {
+  return s.length > 170 ? s.slice(0, 167).trimEnd() + "..." : s;
+}
+
+function firstTime(s: string): string | null {
+  const m = s.match(TIME);
+  return m ? cleanTime(m[0]) : null;
+}
+
+export function parseRideDays(description: string | null): RideDay[] | null {
+  if (!description) return null;
+  const lines = description.split("\n");
+  const headingIdx: number[] = [];
+  lines.forEach((l, i) => {
+    if (DAY_HEADING.test(l)) headingIdx.push(i);
+  });
+  if (headingIdx.length < 2) return null;
+
+  const intro = splitSentences(lines.slice(0, headingIdx[0]).join("\n"));
+  const days: RideDay[] = [];
+
+  headingIdx.forEach((start, n) => {
+    const end = n + 1 < headingIdx.length ? headingIdx[n + 1] : lines.length;
+    const h = lines[start].match(DAY_HEADING)!;
+    const route = h[2].split(":")[0].trim();
+    const [fromRaw, toRaw] = route.split(/\s+to\s+/i);
+    const from = toRaw ? fromRaw.trim() : null;
+    const to = toRaw ? toRaw.trim() : null;
+
+    // Stop at the first standalone short heading (e.g. "What a Ride It Was!")
+    // so a closing summary never leaks into the last day.
+    let stop = end;
+    for (let i = start + 2; i < end; i++) {
+      const t = lines[i].trim();
+      if (t && t.length <= 60 && !/[.,]$/.test(t) && !/\.\s/.test(t) && !lines[i - 1].trim() && !lines[i + 1]?.trim()) {
+        stop = i;
+        break;
+      }
+    }
+    const sentences = splitSentences(lines.slice(start + 1, stop).join("\n"));
+    const pool = n === 0 ? [...sentences, ...intro] : sentences;
+
+    const startSentence = pool.find((s) => START_RE.test(s) && TIME.test(s));
+    const startTime = startSentence ? firstTime(startSentence) : null;
+    const startPlace = startSentence ? placeAfter(startSentence, "from|of|at|near") ?? from : from;
+
+    const reachSentence = sentences.find((s) => s !== startSentence && REACH_RE.test(s) && TIME.test(s));
+    const reachTime = reachSentence ? firstTime(reachSentence) : null;
+    const reachPlace = reachSentence
+      ? placeAfter(reachSentence, "reached|arrived at|arrived in|reaching|made it to|returned to|returning to|back (?:in|at|to)") ?? to
+      : to;
+
+    const rows: RideDay["rows"] = [];
+    if (startTime) rows.push({ label: "Flag Off", icon: "\u{1F3C1}", value: [startTime, startPlace].filter(Boolean).join(", ") });
+    if (reachTime) rows.push({ label: "Reached", icon: "\u{1F4CD}", value: [reachTime, reachPlace].filter(Boolean).join(", ") });
+    const sMin = startTime ? parseTimeMinutes(startTime) : null;
+    const eMin = reachTime ? parseTimeMinutes(reachTime) : null;
+    if (sMin !== null && eMin !== null) {
+      let diff = eMin - sMin;
+      if (diff <= 0) diff += 24 * 60;
+      rows.push({ label: "Duration", icon: "⏱️", value: formatDuration(diff) });
+    }
+
+    const prose = extractFromProse(sentences.join("\n"));
+    const stay = prose.get("stay")?.[0];
+    if (stay) rows.push({ label: "Stay", icon: "\u{1F3E8}", value: stay });
+    const food = prose.get("food");
+    if (food) rows.push({ label: "Food", icon: "\u{1F37D}️", value: food.join(" · ") });
+
+    const picked = HIGHLIGHT_GROUPS.map((re) => sentences.findIndex((s) => re.test(s))).filter((i) => i >= 0);
+    const highlights = [...new Set(picked)].sort((a, b) => a - b).map((i) => clip(sentences[i]));
+    if (highlights.length) rows.push({ label: "Highlights", icon: "✨", value: highlights.join(" ") });
+
+    const challenges = sentences
+      .filter((s) => CHALLENGE_RE.test(s) && !/\b(thankfully|given us a break|gave us a break)\b/i.test(s))
+      .slice(0, 2)
+      .map(clip);
+    if (challenges.length) rows.push({ label: "Challenges", icon: "⚠️", value: challenges.join(" ") });
+
+    days.push({ label: `Day ${h[1]}`, route, rows });
+  });
+
+  return days;
 }
