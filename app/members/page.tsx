@@ -96,6 +96,21 @@ export default async function MembersPage() {
     );
   }
 
+  const { data: suspendedRow } = await supabase
+    .from("suspended_members")
+    .select("member_id")
+    .eq("member_id", member.id)
+    .maybeSingle();
+  if (suspendedRow) {
+    return (
+      <div className="container" style={{ padding: "70px 24px", maxWidth: 640 }}>
+        <h1 style={{ color: "#ef4444", marginBottom: 12 }}>
+          This Member is suspended from The Knight Ryders Club
+        </h1>
+      </div>
+    );
+  }
+
   if (member.is_hidden) {
     await supabase.rpc("request_reactivation");
 

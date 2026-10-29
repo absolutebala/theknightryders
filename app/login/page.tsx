@@ -8,6 +8,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const authFailed = searchParams.get("error") === "auth_failed";
+  const suspendedBlocked = searchParams.get("error") === "suspended";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,6 +61,20 @@ function LoginForm() {
         .eq("user_id", data.user.id)
         .maybeSingle();
 
+      if (member) {
+        const { data: suspended } = await supabase
+          .from("suspended_members")
+          .select("member_id")
+          .eq("member_id", member.id)
+          .maybeSingle();
+        if (suspended) {
+          await supabase.auth.signOut();
+          setLoading(false);
+          setError("This Member is suspended from The Knight Ryders Club");
+          return;
+        }
+      }
+
       setLoading(false);
 
       if (member && !member.is_hidden) {
@@ -80,9 +95,12 @@ function LoginForm() {
         <h1>Member Login</h1>
         <p className="sub">Sign in to access the members&apos; area.</p>
 
-        {(error || authFailed) && (
+        {(error || authFailed || suspendedBlocked) && (
           <div className="auth-error">
-            {error ?? "Google sign-in didn't complete. Please try again."}
+            {error ??
+              (suspendedBlocked
+                ? "This Member is suspended from The Knight Ryders Club"
+                : "Google sign-in didn't complete. Please try again.")}
             {error === "Invalid login credentials" && (
               <div style={{ marginTop: 8, fontSize: 13, fontWeight: 400 }}>
                 Our website recently got migrated, so you may need to reset

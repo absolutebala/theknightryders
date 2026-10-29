@@ -25,6 +25,18 @@ export async function GET(request: Request) {
         .eq("user_id", data.user.id)
         .maybeSingle();
 
+      if (member) {
+        const { data: suspended } = await supabase
+          .from("suspended_members")
+          .select("member_id")
+          .eq("member_id", member.id)
+          .maybeSingle();
+        if (suspended) {
+          await supabase.auth.signOut();
+          return NextResponse.redirect(`${origin}/login?error=suspended`);
+        }
+      }
+
       if (member && !member.is_hidden) {
         const dest = member.handle ? `/@${member.handle}` : `/members/${member.id}`;
         return NextResponse.redirect(`${origin}${dest}`);
