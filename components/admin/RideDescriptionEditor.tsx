@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { parseItinerary } from "@/lib/parseItinerary";
+import { isStoryHeading } from "@/lib/rideDetails";
+
+const DETAILS_TEMPLATE =
+  "Flag Off: 5:30 AM, <place>\nReached: 7:00 PM, <place>\nStay: <hotel name>\nRestaurant: <restaurant names>\nRoute: <roads and places covered>\nChallenges: <weather, traffic, breakdowns...>\n\n";
 
 export default function RideDescriptionEditor({
   rideId,
@@ -61,6 +65,15 @@ export default function RideDescriptionEditor({
           }}
         />
         {error && <div style={{ color: "#a3312a", fontSize: 12, marginTop: 6 }}>{error}</div>}
+        {!/^\s*flag[ -]?off\s*:/im.test(draft) && (
+          <button
+            type="button"
+            onClick={() => setDraft((d) => DETAILS_TEMPLATE + d)}
+            style={{ marginTop: 8, fontSize: 12.5, color: "var(--cta-blue)", background: "none", border: "none", cursor: "pointer", fontWeight: 700, padding: 0 }}
+          >
+            + Insert ride details template (flag off, reached, stay, food, route, challenges)
+          </button>
+        )}
         <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
           <button type="button" className="btn btn-amber" style={{ padding: "8px 18px", fontSize: 13 }} disabled={saving} onClick={save}>
             {saving ? "Saving…" : "Save"}
@@ -135,18 +148,28 @@ export default function RideDescriptionEditor({
             </div>
           </div>
         ) : (
-          <p
+          <div
             style={{
               color: description ? "var(--dark)" : "var(--grey)",
               fontStyle: description ? "normal" : "italic",
-              whiteSpace: "pre-line",
               lineHeight: 1.8,
               fontSize: 15.5,
-              margin: 0,
             }}
           >
-            {description || fallbackText}
-          </p>
+            {(description || fallbackText).split("\n").map((line, i) => {
+              const m = line.match(/^\s*([A-Za-z][A-Za-z \-]{1,24}?)\s*:\s*(.*)$/);
+              if (description && m && isStoryHeading(m[1])) {
+                return (
+                  <p key={i} style={{ margin: "0 0 6px" }}>
+                    <strong style={{ color: "var(--cta-blue)", fontWeight: 800 }}>{m[1].trim()}:</strong> {m[2]}
+                  </p>
+                );
+              }
+              return line.trim() ? (
+                <p key={i} style={{ margin: "0 0 10px" }}>{line}</p>
+              ) : null;
+            })}
+          </div>
         )}
       </div>
       {isAdmin && (
