@@ -190,7 +190,10 @@ export default function EliteProfileView({
               THE KNIGHT RYDERS
             </div>
           </div>
-          <div className="elite-dossier-header-title">
+          <div
+            className="elite-dossier-header-title"
+            style={isSuspended ? { color: "#ef4444", fontWeight: 700, borderBottomColor: "rgba(239,68,68,.4)" } : undefined}
+          >
             {isSuspended
               ? "This Member is suspended from The Knight Ryders Club"
               : "The proud member of The Knight Ryders club"}
