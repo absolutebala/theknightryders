@@ -31,7 +31,7 @@ export default async function EditProfilePage() {
         Ride count and ride history aren&apos;t editable here -- they&apos;re
         maintained by club admins.
       </p>
-      <EditProfileForm member={member} isElite={member.profile_template === "elite"} />
+      <EditProfileForm member={member} isElite />
     </div>
   );
 }
