@@ -23,7 +23,34 @@ function LeaderboardBadgeLine({ rideCount }: { rideCount: number }) {
   );
 }
 
-export default async function PastRidesPage() {
+const STATE_CANONICAL: Record<string, string> = {
+  tamilnadu: "Tamil Nadu",
+  andhrapradesh: "Andhra Pradesh",
+  uttarpradesh: "Uttar Pradesh",
+  madhyapradesh: "Madhya Pradesh",
+  himachalpradesh: "Himachal Pradesh",
+  arunachalpradesh: "Arunachal Pradesh",
+  westbengal: "West Bengal",
+  jammuandkashmir: "Jammu and Kashmir",
+};
+
+// "Tamilnadu", "Tamil Nadu" and "tamil nadu " are all the same state.
+function stateKey(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function stateLabel(raw: string): string {
+  const canonical = STATE_CANONICAL[stateKey(raw)];
+  if (canonical) return canonical;
+  return raw.trim().replace(/\s+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+export default async function PastRidesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ state?: string }>;
+}) {
+  const { state: stateParam } = await searchParams;
   const supabase = await createClient();
 
   await supabase.rpc("expire_stale_elite_members");
@@ -51,13 +78,22 @@ export default async function PastRidesPage() {
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
   const visibleRides = (rides ?? []).filter((r) => isAdmin || r.is_published);
 
-  const stateCounts = new Map<string, number>();
+  const stateCounts = new Map<string, { label: string; count: number }>();
   for (const ride of visibleRides) {
     if (ride.state) {
-      stateCounts.set(ride.state, (stateCounts.get(ride.state) ?? 0) + 1);
+      const key = stateKey(ride.state);
+      const entry = stateCounts.get(key) ?? { label: stateLabel(ride.state), count: 0 };
+      entry.count += 1;
+      stateCounts.set(key, entry);
     }
   }
-  const statesVisited = Array.from(stateCounts.entries()).sort((a, b) => b[1] - a[1]);
+  const statesVisited = Array.from(stateCounts.entries()).sort((a, b) => b[1].count - a[1].count);
+  const activeStateKey = stateParam ? stateKey(stateParam) : null;
+  const activeState = activeStateKey ? stateCounts.get(activeStateKey) : undefined;
+  const shownRides =
+    activeState && activeStateKey
+      ? visibleRides.filter((r) => r.state && stateKey(r.state) === activeStateKey)
+      : visibleRides;
 
   return (
     <>
@@ -94,21 +130,34 @@ export default async function PastRidesPage() {
               <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--navy)", marginRight: 4 }}>
                 {statesVisited.length} state{statesVisited.length === 1 ? "" : "s"} ridden:
               </span>
-              {statesVisited.map(([state, count]) => (
-                <span
-                  key={state}
-                  style={{
-                    background: "var(--white)",
-                    border: "1px solid #c7d3cf",
-                    borderRadius: 16,
-                    padding: "4px 12px",
-                    fontSize: 12.5,
-                    color: "var(--dark)",
-                  }}
-                >
-                  {state} <strong style={{ color: "var(--cta-blue)" }}>&times;{count}</strong>
-                </span>
-              ))}
+              {statesVisited.map(([key, { label, count }]) => {
+                const active = key === activeStateKey;
+                return (
+                  <a
+                    key={key}
+                    href={active ? "/rides/past" : `/rides/past?state=${encodeURIComponent(label)}`}
+                    aria-current={active ? "true" : undefined}
+                    style={{
+                      background: active ? "var(--cta-blue)" : "var(--white)",
+                      border: `1px solid ${active ? "var(--cta-blue)" : "#c7d3cf"}`,
+                      borderRadius: 16,
+                      padding: "4px 12px",
+                      fontSize: 12.5,
+                      color: active ? "var(--white)" : "var(--dark)",
+                      textDecoration: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}{" "}
+                    <strong style={{ color: active ? "var(--white)" : "var(--cta-blue)" }}>&times;{count}</strong>
+                  </a>
+                );
+              })}
+              {activeState && (
+                <a href="/rides/past" style={{ fontSize: 12.5, fontWeight: 700, color: "var(--cta-blue)", marginLeft: 4 }}>
+                  Show all rides
+                </a>
+              )}
             </div>
           </div>
         </section>
@@ -118,7 +167,7 @@ export default async function PastRidesPage() {
         <div className="container">
           <div className="past-rides-layout">
             <div className="past-rides-grid">
-              {visibleRides.map((ride) => (
+              {shownRides.map((ride) => (
                 <a
                   key={ride.id}
                   href={`/rides/${ride.slug}`}
