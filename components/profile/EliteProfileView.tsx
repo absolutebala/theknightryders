@@ -1,3 +1,4 @@
+import { isSuspendedHandle } from "@/lib/suspendedMembers";
 import EliteGallery, { type MemberPhoto } from "./EliteGallery";
 import EliteRidesCarousel from "./EliteRidesCarousel";
 import EliteBackgroundEditor from "./EliteBackgroundEditor";
@@ -113,7 +114,8 @@ export default function EliteProfileView({
   const bgUrl = useCustomBg ? customBackgroundUrl : latestRideImageUrl;
   const bgPosition = useCustomBg ? customBackgroundPosition : latestRideImagePosition;
 
-  const circleRiders = coRiders.filter((r) => r.profile_photo_url);
+  const isSuspended = isSuspendedHandle(handle);
+  const circleRiders = isSuspended ? [] : coRiders.filter((r) => r.profile_photo_url);
 
   return (
     <div
@@ -189,7 +191,9 @@ export default function EliteProfileView({
             </div>
           </div>
           <div className="elite-dossier-header-title">
-            The proud member of The Knight Ryders club
+            {isSuspended
+              ? "This Member is suspended from The Knight Ryders Club"
+              : "The proud member of The Knight Ryders club"}
           </div>
           <div className="elite-dossier-body">
             <div>
@@ -199,7 +203,7 @@ export default function EliteProfileView({
                 isAdmin={isAdmin}
                 fullName={fullName}
                 profilePhotoUrl={profilePhotoUrl}
-                showCrown
+                showCrown={!isSuspended}
                 rideCount={ridesCount}
               />
               {instagram && (
@@ -243,7 +247,7 @@ export default function EliteProfileView({
             </div>
           </div>
 
-          <RideBadgeStrip rideCount={ridesCount} variant="elite" />
+          {!isSuspended && <RideBadgeStrip rideCount={ridesCount} variant="elite" />}
         </div>
         {circleRiders.length > 0 && (
           <div className="elite-circle-panel">
@@ -303,6 +307,8 @@ export default function EliteProfileView({
         )}
         </div>
 
+        {!isSuspended && (
+          <>
         {/* TWO COLUMN: stats+co-riders | photos */}
         <div className="elite-two-col">
           <div>
@@ -354,6 +360,8 @@ export default function EliteProfileView({
         <div style={{ marginTop: 40 }}>
           <NextTierProgress rideCount={ridesCount} />
         </div>
+          </>
+        )}
       </div>
 
       <RequestEliteBanner
