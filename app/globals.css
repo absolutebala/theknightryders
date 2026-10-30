@@ -263,6 +263,8 @@ section{padding:70px 0;}
 .elite-circle-panel .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
 .elite-two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;min-width:0;}
 .elite-two-col>div{min-width:0;}
+.elite-two-col-single{grid-template-columns:1fr;}
+.elite-two-col-single .elite-telemetry-row{grid-template-columns:repeat(4,1fr);}
 
 .elite-slider{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--elite-glass-border);background:var(--elite-glass-panel);}
 .elite-slider-frame{position:relative;width:100%;aspect-ratio:4/3;background:#05060a;}
@@ -291,6 +293,7 @@ section{padding:70px 0;}
   .elite-telemetry-row,.elite-rides-grid-v2{grid-template-columns:1fr;}
   .elite-gallery-grid-v2{grid-template-columns:repeat(3,1fr);}
   .elite-two-col{grid-template-columns:1fr;}
+  .elite-two-col-single .elite-telemetry-row{grid-template-columns:1fr;}
   .elite-top-grid{grid-template-columns:1fr;}
   .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
   .elite-dossier-card{padding:26px 20px;}

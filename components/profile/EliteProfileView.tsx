@@ -115,6 +115,9 @@ export default function EliteProfileView({
   const bgUrl = useCustomBg ? customBackgroundUrl : latestRideImageUrl;
   const bgPosition = useCustomBg ? customBackgroundPosition : latestRideImagePosition;
 
+  // With no photos, only the owner still needs the album column (to upload);
+  // for everyone else the stats take the full row instead of leaving a gap.
+  const showAlbum = photos.length > 0 || isOwner;
   const circleRiders = isSuspended ? [] : coRiders.filter((r) => r.profile_photo_url);
 
   return (
@@ -313,7 +316,7 @@ export default function EliteProfileView({
         {!isSuspended && (
           <>
         {/* TWO COLUMN: stats+co-riders | photos */}
-        <div className="elite-two-col">
+        <div className={showAlbum ? "elite-two-col" : "elite-two-col elite-two-col-single"}>
           <div>
             <div className="elite-telemetry-row" style={{ marginBottom: 36 }}>
               <div className="elite-stat-card">
