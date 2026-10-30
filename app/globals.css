@@ -241,7 +241,7 @@ section{padding:70px 0;}
 .elite-section-header h2{font-family:'Poppins',sans-serif;font-size:32px;letter-spacing:2px;text-transform:uppercase;color:#fff;}
 .elite-section-header p{color:#64748b;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-bottom:25px;}
 
-.elite-rides-grid-v2{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;}
+.elite-rides-grid-v2{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
 .elite-ride-card-v2{background:var(--elite-glass-panel);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;position:relative;transition:all .3s ease;display:block;}
 .elite-ride-card-v2:hover{border-color:var(--elite-gold-main);box-shadow:0 0 25px var(--elite-gold-glow);}
 .elite-ride-thumb{width:100%;height:190px;position:relative;overflow:hidden;background:#1a1d24;}
@@ -249,7 +249,7 @@ section{padding:70px 0;}
 .elite-ride-card-v2:hover .elite-ride-thumb img{transform:scale(1.06);}
 .elite-ride-badge-hex{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.85);border:1px solid var(--elite-gold-main);color:var(--elite-gold-main);font-family:'Oswald',sans-serif;font-size:12px;padding:4px 10px;border-radius:4px;}
 .elite-ride-info{padding:18px 20px;}
-.elite-ride-info h3{font-family:'Poppins',sans-serif;font-size:22px;letter-spacing:1px;color:#fff;margin-bottom:4px;}
+.elite-ride-info h3{font-family:'Poppins',sans-serif;font-size:17px;letter-spacing:1px;color:#fff;margin-bottom:4px;}
 .elite-ride-info span{font-size:12px;color:#64748b;}
 
 .elite-subsection-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:20px;color:#fff;margin-bottom:16px;}
@@ -290,10 +290,12 @@ section{padding:70px 0;}
 @media (max-width:900px){
   .elite-dossier-body{grid-template-columns:1fr;text-align:center;}
   .elite-avatar-container{margin:0 auto;}
-  .elite-telemetry-row,.elite-rides-grid-v2{grid-template-columns:1fr;}
+  .elite-telemetry-row{grid-template-columns:1fr;}
+  .elite-rides-grid-v2{grid-template-columns:repeat(2,1fr);gap:14px;}
   .elite-gallery-grid-v2{grid-template-columns:repeat(3,1fr);}
   .elite-two-col{grid-template-columns:1fr;}
   .elite-two-col-single .elite-telemetry-row{grid-template-columns:1fr;}
+
   .elite-top-grid{grid-template-columns:1fr;}
   .elite-co-riders-row{grid-template-columns:repeat(2,1fr);}
   .elite-dossier-card{padding:26px 20px;}
@@ -307,6 +309,9 @@ section{padding:70px 0;}
   .elite-lightbox-nav.elite-prev{left:8px;}
   .elite-lightbox-nav.elite-next{right:8px;}
   .elite-lightbox-close{top:12px;right:12px;width:32px;height:32px;}
+}
+@media (max-width:520px){
+  .elite-rides-grid-v2{grid-template-columns:1fr;}
 }
 
 /* PUBLIC PROFILE: two-column layout for rides + frequently-rides-with */

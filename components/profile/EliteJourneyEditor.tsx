@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { highlightProperNouns } from "@/lib/highlightProperNouns";
 
 const GOLD = "#d4af37";
 
@@ -11,11 +12,13 @@ export default function EliteJourneyEditor({
   isOwner,
   journeyText,
   generatedNarrative,
+  knownNames = [],
 }: {
   memberId: string;
   isOwner: boolean;
   journeyText: string | null;
   generatedNarrative: string;
+  knownNames?: string[];
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -183,7 +186,17 @@ export default function EliteJourneyEditor({
             padding: "24px 28px",
           }}
         >
-          <p style={{ color: "#e2e5ea", fontSize: 15, lineHeight: 1.8, margin: 0 }}>{displayText}</p>
+          <p style={{ color: "#e2e5ea", fontSize: 15, lineHeight: 1.8, margin: 0, whiteSpace: "pre-line" }}>
+            {highlightProperNouns(displayText, knownNames).map((seg, i) =>
+              seg.bold ? (
+                <strong key={i} style={{ color: "#f3e5ab", fontWeight: 700 }}>
+                  {seg.text}
+                </strong>
+              ) : (
+                <span key={i}>{seg.text}</span>
+              )
+            )}
+          </p>
         </div>
       )}
     </div>
