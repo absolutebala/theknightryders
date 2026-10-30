@@ -11,7 +11,7 @@ type Ride = {
   ride_number: number | null;
 };
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 16;
 
 export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
   const [page, setPage] = useState(0);

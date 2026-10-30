@@ -357,6 +357,10 @@ export default function EliteProfileView({
           isOwner={isOwner}
           journeyText={journeyText}
           generatedNarrative={journeyNarrative}
+          knownNames={[
+            ...(fullName ? [fullName, fullName.split(/\s+/)[0]] : []),
+            ...coRiders.flatMap((r) => (r.full_name ? [r.full_name, r.full_name.split(/\s+/)[0]] : [])),
+          ]}
         />
 
         {/* MY RIDES */}
