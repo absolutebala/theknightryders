@@ -2,6 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateUpcomingRideButton from "@/components/admin/CreateUpcomingRideButton";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Upcoming Group Bike Rides from Chennai",
+  description:
+    "Upcoming group bike rides and tours from The Knight Ryders, a group bike riding community in Chennai. See dates, destinations and join the next ride.",
+  alternates: { canonical: "/rides/upcoming" },
+};
+
 export default async function UpcomingRidesPage() {
   const supabase = await createClient();
   await supabase.rpc("convert_ended_upcoming_rides");

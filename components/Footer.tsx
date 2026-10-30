@@ -11,6 +11,7 @@ export default function Footer() {
           The Knight Ryders
         </a>
         <div>
+          <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>Group bike riding community in Chennai</div>
           <div className="whatsapp-line">Whatsapp : +91 6381 890 182</div>
           <nav style={{ marginTop: 10 }}>
             <ul>

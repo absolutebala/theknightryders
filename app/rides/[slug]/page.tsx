@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
@@ -11,6 +12,36 @@ import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
 import AddMeToRideButton from "@/components/AddMeToRideButton";
 import RideStatsEditor from "@/components/admin/RideStatsEditor";
 import { cleanRideTitle, findTerrainMentions, formatList } from "@/lib/journeyNarrative";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("title, description, hero_image_url, ride_date, destination, is_published")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!ride) return {};
+  const place = ride.destination || cleanRideTitle(ride.title);
+  const fallback = `Ride story, route and photos from The Knight Ryders group ride to ${place}${
+    ride.ride_date ? ` on ${new Date(ride.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}` : ""
+  }. A group bike riding community in Chennai.`;
+  const description = ride.description
+    ? ride.description.replace(/\s+/g, " ").trim().slice(0, 155).replace(/\s+\S*$/, "") + "..."
+    : fallback;
+  return {
+    title: `${place} Group Bike Ride`,
+    description,
+    alternates: { canonical: `/rides/${slug}` },
+    robots: ride.is_published ? undefined : { index: false },
+    openGraph: {
+      type: "article",
+      title: `${place} Group Bike Ride | The Knight Ryders`,
+      description,
+      images: ride.hero_image_url ? [{ url: ride.hero_image_url }] : undefined,
+    },
+  };
+}
 
 export default async function RideDetailPage({
   params,

@@ -1,10 +1,38 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import JoinUpcomingRideButton from "@/components/JoinUpcomingRideButton";
 import UpcomingRideParticipantsManager from "@/components/admin/UpcomingRideParticipantsManager";
 import UpcomingRidePhotoEditor from "@/components/admin/UpcomingRidePhotoEditor";
 import EditUpcomingRideButton from "@/components/admin/EditUpcomingRideButton";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: ride } = await supabase
+    .from("upcoming_rides")
+    .select("title, place, summary, ride_date, hero_image_url")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!ride) return {};
+  const when = ride.ride_date
+    ? new Date(ride.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+    : null;
+  const description =
+    ride.summary?.replace(/\s+/g, " ").trim().slice(0, 155) ||
+    `Join The Knight Ryders group bike ride to ${ride.place || ride.title}${when ? ` on ${when}` : ""}. A group bike riding community in Chennai.`;
+  return {
+    title: `${ride.title} | Upcoming Group Ride`,
+    description,
+    alternates: { canonical: `/rides/upcoming/${slug}` },
+    openGraph: {
+      title: `${ride.title} | The Knight Ryders`,
+      description,
+      images: ride.hero_image_url ? [{ url: ride.hero_image_url }] : undefined,
+    },
+  };
+}
 
 export default async function UpcomingRideDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

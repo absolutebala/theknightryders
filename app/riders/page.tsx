@@ -4,6 +4,15 @@ import RideBadgeStrip from "@/components/RideBadgeStrip";
 import RiderRemoveButton from "@/components/admin/RiderRemoveButton";
 import { RIDE_BADGE_TIERS } from "@/lib/rideBadges";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Our Riders",
+  description:
+    "Meet the riders of The Knight Ryders, a group bike riding community in Chennai for Honda CB350 owners.",
+  alternates: { canonical: "/riders" },
+};
+
 export default async function RidersPage() {
   const supabase = await createClient();
 

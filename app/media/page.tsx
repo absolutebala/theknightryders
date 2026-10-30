@@ -2,6 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import EditableGallery from "@/components/admin/EditableGallery";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Media",
+  description:
+    "Videos, press and media coverage of The Knight Ryders, a group bike riding community in Chennai.",
+  alternates: { canonical: "/media" },
+};
+
 const SECTION_KEY = "media";
 
 export default async function MediaPage() {

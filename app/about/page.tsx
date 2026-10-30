@@ -1,5 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About the Club",
+  description:
+    "The Knight Ryders is a group bike riding community in Chennai for Honda CB350 owners. Learn how we ride, the causes we support and how to join.",
+  alternates: { canonical: "/about" },
+};
+
 // Placeholder "About" page linked from the homepage's "Know about our
 // club" button. Built from context already established elsewhere on the
 // site (hero copy, milestone section) since no reference design was
@@ -19,14 +28,16 @@ export default async function AboutPage() {
           About The Knight Ryders
         </h1>
         <p style={{ color: "var(--dark)", fontSize: 16, lineHeight: 1.8, marginBottom: 20 }}>
-          The Knight Ryders is an exclusive riding club for Honda CB350
-          owners -- a community bound by the road, the brand, and the ride
-          experiences we share together.
+          The Knight Ryders is a group bike riding community in Chennai for
+          Honda CB350 owners -- a Chennai bike riding community bound by the
+          road, the brand, and the ride experiences we share together.
         </p>
         <p style={{ color: "var(--dark)", fontSize: 16, lineHeight: 1.8, marginBottom: 40 }}>
-          What started as a handful of riders has grown into a club that
-          has covered thousands of kilometers together, taken on social
-          causes, and built friendships one ride at a time.
+          What started as a handful of riders has grown into a group bike
+          riding club that has covered thousands of kilometers together,
+          taken on social causes, and built friendships one ride at a time.
+          Explore our upcoming group rides or read the stories from our past
+          rides to see where the road has taken us.
         </p>
 
         <div

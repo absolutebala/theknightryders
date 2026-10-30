@@ -5,6 +5,15 @@ import RidePublishToggle from "@/components/admin/RidePublishToggle";
 import { getOrdinalRideLabel } from "@/lib/journeyNarrative";
 import { getRideBadgeTier } from "@/lib/rideBadges";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Past Rides",
+  description:
+    "Every past group ride of The Knight Ryders, a Chennai bike riding community: routes, destinations, photos, distance covered and the riders who took part.",
+  alternates: { canonical: "/rides/past" },
+};
+
 function LeaderboardBadgeLine({ rideCount }: { rideCount: number }) {
   const tier = getRideBadgeTier(rideCount);
   if (!tier) return null;
