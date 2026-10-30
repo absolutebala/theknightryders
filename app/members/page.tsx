@@ -2,6 +2,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { notifyAdminOfPendingRequest } from "@/lib/notifyAdmin";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Members Area",
+  description:
+    "Members area of The Knight Ryders riding club.",
+  robots: { index: false, follow: false },
+};
+
 export default async function MembersPage() {
   const supabase = await createClient();
   const {

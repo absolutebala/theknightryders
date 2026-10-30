@@ -5,6 +5,7 @@ import EditableGallery from "@/components/admin/EditableGallery";
 import HeroBannerEditor from "@/components/admin/HeroBannerEditor";
 import HeroPromoSlider from "@/components/admin/HeroPromoSlider";
 import HolidayCardsManager from "@/components/admin/HolidayCardsManager";
+import HomeSeoSection from "@/components/HomeSeoSection";
 
 async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -392,6 +393,8 @@ export default async function HomePage({
           />
         </div>
       </section>
+
+      <HomeSeoSection />
     </>
   );
 }

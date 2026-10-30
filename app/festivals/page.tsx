@@ -1,6 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import FestivalCard from "@/components/FestivalCard";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Festival Greetings",
+  description:
+    "Festival and holiday greeting cards from The Knight Ryders, a Honda CB350 group bike riding community in Chennai.",
+  alternates: { canonical: "/festivals" },
+};
+
 export default async function FestivalsPage() {
   const supabase = await createClient();
 

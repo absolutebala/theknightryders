@@ -6,10 +6,60 @@ import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
+const SITE_URL = "https://theknightryders.com";
+const SITE_TITLE = "The Knight Ryders | Group Bike Riding Community in Chennai";
+const SITE_DESCRIPTION =
+  "The Knight Ryders is a group bike riding community in Chennai for Honda CB350 owners. Join our weekend rides, long-distance tours and social-cause rides across Tamil Nadu and beyond.";
+
 export const metadata: Metadata = {
-  title: "The Knight Ryders | Exclusive Honda CB350 Riding Club",
-  description:
-    "The Knight Ryders — an exclusive bike riding club for Honda CB350 owners.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_TITLE, template: "%s | The Knight Ryders" },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "group bike riding community",
+    "group bike riding community Chennai",
+    "Chennai bike riding community",
+    "bike riding club Chennai",
+    "Honda CB350 riding club",
+    "motorcycle riding group Chennai",
+    "weekend bike rides Chennai",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: "The Knight Ryders",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "en_IN",
+    images: [{ url: "/icon.png", width: 512, height: 512, alt: "The Knight Ryders logo" }],
+  },
+  twitter: { card: "summary", title: SITE_TITLE, description: SITE_DESCRIPTION, images: ["/icon.png"] },
+};
+
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SportsOrganization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "The Knight Ryders",
+      alternateName: "Knight Ryders Honda CB350 Riding Club",
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon.png`,
+      description: SITE_DESCRIPTION,
+      sport: "Motorcycle touring",
+      areaServed: { "@type": "City", name: "Chennai" },
+      location: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: "Chennai", addressRegion: "Tamil Nadu", addressCountry: "IN" } },
+      sameAs: [
+        "https://www.instagram.com/theknightryders/",
+        "https://www.facebook.com/theknightryders",
+        "https://www.youtube.com/@TheKnightRyders1",
+      ],
+      contactPoint: { "@type": "ContactPoint", telephone: "+91-6381890182", contactType: "customer support", availableLanguage: ["en", "ta"] },
+    },
+    { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: "The Knight Ryders", publisher: { "@id": `${SITE_URL}/#organization` }, inLanguage: "en-IN" },
+  ],
 };
 
 export default async function RootLayout({
@@ -90,6 +140,10 @@ export default async function RootLayout({
         />
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+        />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-V0KQP6J8SN"
           strategy="afterInteractive"
