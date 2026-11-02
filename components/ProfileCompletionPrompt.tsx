@@ -8,26 +8,27 @@ const SNOOZE_KEY = "tkr_profile_prompt_snoozed";
 /**
  * One-time popup shown to signed-in members who haven't yet completed the
  * mandatory profile update (photo, vehicle number, blood group, date of birth).
+ * "Later" is remembered per sign-in (signInId changes on every login).
  * The server only renders this while members.profile_updated_at is empty, so
  * it disappears for good once the member saves a complete profile.
  */
-export default function ProfileCompletionPrompt() {
+export default function ProfileCompletionPrompt({ signInId }: { signInId: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     try {
-      setOpen(sessionStorage.getItem(SNOOZE_KEY) !== "1");
+      setOpen(sessionStorage.getItem(SNOOZE_KEY) !== signInId);
     } catch {
       setOpen(true);
     }
-  }, []);
+  }, [signInId]);
 
   if (!open || pathname.startsWith("/members/edit")) return null;
 
   function later() {
     try {
-      sessionStorage.setItem(SNOOZE_KEY, "1");
+      sessionStorage.setItem(SNOOZE_KEY, signInId);
     } catch {}
     setOpen(false);
   }

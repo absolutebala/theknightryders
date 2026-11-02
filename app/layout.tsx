@@ -177,7 +177,7 @@ export default async function RootLayout({
         <Header authUser={headerUser} initialEditMode={initialEditMode} />
         {children}
         <Footer />
-        {needsProfileUpdate && <ProfileCompletionPrompt />}
+        {needsProfileUpdate && <ProfileCompletionPrompt signInId={user?.last_sign_in_at ?? "x"} />}
       </body>
     </html>
   );
