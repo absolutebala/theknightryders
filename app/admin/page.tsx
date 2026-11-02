@@ -64,7 +64,7 @@ export default async function AdminPage() {
       .order("reactivation_requested_at", { ascending: true }),
     supabase.rpc("get_all_ride_join_requests"),
     supabase.rpc("get_all_upcoming_ride_requests"),
-    supabase.rpc("get_profile_updates"),
+    supabase.rpc("get_profile_update_log"),
     supabase.rpc("get_profile_update_pending_count"),
   ]);
 
