@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
+import ProfileCompletionPrompt from "@/components/ProfileCompletionPrompt";
 
 const SITE_URL = "https://theknightryders.com";
 const SITE_TITLE = "The Knight Ryders | Group Bike Riding Community in Chennai";
@@ -81,11 +82,13 @@ export default async function RootLayout({
     pendingRequestCount: number;
   } | null = null;
 
+  let needsProfileUpdate = false;
+
   if (user) {
     const [{ data: member }, { data: isAdminResult }] = await Promise.all([
       supabase
         .from("members")
-        .select("full_name, handle, profile_photo_url")
+        .select("id, full_name, handle, profile_photo_url")
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase.rpc("is_admin"),
@@ -104,6 +107,21 @@ export default async function RootLayout({
           .eq("status", "pending"),
       ]);
       pendingRequestCount = (pendingAccessCount ?? 0) + (pendingTemplateCount ?? 0);
+    }
+
+    // Separate query so the header keeps working even before the
+    // profile_updated_at column exists in the database.
+    const { data: completion, error: completionError } = member
+      ? await supabase.from("members").select("profile_updated_at").eq("id", member.id).maybeSingle()
+      : { data: null, error: null };
+
+    if (member && !completionError && completion && !completion.profile_updated_at) {
+      const { data: suspendedRow } = await supabase
+        .from("suspended_members")
+        .select("member_id")
+        .eq("member_id", member.id)
+        .maybeSingle();
+      needsProfileUpdate = !suspendedRow;
     }
 
     headerUser = {
@@ -159,6 +177,7 @@ export default async function RootLayout({
         <Header authUser={headerUser} initialEditMode={initialEditMode} />
         {children}
         <Footer />
+        {needsProfileUpdate && <ProfileCompletionPrompt />}
       </body>
     </html>
   );

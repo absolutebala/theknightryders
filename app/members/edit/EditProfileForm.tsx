@@ -99,6 +99,18 @@ export default function EditProfileForm({
     setError(null);
     setSaved(false);
 
+    const missing: string[] = [];
+    if (!form.profile_photo_url) missing.push("Profile Photo");
+    if (!form.vehicle_number.trim()) missing.push("Vehicle Number");
+    if (!form.blood_group.trim()) missing.push("Blood Group");
+    if (!form.date_of_birth) missing.push("Date of Birth");
+    if (missing.length > 0) {
+      setSaving(false);
+      setError(`Please fill the mandatory fields: ${missing.join(", ")}.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     const supabase = createClient();
 
     // Deliberately only sends editable fields -- ride_count/ride_list are
@@ -161,7 +173,7 @@ export default function EditProfileForm({
       )}
 
       <div className="field">
-        <label>Profile Photo</label>
+        <label>Profile Photo <span style={{ color: "#c0392b" }}>*</span></label>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 6 }}>
           {form.profile_photo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -237,7 +249,7 @@ export default function EditProfileForm({
       </div>
 
       <div className="field">
-        <label htmlFor="date_of_birth">Date of Birth</label>
+        <label htmlFor="date_of_birth">Date of Birth <span style={{ color: "#c0392b" }}>*</span></label>
         <input
           id="date_of_birth"
           type="date"
@@ -256,7 +268,7 @@ export default function EditProfileForm({
       </div>
 
       <div className="field">
-        <label htmlFor="blood_group">Blood Group</label>
+        <label htmlFor="blood_group">Blood Group <span style={{ color: "#c0392b" }}>*</span></label>
         <input
           id="blood_group"
           value={form.blood_group}
@@ -274,7 +286,7 @@ export default function EditProfileForm({
       </div>
 
       <div className="field">
-        <label htmlFor="vehicle_number">Vehicle Number</label>
+        <label htmlFor="vehicle_number">Vehicle Number <span style={{ color: "#c0392b" }}>*</span></label>
         <input
           id="vehicle_number"
           value={form.vehicle_number}

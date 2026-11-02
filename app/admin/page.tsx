@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminRequestTabs from "@/components/admin/AdminRequestTabs";
+import ProfileUpdatesList from "@/components/admin/ProfileUpdatesList";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -31,6 +32,8 @@ export default async function AdminPage() {
     { data: reactivationRequests },
     { data: pastRideRequestsRaw },
     { data: upcomingRideRequestsRaw },
+    { data: profileUpdates },
+    { data: profilePendingCount },
   ] = await Promise.all([
     supabase
       .from("pending_requests")
@@ -61,6 +64,8 @@ export default async function AdminPage() {
       .order("reactivation_requested_at", { ascending: true }),
     supabase.rpc("get_all_ride_join_requests"),
     supabase.rpc("get_all_upcoming_ride_requests"),
+    supabase.rpc("get_profile_updates"),
+    supabase.rpc("get_profile_update_pending_count"),
   ]);
 
   type TemplateRow = {
@@ -135,6 +140,8 @@ export default async function AdminPage() {
         pastRideRequests={pastRideRequests}
         upcomingRideRequests={upcomingRideRequests}
       />
+
+      <ProfileUpdatesList rows={profileUpdates ?? []} pendingCount={profilePendingCount ?? 0} />
     </div>
   );
 }
