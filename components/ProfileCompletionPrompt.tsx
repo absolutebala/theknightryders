@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
+const LOGGED_KEY = "tkr_profile_prompt_logged";
 const SNOOZE_KEY = "tkr_profile_prompt_snoozed";
 
 /**
@@ -17,8 +19,15 @@ export default function ProfileCompletionPrompt({ signInId }: { signInId: string
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    let snoozed = false;
     try {
-      setOpen(sessionStorage.getItem(SNOOZE_KEY) !== signInId);
+      snoozed = sessionStorage.getItem(SNOOZE_KEY) === signInId;
+      setOpen(!snoozed);
+      // Tell the admin page this member saw the popup (once per sign-in)
+      if (!snoozed && sessionStorage.getItem(LOGGED_KEY) !== signInId) {
+        sessionStorage.setItem(LOGGED_KEY, signInId);
+        void createClient().rpc("log_profile_prompt", { p_action: "shown" });
+      }
     } catch {
       setOpen(true);
     }
@@ -30,6 +39,7 @@ export default function ProfileCompletionPrompt({ signInId }: { signInId: string
     try {
       sessionStorage.setItem(SNOOZE_KEY, signInId);
     } catch {}
+    void createClient().rpc("log_profile_prompt", { p_action: "later" });
     setOpen(false);
   }
 
