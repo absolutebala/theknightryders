@@ -6,6 +6,7 @@ import JoinUpcomingRideButton from "@/components/JoinUpcomingRideButton";
 import UpcomingRideParticipantsManager from "@/components/admin/UpcomingRideParticipantsManager";
 import UpcomingRidePhotoEditor from "@/components/admin/UpcomingRidePhotoEditor";
 import EditUpcomingRideButton from "@/components/admin/EditUpcomingRideButton";
+import DownloadUpcomingRideCard from "@/components/DownloadUpcomingRideCard";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -45,6 +46,13 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
     .maybeSingle();
 
   if (!ride) notFound();
+
+  // Separate query so the page keeps working before the card columns exist.
+  const { data: cardExtras } = await supabase
+    .from("upcoming_rides")
+    .select("approx_km, approx_hours, slots_total")
+    .eq("id", ride.id)
+    .maybeSingle();
 
   const cookieStore = await cookies();
   const editModeOn = cookieStore.get("edit_mode")?.value === "true";
@@ -138,6 +146,9 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
                   is_multi_day: ride.is_multi_day,
                   cost_per_person: ride.cost_per_person,
                   summary: ride.summary,
+                  approx_km: cardExtras?.approx_km ?? null,
+                  approx_hours: cardExtras?.approx_hours ?? null,
+                  slots_total: cardExtras?.slots_total ?? null,
                 }}
               />
               <UpcomingRidePhotoEditor
@@ -202,6 +213,23 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
               />
             </div>
           )}
+        </div>
+      </section>
+
+      <section style={{ paddingTop: 0, paddingBottom: 30 }}>
+        <div className="container" style={{ maxWidth: 780 }}>
+          <DownloadUpcomingRideCard
+            title={ride.title}
+            imageUrl={ride.hero_image_url}
+            rideDate={ride.ride_date}
+            endDate={ride.is_multi_day ? ride.end_date : null}
+            approxKm={cardExtras?.approx_km ?? null}
+            approxHours={cardExtras?.approx_hours ?? null}
+            slotsAvailable={
+              cardExtras?.slots_total != null ? Math.max(0, cardExtras.slots_total - approved.length) : null
+            }
+            cost={ride.cost_per_person}
+          />
         </div>
       </section>
 
