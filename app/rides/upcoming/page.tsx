@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateUpcomingRideButton from "@/components/admin/CreateUpcomingRideButton";
 import UpcomingPosterCard from "@/components/UpcomingPosterCard";
+import JoinUpcomingRideButton from "@/components/JoinUpcomingRideButton";
 
 import type { Metadata } from "next";
 
@@ -40,6 +41,18 @@ export default async function UpcomingRidesPage() {
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
   const rides = ridesResult.data ?? [];
 
+  const { data: viewerMember } = user
+    ? await supabase.from("members").select("id").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const { data: myParticipation } = viewerMember
+    ? await supabase.from("upcoming_ride_participants").select("upcoming_ride_id, status").eq("member_id", viewerMember.id)
+    : { data: [] };
+  const myStatusByRide = new Map(
+    (myParticipation ?? []).map((p: { upcoming_ride_id: string; status: string }) => [p.upcoming_ride_id, p.status])
+  );
+  const { data: upiRows } = await supabase.from("upcoming_rides").select("id, upi_id");
+  const upiById = new Map((upiRows ?? []).map((r: { id: string; upi_id: string | null }) => [r.id, r.upi_id]));
+
   // Poster details; separate query so the page works before the columns exist.
   const { data: extrasRows } = await supabase
     .from("upcoming_rides")
@@ -53,13 +66,9 @@ export default async function UpcomingRidesPage() {
   const existingPhotos = (pastPhotosResult.data ?? []).map((r) => ({ url: r.hero_image_url as string, title: r.title }));
 
   return (
-    <section style={{ paddingTop: 90, paddingBottom: 100 }}>
+    <section style={{ paddingTop: 60, paddingBottom: 100 }}>
       <div className="container" style={{ textAlign: "center" }}>
-        <span className="eyebrow-sm">What's Next</span>
-        <h1 className="section-title">Upcoming Rides</h1>
-        <p className="section-sub" style={{ maxWidth: 480, margin: "16px auto 0" }}>
-          Everything on the club's calendar -- join up before the kickstands go up.
-        </p>
+        <h1 className="sr-only">Upcoming Group Bike Rides from Chennai</h1>
         {isAdmin && (
           <div style={{ marginTop: 18 }}>
             <CreateUpcomingRideButton existingPhotos={existingPhotos} />
@@ -67,7 +76,7 @@ export default async function UpcomingRidesPage() {
         )}
       </div>
 
-      <div className="container" style={{ marginTop: 40 }}>
+      <div className="container" style={{ marginTop: 20 }}>
         {rides.length === 0 ? (
           <p style={{ textAlign: "center", color: "var(--grey)" }}>
             No upcoming rides scheduled for now. Check back soon, or watch the club&apos;s channels for the next announcement.
@@ -77,8 +86,8 @@ export default async function UpcomingRidesPage() {
             {rides.map((ride) => {
               const ex = extrasById.get(ride.id);
               return (
+                <div key={ride.id} style={{ width: "100%", maxWidth: 320, textAlign: "center" }}>
                 <UpcomingPosterCard
-                  key={ride.id}
                   href={`/rides/upcoming/${ride.slug}`}
                   title={ride.title}
                   imageUrl={ride.hero_image_url}
@@ -91,6 +100,20 @@ export default async function UpcomingRidesPage() {
                   }
                   cost={ride.cost_per_person}
                 />
+                <div style={{ marginTop: 14 }}>
+                  {viewerMember ? (
+                    <JoinUpcomingRideButton
+                      upcomingRideId={ride.id}
+                      initialStatus={(myStatusByRide.get(ride.id) as "pending" | "approved" | "rejected" | undefined) ?? null}
+                      rideTitle={ride.title}
+                      cost={ride.cost_per_person}
+                      upiId={upiById.get(ride.id) ?? null}
+                    />
+                  ) : (
+                    <a href="/login" className="btn btn-amber">Log in to Request to Join</a>
+                  )}
+                </div>
+                </div>
               );
             })}
           </div>
