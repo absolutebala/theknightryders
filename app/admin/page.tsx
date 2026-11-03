@@ -33,6 +33,7 @@ export default async function AdminPage() {
     { data: pastRideRequestsRaw },
     { data: upcomingRideRequestsRaw },
     { data: profileUpdates },
+    { data: registrationsRaw },
     { data: profilePendingCount },
   ] = await Promise.all([
     supabase
@@ -65,6 +66,7 @@ export default async function AdminPage() {
     supabase.rpc("get_all_ride_join_requests"),
     supabase.rpc("get_all_upcoming_ride_requests"),
     supabase.rpc("get_profile_update_log"),
+    supabase.rpc("get_upcoming_ride_registrations"),
     supabase.rpc("get_profile_update_pending_count"),
   ]);
 
@@ -110,7 +112,14 @@ export default async function AdminPage() {
     requested_at: r.requested_at,
   }));
 
+  const detailsByParticipant = new Map(
+    ((registrationsRaw ?? []) as { participant_id: string; phone: string; vehicle_number: string; upi_txn: string; gear: string[] }[]).map(
+      (d) => [d.participant_id, { phone: d.phone, vehicle_number: d.vehicle_number, upi_txn: d.upi_txn, gear: d.gear }]
+    )
+  );
+
   const upcomingRideRequests = ((upcomingRideRequestsRaw ?? []) as RideRequestRow[]).map((r) => ({
+    details: detailsByParticipant.get(r.id) ?? null,
     id: r.id,
     ride_title: r.ride_title,
     ride_slug: r.ride_slug,
