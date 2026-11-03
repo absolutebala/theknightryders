@@ -6,6 +6,7 @@ import JoinUpcomingRideButton from "@/components/JoinUpcomingRideButton";
 import UpcomingRideParticipantsManager from "@/components/admin/UpcomingRideParticipantsManager";
 import UpcomingRidePhotoEditor from "@/components/admin/UpcomingRidePhotoEditor";
 import EditUpcomingRideButton from "@/components/admin/EditUpcomingRideButton";
+import CopyJoinLink from "@/components/CopyJoinLink";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -34,8 +35,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function UpcomingRideDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function UpcomingRideDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ join?: string }>;
+}) {
   const { slug } = await params;
+  const { join } = await searchParams;
+  const autoOpenJoin = join === "1";
   const supabase = await createClient();
 
   const { data: ride } = await supabase
@@ -183,10 +192,17 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
               rideTitle={ride.title}
               cost={ride.cost_per_person}
               upiId={upiId}
+              autoOpen={autoOpenJoin}
             />
           ) : (
-            <a href="/login" className="btn btn-amber">Log in to Request to Join</a>
+            <a
+              href={`/login?next=${encodeURIComponent(`/rides/upcoming/${ride.slug}?join=1`)}`}
+              className="btn btn-amber"
+            >
+              Log in to Request to Join
+            </a>
           )}
+          {isAdminResult.data && <CopyJoinLink slug={ride.slug} />}
         </div>
       </div>
 

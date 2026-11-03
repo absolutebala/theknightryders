@@ -9,6 +9,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const authFailed = searchParams.get("error") === "auth_failed";
   const suspendedBlocked = searchParams.get("error") === "suspended";
+  const rawNext = searchParams.get("next");
+  // Only same-site paths, to avoid open redirects
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +27,7 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/members`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath ?? "/members")}`,
       },
     });
 
@@ -76,6 +79,12 @@ function LoginForm() {
       }
 
       setLoading(false);
+
+      if (member && !member.is_hidden && nextPath) {
+        router.push(nextPath);
+        router.refresh();
+        return;
+      }
 
       if (member && !member.is_hidden) {
         router.push(member.handle ? `/@${member.handle}` : `/members/${member.id}`);
