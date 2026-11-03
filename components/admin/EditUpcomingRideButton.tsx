@@ -13,6 +13,9 @@ type RideValues = {
   is_multi_day: boolean;
   cost_per_person: number | null;
   summary: string | null;
+  approx_km?: string | null;
+  approx_hours?: string | null;
+  slots_total?: number | null;
 };
 
 export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
@@ -28,6 +31,9 @@ export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
   const [endDate, setEndDate] = useState(ride.end_date ?? "");
   const [cost, setCost] = useState(ride.cost_per_person?.toString() ?? "");
   const [summary, setSummary] = useState(ride.summary ?? "");
+  const [approxKm, setApproxKm] = useState(ride.approx_km ?? "");
+  const [approxHours, setApproxHours] = useState(ride.approx_hours ?? "");
+  const [slotsTotal, setSlotsTotal] = useState(ride.slots_total?.toString() ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +59,18 @@ export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
     if (updateError) {
       setSaving(false);
       setError(updateError.message);
+      return;
+    }
+
+    const { error: cardError } = await supabase.rpc("set_upcoming_ride_card_details", {
+      target_id: ride.id,
+      p_approx_km: approxKm.trim() || null,
+      p_approx_hours: approxHours.trim() || null,
+      p_slots_total: slotsTotal ? Number(slotsTotal) : null,
+    });
+    if (cardError) {
+      setSaving(false);
+      setError(cardError.message);
       return;
     }
 
@@ -155,6 +173,21 @@ export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
             <div style={{ marginBottom: 14 }}>
               <label style={fieldLabel}>Cost Per Person (&#8377;)</label>
               <input type="number" value={cost} onChange={(e) => setCost(e.target.value)} style={fieldInput} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 14 }}>
+              <div>
+                <label style={fieldLabel}>Approx Km</label>
+                <input value={approxKm} onChange={(e) => setApproxKm(e.target.value)} placeholder="450" style={fieldInput} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Approx Hours</label>
+                <input value={approxHours} onChange={(e) => setApproxHours(e.target.value)} placeholder="10 – 12" style={fieldInput} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Total Slots</label>
+                <input type="number" min={0} value={slotsTotal} onChange={(e) => setSlotsTotal(e.target.value)} placeholder="20" style={fieldInput} />
+              </div>
             </div>
 
             <div style={{ marginBottom: 18 }}>
