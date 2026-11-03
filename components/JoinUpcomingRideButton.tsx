@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 
+const ADVANCE_AMOUNT = 500;
+const DEFAULT_UPI_ID = "ramesh1979@okaxis";
 const GEAR = ["Full-face helmet", "Riding jacket", "Riding pant", "Riding boots", "Gloves"];
 
 export default function JoinUpcomingRideButton({
@@ -69,6 +71,7 @@ function JoinModal({
   onClose: () => void;
   onSubmitted: () => void;
 }) {
+  const payTo = upiId || DEFAULT_UPI_ID;
   const [qr, setQr] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -79,13 +82,12 @@ function JoinModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!upiId) return;
     const uri =
-      `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("The Knight Ryders")}` +
-      (cost ? `&am=${cost}` : "") +
+      `upi://pay?pa=${encodeURIComponent(payTo)}&pn=${encodeURIComponent("The Knight Ryders")}` +
+      `&am=${ADVANCE_AMOUNT}` +
       `&cu=INR&tn=${encodeURIComponent(rideTitle.slice(0, 40))}`;
     QRCode.toDataURL(uri, { width: 320, margin: 1 }).then(setQr).catch(() => setQr(null));
-  }, [upiId, cost, rideTitle]);
+  }, [payTo, rideTitle]);
 
   // Auto-populate everything we already know about the member
   useEffect(() => {
@@ -171,8 +173,10 @@ function JoinModal({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <div>
-            <h2 style={{ color: "var(--navy)", fontSize: 21, margin: 0 }}>Request to Join</h2>
-            <div style={{ color: "var(--grey)", fontSize: 13.5, marginTop: 2 }}>{rideTitle}</div>
+            <h2 style={{ color: "var(--navy)", fontSize: 21, margin: 0 }}>
+              Do the advance payment of INR {ADVANCE_AMOUNT} for the participation
+            </h2>
+            <div style={{ color: "var(--grey)", fontSize: 13.5, marginTop: 4 }}>{rideTitle}</div>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "var(--grey)" }}>
             &times;
@@ -181,31 +185,24 @@ function JoinModal({
 
         <div className="join-modal-grid">
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontWeight: 700, color: "var(--navy)", marginBottom: 10, fontSize: 14 }}>
-              1. Pay{cost ? ` ₹${cost.toLocaleString("en-IN")}` : ""} using UPI
-            </div>
-            {upiId ? (
-              qr ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={qr} alt="UPI payment QR code" style={{ width: "100%", maxWidth: 260, borderRadius: 10, border: "1px solid #e3ebe7" }} />
-              ) : (
-                <div style={{ color: "var(--grey)", fontSize: 13 }}>Generating QR…</div>
-              )
+            {qr ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={qr} alt="UPI payment QR code" style={{ width: "100%", maxWidth: 260, borderRadius: 10, border: "1px solid #e3ebe7" }} />
             ) : (
-              <div style={{ color: "#a3312a", fontSize: 13 }}>Payment QR is not set up for this ride yet. Please contact the admin.</div>
+              <div style={{ color: "var(--grey)", fontSize: 13 }}>Generating QR…</div>
             )}
-            {upiId && <div style={{ fontSize: 12.5, color: "var(--grey)", marginTop: 8 }}>UPI ID: {upiId}</div>}
+            <div style={{ fontSize: 13, color: "var(--dark)", marginTop: 10, fontWeight: 600 }}>UPI ID: {payTo}</div>
           </div>
 
           <div>
-            <div style={{ fontWeight: 700, color: "var(--navy)", marginBottom: 10, fontSize: 14 }}>2. Your details</div>
+            <div style={{ fontWeight: 700, color: "var(--navy)", marginBottom: 10, fontSize: 14 }}>Your details</div>
             <Field label="Name" value={name} onChange={setName} />
             <Field label="Phone number" value={phone} onChange={setPhone} type="tel" />
             <Field label="Vehicle number" value={vehicle} onChange={setVehicle} />
             <Field label="UPI transaction number" value={txn} onChange={setTxn} placeholder="From your payment app" />
 
             <div style={{ fontWeight: 700, color: "var(--navy)", margin: "14px 0 6px", fontSize: 14 }}>
-              3. I will ride with
+              I will ride with
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 10px" }}>
               {GEAR.map((g) => (

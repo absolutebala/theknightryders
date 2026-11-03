@@ -37,6 +37,12 @@ type RideRequest = {
   member_name: string | null;
   status: "pending" | "approved" | "rejected";
   requested_at: string;
+  details?: {
+    phone: string;
+    vehicle_number: string;
+    upi_txn: string;
+    gear: string[];
+  } | null;
 };
 
 const TABS = [
@@ -162,6 +168,15 @@ function RideRequestList({
             <div style={{ fontSize: 11.5, color: "var(--grey)", marginTop: 2 }}>
               Requested {new Date(r.requested_at).toLocaleString("en-IN")}
             </div>
+            {r.details && (
+              <div style={{ fontSize: 13, color: "var(--dark)", lineHeight: 1.7, marginTop: 8 }}>
+                Phone: <b>{r.details.phone}</b> &middot; Vehicle: <b>{r.details.vehicle_number}</b>
+                <br />
+                UPI transaction: <b>{r.details.upi_txn}</b>
+                <br />
+                Gear: {r.details.gear.join(", ")}
+              </div>
+            )}
           </div>
           <UniversalRequestActions
             id={r.id}
