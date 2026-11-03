@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CreateUpcomingRideButton from "@/components/admin/CreateUpcomingRideButton";
+import UpcomingPosterCard from "@/components/UpcomingPosterCard";
 
 import type { Metadata } from "next";
 
@@ -22,7 +23,7 @@ export default async function UpcomingRidesPage() {
     supabase.rpc("is_admin"),
     supabase
       .from("upcoming_rides")
-      .select("id, slug, title, place, ride_date, end_date, is_multi_day, hero_image_url")
+      .select("id, slug, title, place, ride_date, end_date, is_multi_day, hero_image_url, cost_per_person")
       .order("ride_date", { ascending: true }),
     supabase.rpc("get_upcoming_ride_participant_counts"),
     supabase
@@ -38,6 +39,14 @@ export default async function UpcomingRidesPage() {
   } = authResult;
   const isAdmin = !!user && !!isAdminResult.data && editModeOn;
   const rides = ridesResult.data ?? [];
+
+  // Poster details; separate query so the page works before the columns exist.
+  const { data: extrasRows } = await supabase
+    .from("upcoming_rides")
+    .select("id, approx_km, approx_hours, slots_total");
+  const extrasById = new Map(
+    (extrasRows ?? []).map((r: { id: string; approx_km: string | null; approx_hours: string | null; slots_total: number | null }) => [r.id, r])
+  );
   const countByRide = new Map<string, number>(
     (countsResult.data ?? []).map((c: { upcoming_ride_id: string; approved_count: number }) => [c.upcoming_ride_id, c.approved_count])
   );
@@ -64,36 +73,24 @@ export default async function UpcomingRidesPage() {
             No upcoming rides scheduled for now. Check back soon, or watch the club&apos;s channels for the next announcement.
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 640, margin: "0 auto" }}>
+          <div className="upcoming-poster-grid">
             {rides.map((ride) => {
-              const dateLabel = ride.is_multi_day && ride.end_date
-                ? `${new Date(ride.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} - ${new Date(ride.end_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
-                : new Date(ride.ride_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-
+              const ex = extrasById.get(ride.id);
               return (
-                <a
+                <UpcomingPosterCard
                   key={ride.id}
                   href={`/rides/upcoming/${ride.slug}`}
-                  className="upcoming-ride-card"
-                >
-                  {ride.hero_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ride.hero_image_url} alt={ride.title} className="upcoming-ride-card-img" />
-                  ) : (
-                    <div className="upcoming-ride-card-img upcoming-ride-card-noimg">
-                      {ride.title.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="upcoming-ride-card-body">
-                    <div className="upcoming-ride-card-title">{ride.title}</div>
-                    {ride.place && <div className="upcoming-ride-card-place">{ride.place}</div>}
-                    <div className="upcoming-ride-card-meta">
-                      <span>{dateLabel}</span>
-                      <span>&middot;</span>
-                      <span>{countByRide.get(ride.id) ?? 0} riders going</span>
-                    </div>
-                  </div>
-                </a>
+                  title={ride.title}
+                  imageUrl={ride.hero_image_url}
+                  rideDate={ride.ride_date}
+                  endDate={ride.is_multi_day ? ride.end_date : null}
+                  approxKm={ex?.approx_km ?? null}
+                  approxHours={ex?.approx_hours ?? null}
+                  slotsAvailable={
+                    ex?.slots_total != null ? Math.max(0, ex.slots_total - (countByRide.get(ride.id) ?? 0)) : null
+                  }
+                  cost={ride.cost_per_person}
+                />
               );
             })}
           </div>

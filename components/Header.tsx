@@ -301,6 +301,21 @@ export default function Header({
                     Member Requests
                   </a>
                 )}
+                {authUser.isAdmin && (
+                  <a
+                    href="/admin/upcoming-rides"
+                    style={{
+                      display: "block",
+                      padding: "9px 18px",
+                      color: "var(--amber)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textTransform: "none",
+                    }}
+                  >
+                    Upcoming Ride Requests
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={handleLogout}

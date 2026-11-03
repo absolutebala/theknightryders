@@ -13,6 +13,7 @@ type RideValues = {
   is_multi_day: boolean;
   cost_per_person: number | null;
   summary: string | null;
+  upi_id?: string | null;
   approx_km?: string | null;
   approx_hours?: string | null;
   slots_total?: number | null;
@@ -31,6 +32,7 @@ export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
   const [endDate, setEndDate] = useState(ride.end_date ?? "");
   const [cost, setCost] = useState(ride.cost_per_person?.toString() ?? "");
   const [summary, setSummary] = useState(ride.summary ?? "");
+  const [upiId, setUpiId] = useState(ride.upi_id ?? "");
   const [approxKm, setApproxKm] = useState(ride.approx_km ?? "");
   const [approxHours, setApproxHours] = useState(ride.approx_hours ?? "");
   const [slotsTotal, setSlotsTotal] = useState(ride.slots_total?.toString() ?? "");
@@ -71,6 +73,16 @@ export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
     if (cardError) {
       setSaving(false);
       setError(cardError.message);
+      return;
+    }
+
+    const { error: upiError } = await supabase.rpc("set_upcoming_ride_upi_id", {
+      target_id: ride.id,
+      p_upi_id: upiId.trim() || null,
+    });
+    if (upiError) {
+      setSaving(false);
+      setError(upiError.message);
       return;
     }
 
@@ -188,6 +200,11 @@ export default function EditUpcomingRideButton({ ride }: { ride: RideValues }) {
                 <label style={fieldLabel}>Total Slots</label>
                 <input type="number" min={0} value={slotsTotal} onChange={(e) => setSlotsTotal(e.target.value)} placeholder="20" style={fieldInput} />
               </div>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={fieldLabel}>UPI ID for payment QR</label>
+              <input value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="name@bank" style={fieldInput} />
             </div>
 
             <div style={{ marginBottom: 18 }}>

@@ -6,11 +6,10 @@ export default function Footer() {
           <img
             src="https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png"
             alt="The Knight Ryders logo"
-            style={{ height: 52 }}
+            style={{ height: 64 }}
           />
-          The Knight Ryders
         </a>
-        <div>
+        <div className="footer-center">
           <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>Group bike riding community in Chennai</div>
           <div className="whatsapp-line">Whatsapp : +91 6381 890 182</div>
           <nav style={{ marginTop: 10 }}>
@@ -23,9 +22,6 @@ export default function Footer() {
               </li>
               <li>
                 <a href="/members">Members</a>
-              </li>
-              <li>
-                <a href="/blog">Blog</a>
               </li>
             </ul>
           </nav>

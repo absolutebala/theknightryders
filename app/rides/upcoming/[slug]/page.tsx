@@ -47,6 +47,8 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
   if (!ride) notFound();
 
   // Separate query so the page keeps working before the card columns exist.
+  const { data: upiRow } = await supabase.from("upcoming_rides").select("upi_id").eq("id", ride.id).maybeSingle();
+  const upiId = upiRow?.upi_id ?? null;
   const { data: cardExtras } = await supabase
     .from("upcoming_rides")
     .select("approx_km, approx_hours, slots_total")
@@ -145,6 +147,7 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
                   is_multi_day: ride.is_multi_day,
                   cost_per_person: ride.cost_per_person,
                   summary: ride.summary,
+                  upi_id: upiId,
                   approx_km: cardExtras?.approx_km ?? null,
                   approx_hours: cardExtras?.approx_hours ?? null,
                   slots_total: cardExtras?.slots_total ?? null,
@@ -163,6 +166,27 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
             {ride.place && <span>{ride.place} &middot; </span>}
             {dateLabel}
           </div>
+        </div>
+      </div>
+
+
+      <div style={{ background: "var(--mint)", borderBottom: "1px solid #dce8e3" }}>
+        <div className="container" style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+          <div style={{ color: "var(--navy)", fontWeight: 700, fontSize: 15 }}>
+            {approved.length} rider{approved.length === 1 ? "" : "s"} going
+            {ride.cost_per_person !== null && <span style={{ color: "var(--grey)", fontWeight: 600 }}> &middot; &#8377;{ride.cost_per_person} per rider</span>}
+          </div>
+          {viewerMember ? (
+            <JoinUpcomingRideButton
+              upcomingRideId={ride.id}
+              initialStatus={(viewerParticipant?.status as "pending" | "approved" | "rejected" | undefined) ?? null}
+              rideTitle={ride.title}
+              cost={ride.cost_per_person}
+              upiId={upiId}
+            />
+          ) : (
+            <a href="/login" className="btn btn-amber">Log in to Request to Join</a>
+          )}
         </div>
       </div>
 
@@ -197,20 +221,6 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
                 No summary yet -- use &quot;Edit Ride Details&quot; above to add one.
               </p>
             )
-          )}
-
-          {viewerMember && !viewerParticipant && (
-            <div style={{ marginTop: 20 }}>
-              <JoinUpcomingRideButton upcomingRideId={ride.id} initialStatus={null} />
-            </div>
-          )}
-          {viewerParticipant && (viewerParticipant.status === "pending" || viewerParticipant.status === "approved") && (
-            <div style={{ marginTop: 20 }}>
-              <JoinUpcomingRideButton
-                upcomingRideId={ride.id}
-                initialStatus={viewerParticipant.status as "pending" | "approved"}
-              />
-            </div>
           )}
         </div>
       </section>
