@@ -40,7 +40,8 @@ type RideRequest = {
   details?: {
     phone: string;
     vehicle_number: string;
-    upi_txn: string;
+    upi_txn: string | null;
+    upi_screenshot_url?: string | null;
     gear: string[];
   } | null;
 };
@@ -172,7 +173,13 @@ function RideRequestList({
               <div style={{ fontSize: 13, color: "var(--dark)", lineHeight: 1.7, marginTop: 8 }}>
                 Phone: <b>{r.details.phone}</b> &middot; Vehicle: <b>{r.details.vehicle_number}</b>
                 <br />
-                UPI transaction: <b>{r.details.upi_txn}</b>
+                {r.details.upi_txn && <>UPI transaction: <b>{r.details.upi_txn}</b></>}
+                {r.details.upi_txn && r.details.upi_screenshot_url && " · "}
+                {r.details.upi_screenshot_url && (
+                  <a href={r.details.upi_screenshot_url} target="_blank" rel="noopener" style={{ color: "var(--cta-blue)", fontWeight: 700 }}>
+                    View payment screenshot
+                  </a>
+                )}
                 <br />
                 Gear: {r.details.gear.join(", ")}
               </div>

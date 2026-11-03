@@ -113,8 +113,8 @@ export default async function AdminPage() {
   }));
 
   const detailsByParticipant = new Map(
-    ((registrationsRaw ?? []) as { participant_id: string; phone: string; vehicle_number: string; upi_txn: string; gear: string[] }[]).map(
-      (d) => [d.participant_id, { phone: d.phone, vehicle_number: d.vehicle_number, upi_txn: d.upi_txn, gear: d.gear }]
+    ((registrationsRaw ?? []) as { participant_id: string; phone: string; vehicle_number: string; upi_txn: string | null; upi_screenshot_url: string | null; gear: string[] }[]).map(
+      (d) => [d.participant_id, { phone: d.phone, vehicle_number: d.vehicle_number, upi_txn: d.upi_txn, upi_screenshot_url: d.upi_screenshot_url, gear: d.gear }]
     )
   );
 

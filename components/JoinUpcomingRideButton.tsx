@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage, jpegFilename } from "@/lib/imageCompression";
 
 const ADVANCE_AMOUNT = 500;
 const DEFAULT_UPI_ID = "ramesh1979@okaxis";
@@ -78,6 +79,8 @@ function JoinModal({
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
   const [txn, setTxn] = useState("");
+  const [shotUrl, setShotUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [gear, setGear] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +113,33 @@ function JoinModal({
     })();
   }, []);
 
+  async function handleShot(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Please log in again.");
+      const compressed = await compressImage(file);
+      const clean = jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""));
+      const path = `${user.id}/payments/${Date.now()}-${clean}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
+      if (upErr) throw upErr;
+      setShotUrl(supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
   function toggleGear(g: string) {
     setGear((cur) => (cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g]));
   }
@@ -117,8 +147,12 @@ function JoinModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim() || !phone.trim() || !vehicle.trim() || !txn.trim()) {
+    if (!name.trim() || !phone.trim() || !vehicle.trim()) {
       setError("All fields are mandatory.");
+      return;
+    }
+    if (!txn.trim() && !shotUrl) {
+      setError("Enter the UPI transaction number or upload the payment screenshot.");
       return;
     }
     if (gear.length !== GEAR.length) {
@@ -134,6 +168,7 @@ function JoinModal({
       p_vehicle: vehicle,
       p_upi_txn: txn,
       p_gear: gear,
+      p_screenshot_url: shotUrl,
     });
     setSaving(false);
     if (error) {
@@ -209,7 +244,28 @@ function JoinModal({
             <Field label="Name" value={name} onChange={setName} />
             <Field label="Phone number" value={phone} onChange={setPhone} type="tel" />
             <Field label="Vehicle number" value={vehicle} onChange={setVehicle} />
-            <Field label="UPI transaction number" value={txn} onChange={setTxn} placeholder="From your payment app" />
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--dark)", marginBottom: 4 }}>
+                Payment proof <span style={{ color: "#c0392b" }}>*</span>
+              </label>
+              <input
+                value={txn}
+                onChange={(e) => setTxn(e.target.value)}
+                placeholder="UPI transaction number"
+                style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #c7d3cf", borderRadius: 6, fontSize: 14 }}
+              />
+              <div style={{ textAlign: "center", fontSize: 12, color: "var(--grey)", margin: "6px 0" }}>or</div>
+              <input id="payment-shot" type="file" accept="image/*" onChange={handleShot} style={{ display: "none" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <label htmlFor="payment-shot" className="btn btn-outline" style={{ padding: "7px 14px", fontSize: 12.5, cursor: "pointer" }}>
+                  {uploading ? "Uploading…" : shotUrl ? "Change screenshot" : "Upload payment screenshot"}
+                </label>
+                {shotUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={shotUrl} alt="Payment screenshot" style={{ height: 44, borderRadius: 6, border: "1px solid #e3ebe7" }} />
+                )}
+              </div>
+            </div>
 
             <div style={{ fontWeight: 700, color: "var(--navy)", margin: "14px 0 6px", fontSize: 14 }}>
               I will ride with
