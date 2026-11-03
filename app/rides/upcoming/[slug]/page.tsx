@@ -6,7 +6,6 @@ import JoinUpcomingRideButton from "@/components/JoinUpcomingRideButton";
 import UpcomingRideParticipantsManager from "@/components/admin/UpcomingRideParticipantsManager";
 import UpcomingRidePhotoEditor from "@/components/admin/UpcomingRidePhotoEditor";
 import EditUpcomingRideButton from "@/components/admin/EditUpcomingRideButton";
-import DownloadUpcomingRideCard from "@/components/DownloadUpcomingRideCard";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -213,23 +212,6 @@ export default async function UpcomingRideDetailPage({ params }: { params: Promi
               />
             </div>
           )}
-        </div>
-      </section>
-
-      <section style={{ paddingTop: 0, paddingBottom: 30 }}>
-        <div className="container" style={{ maxWidth: 780 }}>
-          <DownloadUpcomingRideCard
-            title={ride.title}
-            imageUrl={ride.hero_image_url}
-            rideDate={ride.ride_date}
-            endDate={ride.is_multi_day ? ride.end_date : null}
-            approxKm={cardExtras?.approx_km ?? null}
-            approxHours={cardExtras?.approx_hours ?? null}
-            slotsAvailable={
-              cardExtras?.slots_total != null ? Math.max(0, cardExtras.slots_total - approved.length) : null
-            }
-            cost={ride.cost_per_person}
-          />
         </div>
       </section>
 
