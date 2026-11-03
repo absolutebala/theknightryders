@@ -176,8 +176,9 @@ function JoinModal({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <div>
             <h2 style={{ color: "var(--navy)", fontSize: 21, margin: 0 }}>
-              Do the advance payment of INR {ADVANCE_AMOUNT} for the participation
+              Do the advance payment of INR {ADVANCE_AMOUNT} for the confirmation
             </h2>
+            <div style={{ color: "#a3312a", fontSize: 12, fontWeight: 600, marginTop: 3 }}>Non-refundable</div>
             <div style={{ color: "var(--grey)", fontSize: 13.5, marginTop: 4 }}>{rideTitle}</div>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "var(--grey)" }}>
