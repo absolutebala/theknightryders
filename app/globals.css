@@ -422,3 +422,4 @@ footer nav ul{justify-content:center;}
 /* The UPI deep link only works on phones; hide the button on desktop */
 .upi-pay-btn{display:none;}
 @media (max-width:900px){.upi-pay-btn{display:inline-block;}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
