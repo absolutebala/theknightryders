@@ -73,6 +73,7 @@ function JoinModal({
 }) {
   const payTo = upiId || DEFAULT_UPI_ID;
   const [qr, setQr] = useState<string | null>(null);
+  const [upiLink, setUpiLink] = useState<string>("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
@@ -86,6 +87,7 @@ function JoinModal({
       `upi://pay?pa=${encodeURIComponent(payTo)}&pn=${encodeURIComponent("The Knight Ryders")}` +
       `&am=${ADVANCE_AMOUNT}` +
       `&cu=INR&tn=${encodeURIComponent(rideTitle.slice(0, 40))}`;
+    setUpiLink(uri);
     QRCode.toDataURL(uri, { width: 320, margin: 1 }).then(setQr).catch(() => setQr(null));
   }, [payTo, rideTitle]);
 
@@ -186,12 +188,19 @@ function JoinModal({
         <div className="join-modal-grid">
           <div style={{ textAlign: "center" }}>
             {qr ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={qr} alt="UPI payment QR code" style={{ width: "100%", maxWidth: 260, borderRadius: 10, border: "1px solid #e3ebe7" }} />
+              // Tapping the QR on a phone opens the UPI app chooser
+              <a href={upiLink} aria-label="Pay with UPI app">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qr} alt="UPI payment QR code" style={{ width: "100%", maxWidth: 260, borderRadius: 10, border: "1px solid #e3ebe7" }} />
+              </a>
             ) : (
               <div style={{ color: "var(--grey)", fontSize: 13 }}>Generating QR…</div>
             )}
-            <div style={{ fontSize: 13, color: "var(--dark)", marginTop: 10, fontWeight: 600 }}>UPI ID: {payTo}</div>
+            <a href={upiLink} className="btn btn-amber upi-pay-btn" style={{ marginTop: 12, padding: "9px 18px", fontSize: 13 }}>
+              Pay with UPI app
+            </a>
+            <div style={{ fontSize: 12.5, color: "var(--grey)", marginTop: 4 }}>On mobile, tap the QR or this button</div>
+            <div style={{ fontSize: 13, color: "var(--dark)", marginTop: 8, fontWeight: 600 }}>UPI ID: {payTo}</div>
           </div>
 
           <div>
