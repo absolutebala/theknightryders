@@ -16,16 +16,18 @@ export default function JoinUpcomingRideButton({
   rideTitle,
   cost,
   upiId,
+  autoOpen = false,
 }: {
   upcomingRideId: string;
   initialStatus: "pending" | "approved" | "rejected" | null;
   rideTitle: string;
   cost: number | null;
   upiId: string | null;
+  autoOpen?: boolean;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
 
   if (status === "approved") {
     return <span className="btn btn-outline" style={{ opacity: 0.7, cursor: "default" }}>You&apos;re Going &#10003;</span>;

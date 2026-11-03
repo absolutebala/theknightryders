@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") && rawNext !== "/members" ? rawNext : null;
 
   if (code) {
     const supabase = await createClient();
@@ -35,6 +37,10 @@ export async function GET(request: Request) {
           await supabase.auth.signOut();
           return NextResponse.redirect(`${origin}/login?error=suspended`);
         }
+      }
+
+      if (member && !member.is_hidden && nextPath) {
+        return NextResponse.redirect(`${origin}${nextPath}`);
       }
 
       if (member && !member.is_hidden) {
