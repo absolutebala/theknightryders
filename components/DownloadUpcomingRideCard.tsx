@@ -7,7 +7,9 @@ import {
   type UpcomingRideCardOptions,
 } from "@/lib/upcomingRideCard";
 
-export default function DownloadUpcomingRideCard(props: UpcomingRideCardOptions) {
+export default function DownloadUpcomingRideCard(
+  props: UpcomingRideCardOptions & { width?: number; linkHref?: string; dark?: boolean }
+) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
@@ -37,22 +39,29 @@ export default function DownloadUpcomingRideCard(props: UpcomingRideCardOptions)
   }
 
   return (
-    <div style={{ maxWidth: 340, margin: "0 auto", textAlign: "center" }}>
+    <div style={{ maxWidth: props.width ?? 340, margin: "0 auto", textAlign: "center" }}>
       {previewUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={previewUrl} alt={`${title} ride poster`} style={{ width: "100%", display: "block", borderRadius: 12 }} />
+        props.linkHref ? (
+          <a href={props.linkHref} style={{ display: "block" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={previewUrl} alt={`${title} ride poster`} style={{ width: "100%", display: "block", borderRadius: 12 }} />
+          </a>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt={`${title} ride poster`} style={{ width: "100%", display: "block", borderRadius: 12 }} />
+        )
       ) : (
         <div
           style={{
             width: "100%",
             aspectRatio: "2/3",
             borderRadius: 12,
-            background: "var(--mint)",
+            background: props.dark ? "rgba(255,255,255,.08)" : "var(--mint)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: 12,
-            color: "var(--grey)",
+            color: props.dark ? "rgba(255,255,255,.6)" : "var(--grey)",
           }}
         >
           Preparing preview…
@@ -60,10 +69,10 @@ export default function DownloadUpcomingRideCard(props: UpcomingRideCardOptions)
       )}
       <button
         type="button"
-        className="btn btn-amber"
+        className={props.dark ? "hero-promo-manage-btn" : "btn btn-amber"}
         onClick={handleDownload}
         disabled={downloading || !previewUrl}
-        style={{ marginTop: 12, padding: "10px 20px", fontSize: 13.5 }}
+        style={props.dark ? { marginTop: 10 } : { marginTop: 12, padding: "10px 20px", fontSize: 13.5 }}
       >
         {downloading ? "Preparing…" : "Download for WhatsApp Status"}
       </button>

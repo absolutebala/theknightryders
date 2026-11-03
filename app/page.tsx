@@ -87,7 +87,7 @@ export default async function HomePage({
     supabase.rpc("get_recently_promoted_members"),
     supabase
       .from("upcoming_rides")
-      .select("slug, title, place, ride_date, end_date, is_multi_day, hero_image_url, cost_per_person")
+      .select("id, slug, title, place, ride_date, end_date, is_multi_day, hero_image_url, cost_per_person")
       .order("ride_date", { ascending: true })
       .limit(1)
       .maybeSingle(),
@@ -136,7 +136,36 @@ export default async function HomePage({
   };
   const promotedMembers: PromotedMember[] = promotedMembersResult.data ?? [];
 
-  const nextUpcomingRide = nextUpcomingRideResult.data ?? null;
+  const nextUpcomingBase = nextUpcomingRideResult.data ?? null;
+
+  // Card details (approx km / hours, slots left). Separate queries so the
+  // homepage keeps working before the new columns exist.
+  let nextUpcomingRide: (typeof nextUpcomingBase & {
+    approx_km: string | null;
+    approx_hours: string | null;
+    slots_available: number | null;
+  }) | null = null;
+  if (nextUpcomingBase) {
+    const [{ data: extras }, { count: approvedCount }] = await Promise.all([
+      supabase
+        .from("upcoming_rides")
+        .select("approx_km, approx_hours, slots_total")
+        .eq("id", nextUpcomingBase.id)
+        .maybeSingle(),
+      supabase
+        .from("upcoming_ride_participants")
+        .select("id", { count: "exact", head: true })
+        .eq("upcoming_ride_id", nextUpcomingBase.id)
+        .eq("status", "approved"),
+    ]);
+    nextUpcomingRide = {
+      ...nextUpcomingBase,
+      approx_km: extras?.approx_km ?? null,
+      approx_hours: extras?.approx_hours ?? null,
+      slots_available:
+        extras?.slots_total != null ? Math.max(0, extras.slots_total - (approvedCount ?? 0)) : null,
+    };
+  }
   const allHolidayCards = allHolidayCardsResult.data ?? [];
 
   const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });

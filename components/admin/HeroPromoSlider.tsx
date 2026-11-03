@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 import HomepagePremiumCard from "@/components/HomepagePremiumCard";
+import DownloadUpcomingRideCard from "@/components/DownloadUpcomingRideCard";
 import { type PremiumCardOptions } from "@/lib/canvasCardDownload";
 import { getRideBadgeTier } from "@/lib/rideBadges";
 
@@ -44,6 +45,9 @@ type UpcomingRideSummary = {
   is_multi_day: boolean;
   hero_image_url: string | null;
   cost_per_person: number | null;
+  approx_km?: string | null;
+  approx_hours?: string | null;
+  slots_available?: number | null;
 };
 
 type Props = {
@@ -373,8 +377,20 @@ export default function HeroPromoSlider({
 
       {promoMode === "holiday" && getCardOptions() && <HomepagePremiumCard options={getCardOptions()!} />}
 
-      {promoMode === "upcoming-ride" && getCardOptions() && (
-        <HomepagePremiumCard options={getCardOptions()!} linkHref={`/rides/upcoming/${nextUpcomingRide!.slug}`} />
+      {promoMode === "upcoming-ride" && nextUpcomingRide && (
+        <DownloadUpcomingRideCard
+          title={nextUpcomingRide.title}
+          imageUrl={nextUpcomingRide.hero_image_url}
+          rideDate={nextUpcomingRide.ride_date}
+          endDate={nextUpcomingRide.is_multi_day ? nextUpcomingRide.end_date : null}
+          approxKm={nextUpcomingRide.approx_km ?? null}
+          approxHours={nextUpcomingRide.approx_hours ?? null}
+          slotsAvailable={nextUpcomingRide.slots_available ?? null}
+          cost={nextUpcomingRide.cost_per_person}
+          width={320}
+          linkHref={`/rides/upcoming/${nextUpcomingRide.slug}`}
+          dark
+        />
       )}
 
       {promoMode === "fallback" && getCardOptions() && <HomepagePremiumCard options={getCardOptions()!} />}
