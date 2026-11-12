@@ -37,6 +37,7 @@ export default async function AdminPage() {
     { data: registrationsRaw },
     { data: contactMessagesRaw },
     { data: profilePendingCount },
+    { data: joinReasonsRaw },
   ] = await Promise.all([
     supabase
       .from("pending_requests")
@@ -71,7 +72,14 @@ export default async function AdminPage() {
     supabase.rpc("get_upcoming_ride_registrations"),
     supabase.rpc("get_contact_messages"),
     supabase.rpc("get_profile_update_pending_count"),
+    supabase.rpc("get_join_reasons"),
   ]);
+
+  const reasonByEmail = new Map(
+    ((joinReasonsRaw ?? []) as { email: string; reason: string }[]).map((r) => [r.email.toLowerCase(), r.reason])
+  );
+  const withReason = <T extends { email: string }>(rows: T[] | null) =>
+    (rows ?? []).map((r) => ({ ...r, join_reason: reasonByEmail.get(r.email.toLowerCase()) ?? null }));
 
   type TemplateRow = {
     id: string;
@@ -144,8 +152,8 @@ export default async function AdminPage() {
       </div>
 
       <AdminRequestTabs
-        accessPending={pending ?? []}
-        accessReviewed={recentlyReviewed ?? []}
+        accessPending={withReason(pending)}
+        accessReviewed={withReason(recentlyReviewed)}
         templatePending={(templateRequests ?? []).map(flattenTemplate)}
         templateReviewed={(recentlyReviewedTemplates ?? []).map(flattenTemplate)}
         reactivationPending={reactivationRequests ?? []}

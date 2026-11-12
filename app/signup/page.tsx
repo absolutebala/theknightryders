@@ -7,20 +7,25 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleGoogleSignup() {
-    setGoogleLoading(true);
     setError(null);
+    if (!reason.trim()) {
+      setError("Please tell us why you want to join the club.");
+      return;
+    }
+    setGoogleLoading(true);
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/members`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/members&reason=${encodeURIComponent(reason.trim().slice(0, 1500))}`,
       },
     });
 
@@ -32,15 +37,19 @@ export default function SignupPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    if (!reason.trim()) {
+      setError("Please tell us why you want to join the club.");
+      return;
+    }
+    setLoading(true);
 
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: name },
+        data: { full_name: name, join_reason: reason.trim() },
       },
     });
 
@@ -78,6 +87,21 @@ export default function SignupPage() {
         <p className="sub">Create your Knight Ryders member account.</p>
 
         {error && <div className="auth-error">{error}</div>}
+
+        <div className="field">
+          <label htmlFor="reason">Why do you want to join the club? *</label>
+          <textarea
+            id="reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            required
+            rows={3}
+            maxLength={1500}
+            placeholder="Tell us a bit about yourself and your riding"
+            style={{ width: "100%", padding: "11px 14px", border: "1.5px solid #c7d3cf", borderRadius: 8, fontSize: 15, fontFamily: "inherit", resize: "vertical" }}
+          />
+        </div>
+
 
         <button
           type="button"
