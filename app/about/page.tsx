@@ -109,7 +109,7 @@ export default async function AboutPage() {
       </section>
 
       {/* WHAT WE DO */}
-      <section className="ab-section ab-alt">
+      <section className="ab-section">
         <div className="container">
           <div className="ab-head">
             <span className="ab-kicker">What we do together</span>
@@ -148,11 +148,11 @@ export default async function AboutPage() {
 
       {/* GALLERY */}
       {galleryPhotos.length > 0 && (
-        <section className="ab-section ab-dark">
+        <section className="ab-section ab-alt">
           <div className="container">
             <div className="ab-head">
               <span className="ab-kicker">On the road</span>
-              <h2 style={{ color: "#fff" }}>Moments from our latest rides</h2>
+              <h2>Moments from our latest rides</h2>
             </div>
             <div className="ab-gallery">
               {galleryPhotos.map((p) => (
