@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import UniversalRequestActions from "./UniversalRequestActions";
+import ContactMessagesList, { type ContactMessage } from "./ContactMessagesList";
 
 type AccessRequest = {
   id: string;
@@ -52,6 +53,7 @@ const TABS = [
   { key: "reactivation", label: "Reactivations" },
   { key: "pastRide", label: "Past Ride Joins" },
   { key: "upcomingRide", label: "Upcoming Ride Joins" },
+  { key: "messages", label: "Messages" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -206,6 +208,7 @@ export default function AdminRequestTabs({
   reactivationPending,
   pastRideRequests,
   upcomingRideRequests,
+  contactMessages,
 }: {
   accessPending: AccessRequest[];
   accessReviewed: AccessRequest[];
@@ -214,6 +217,7 @@ export default function AdminRequestTabs({
   reactivationPending: ReactivationRequest[];
   pastRideRequests: RideRequest[];
   upcomingRideRequests: RideRequest[];
+  contactMessages: ContactMessage[];
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("access");
   const [accessSub, setAccessSub] = useState("pending");
@@ -238,6 +242,7 @@ export default function AdminRequestTabs({
     reactivation: reactivationPending.length,
     pastRide: pastRidePending.length,
     upcomingRide: upcomingRidePending.length,
+    messages: contactMessages.filter((m) => !m.is_read).length,
   };
 
   return (
@@ -446,6 +451,8 @@ export default function AdminRequestTabs({
           />
         </div>
       )}
+
+      {activeTab === "messages" && <ContactMessagesList messages={contactMessages} />}
     </div>
   );
 }
