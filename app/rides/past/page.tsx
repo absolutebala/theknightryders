@@ -106,19 +106,36 @@ export default async function PastRidesPage({
 
   return (
     <>
-      <section className="page-hero">
-        <div className="container">
-          <span className="page-hero-eyebrow">The Journey So Far</span>
-          <h1>Past <span>Rides</span></h1>
-          <p>
-            {visibleRides.length} rides and counting -- every trip, every
-            destination, every memory.
-          </p>
-          {isAdmin && (
-            <div style={{ marginTop: 18 }}>
-              <CreateRideButton />
+      <section className="page-hero members-hero">
+        <div className="container members-hero-row">
+          <div className="members-hero-title">
+            <span className="page-hero-eyebrow">The Journey So Far</span>
+            <h1>Past <span>Rides</span></h1>
+            <p>
+              {visibleRides.length} rides and counting -- every trip, every
+              destination, every memory.
+            </p>
+            {isAdmin && (
+              <div style={{ marginTop: 18 }}>
+                <CreateRideButton />
+              </div>
+            )}
+          </div>
+          <div className="riders-badge-legend on-dark hero-stats-box">
+            <div className="riders-badge-legend-title">Club Journey</div>
+            <div className="hero-stats-nums">
+              <div><b>{visibleRides.length}</b><span>Rides</span></div>
+              <div><b>{statesVisited.length}</b><span>States</span></div>
             </div>
-          )}
+            {statesVisited.length > 0 && (
+              <div className="hero-stats-top">
+                <div className="riders-badge-legend-title" style={{ marginBottom: 6 }}>Most Ridden</div>
+                {statesVisited.slice(0, 3).map(([key, { label, count }]) => (
+                  <div key={key} className="hero-stats-row"><span>{label}</span><b>{count}</b></div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
