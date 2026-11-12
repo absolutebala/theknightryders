@@ -111,28 +111,9 @@ export default async function RidersPage() {
 
   return (
     <>
-    <section className="page-hero">
-      <div className="container">
-        <span className="page-hero-eyebrow">The Brotherhood</span>
-        <h1>Our <span>Riders</span></h1>
-        <p>{riders.length} member{riders.length === 1 ? "" : "s"} strong.</p>
-      </div>
-    </section>
-    <section style={{ paddingTop: 50, paddingBottom: 70 }}>
-      <div className="container">
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 24,
-            marginBottom: 40,
-          }}
-        >
-          <div />
-
-          <div className="riders-badge-legend">
+    <section className="page-hero members-hero">
+      <div className="container members-hero-row">
+          <div className="riders-badge-legend on-dark">
             <div className="riders-badge-legend-title">Badge Tiers</div>
             <div className="riders-badge-legend-grid">
               {RIDE_BADGE_TIERS.map((tier) => (
@@ -154,8 +135,15 @@ export default async function RidersPage() {
               ))}
             </div>
           </div>
+        <div className="members-hero-title">
+          <span className="page-hero-eyebrow">The Brotherhood</span>
+          <h1>Our <span>Riders</span></h1>
+          <p>{riders.length} member{riders.length === 1 ? "" : "s"} strong.</p>
         </div>
-
+      </div>
+    </section>
+    <section style={{ paddingTop: 50, paddingBottom: 70 }}>
+      <div className="container">
         <div className="riders-grid">
           {riders.map((rider) => (
             <a

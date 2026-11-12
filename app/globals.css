@@ -524,3 +524,13 @@ nav li.has-dropdown>a::after{color:var(--amber);}
 .hero-promo-close{position:absolute;top:8px;right:8px;z-index:5;width:30px;height:30px;border-radius:50%;border:none;background:rgba(6,20,60,.85);color:#fff;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);}
 .hero-promo-close:hover{background:var(--amber);color:var(--navy);}
 .rider-card,.rides-sidebar{border-top:4px solid var(--amber);}
+
+.members-hero{text-align:left;}
+.members-hero-row{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
+.members-hero-title{text-align:right;margin-left:auto;}
+.members-hero-title p{margin:0 0 0 auto;}
+.riders-badge-legend.on-dark{background:rgba(255,255,255,.08);border:1px solid rgba(249,184,26,.5);backdrop-filter:blur(4px);}
+.riders-badge-legend.on-dark .riders-badge-legend-title{color:#f9b81a;}
+.riders-badge-legend.on-dark .riders-badge-legend-item{color:#fff;}
+.riders-badge-legend.on-dark .riders-badge-legend-range{color:rgba(255,255,255,.7);}
+@media (max-width:760px){.members-hero-row{flex-direction:column-reverse;align-items:stretch;}.members-hero-title{text-align:center;margin:0;}.members-hero-title p{margin:0 auto;}.riders-badge-legend-grid{grid-template-columns:repeat(2,auto);}}
