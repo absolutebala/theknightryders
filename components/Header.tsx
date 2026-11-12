@@ -92,29 +92,29 @@ export default function Header({
           </a>
           <nav>
             <ul>
-              <li className={isActive("/rides/past") ? "current" : ""}>
-                <a href="/rides/past">Past Rides</a>
+              <li className={"has-dropdown " + (isActive("/rides") ? "current" : "")}>
+                <a href="/rides/upcoming">Rides</a>
+                <div className="dropdown">
+                  <a href="/rides/upcoming">Upcoming Rides</a>
+                  <a href="/rides/past">Past Rides</a>
+                </div>
               </li>
-              <li className={isActive("/rides/upcoming") ? "current" : ""}>
-                <a href="/rides/upcoming">Upcoming Rides</a>
+              <li className={"has-dropdown " + (isActive("/about") || isActive("/members-directory") || isActive("/festivals") ? "current" : "")}>
+                <a href="/about">The Club</a>
+                <div className="dropdown">
+                  <a href="/about">About Us</a>
+                  <a href="/members-directory">Members</a>
+                  <a href="/festivals">Festival Cards</a>
+                </div>
               </li>
               <li>
-                <a
-                  href="https://www.youtube.com/@TheKnightRyders1"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  Videos
-                </a>
+                <a href="https://www.youtube.com/@TheKnightRyders1" target="_blank" rel="noopener">Video</a>
               </li>
               <li className={isActive("/media") ? "current" : ""}>
                 <a href="/media">Media</a>
               </li>
-              <li className={isActive("/festivals") ? "current" : ""}>
-                <a href="/festivals">Festivals</a>
-              </li>
-              <li className={isActive("/members-directory") ? "current" : ""}>
-                <a href="/members-directory">Members</a>
+              <li className={isActive("/contact") ? "current" : ""}>
+                <a href="/contact">Contact Us</a>
               </li>
             </ul>
           </nav>
@@ -334,14 +334,16 @@ export default function Header({
 
         {mobileOpen && (
           <nav className="mobile-nav">
-            <a href="/rides/past">Past Rides</a>
-            <a href="/rides/upcoming">Upcoming Rides</a>
-            <a href="https://www.youtube.com/@TheKnightRyders1" target="_blank" rel="noopener">
-              Videos
-            </a>
+            <div className="mn-group">Rides</div>
+            <a className="mn-sub" href="/rides/upcoming">Upcoming Rides</a>
+            <a className="mn-sub" href="/rides/past">Past Rides</a>
+            <div className="mn-group">The Club</div>
+            <a className="mn-sub" href="/about">About Us</a>
+            <a className="mn-sub" href="/members-directory">Members</a>
+            <a className="mn-sub" href="/festivals">Festival Cards</a>
+            <a href="https://www.youtube.com/@TheKnightRyders1" target="_blank" rel="noopener">Video</a>
             <a href="/media">Media</a>
-            <a href="/festivals">Festivals</a>
-            <a href="/members-directory">Members</a>
+            <a href="/contact">Contact Us</a>
             {!authUser && <a href="/login">Login</a>}
           </nav>
         )}
