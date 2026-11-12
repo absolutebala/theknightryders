@@ -230,9 +230,14 @@ export default async function HomePage({
               <span className="hero-line highlight">for Honda CB350!</span>
             </span>
           </h1>
-          <a href="/about" className="btn btn-outline">
-            Know about our club
-          </a>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href="/about" className="btn btn-outline">
+              Know about our club
+            </a>
+            <a href="/contact" className="btn btn-amber">
+              Contact Us
+            </a>
+          </div>
           <div className="stats">
             <div>
               <div className="stat-num">{stats?.rides_count ?? 0}</div>

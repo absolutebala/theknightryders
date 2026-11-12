@@ -5,13 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 
 const input: React.CSSProperties = {
   width: "100%",
-  padding: "11px 14px",
-  border: "1.5px solid #c7d3cf",
-  borderRadius: 8,
+  padding: "13px 16px",
+  border: "1.5px solid transparent",
+  background: "#f1f5f9",
+  borderRadius: 12,
   fontSize: 15,
   fontFamily: "inherit",
 };
-const label: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, color: "var(--dark)", marginBottom: 5 };
+const label: React.CSSProperties = { display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--navy)", marginBottom: 6, letterSpacing: ".02em" };
 
 export default function ContactForm() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "", website: "" });
@@ -57,28 +58,30 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ background: "var(--white)", border: "1px solid #e3ebe7", borderRadius: 14, padding: 26 }}>
+    <form onSubmit={handleSubmit} className="contact-card">
+      <h2 style={{ margin: "0 0 4px", color: "var(--navy)", fontSize: 22 }}>Send us a message</h2>
+      <p style={{ margin: "0 0 20px", color: "var(--grey)", fontSize: 13.5 }}>We usually reply within a day.</p>
       <div className="contact-grid">
         <div>
           <label style={label}>Name <span style={{ color: "#c0392b" }}>*</span></label>
-          <input style={input} value={form.name} onChange={set("name")} required maxLength={120} />
+          <input className="contact-input" style={input} value={form.name} onChange={set("name")} required maxLength={120} />
         </div>
         <div>
           <label style={label}>Email <span style={{ color: "#c0392b" }}>*</span></label>
-          <input style={input} type="email" value={form.email} onChange={set("email")} required maxLength={200} />
+          <input className="contact-input" style={input} type="email" value={form.email} onChange={set("email")} required maxLength={200} />
         </div>
         <div>
           <label style={label}>Phone (optional)</label>
-          <input style={input} type="tel" value={form.phone} onChange={set("phone")} maxLength={40} />
+          <input className="contact-input" style={input} type="tel" value={form.phone} onChange={set("phone")} maxLength={40} />
         </div>
         <div>
           <label style={label}>Subject (optional)</label>
-          <input style={input} value={form.subject} onChange={set("subject")} maxLength={200} />
+          <input className="contact-input" style={input} value={form.subject} onChange={set("subject")} maxLength={200} />
         </div>
       </div>
       <div style={{ marginTop: 14 }}>
         <label style={label}>Message <span style={{ color: "#c0392b" }}>*</span></label>
-        <textarea style={{ ...input, minHeight: 140, resize: "vertical" }} value={form.message} onChange={set("message")} required maxLength={4000} />
+        <textarea className="contact-input" style={{ ...input, minHeight: 140, resize: "vertical" }} value={form.message} onChange={set("message")} required maxLength={4000} />
       </div>
       <input
         tabIndex={-1}
@@ -89,7 +92,7 @@ export default function ContactForm() {
         style={{ position: "absolute", left: "-9999px", height: 0, width: 0, opacity: 0 }}
       />
       {error && <div style={{ color: "#a3312a", fontSize: 13, marginTop: 12 }}>{error}</div>}
-      <button type="submit" className="btn btn-amber" disabled={sending} style={{ marginTop: 18 }}>
+      <button type="submit" className="btn btn-amber" disabled={sending} style={{ marginTop: 20, width: "100%", padding: "14px", borderRadius: 12, fontSize: 15 }}>
         {sending ? "Sending…" : "Send Message"}
       </button>
     </form>

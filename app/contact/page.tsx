@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
@@ -8,18 +9,52 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const supabase = await createClient();
+  const { data: rides } = await supabase
+    .from("rides")
+    .select("title, hero_image_url")
+    .eq("is_published", true)
+    .not("hero_image_url", "is", null)
+    .order("ride_date", { ascending: false })
+    .limit(3);
+  const photos = (rides ?? []) as { title: string; hero_image_url: string }[];
+
   return (
-    <section style={{ paddingTop: 70, paddingBottom: 90 }}>
-      <div className="container" style={{ maxWidth: 640 }}>
-        <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <span className="eyebrow-sm">Get in touch</span>
-          <h1 className="section-title">Contact Us</h1>
-          <p className="section-sub" style={{ margin: "14px auto 0", maxWidth: 480 }}>
-            Questions about joining, upcoming rides or collaborations? Send us a message and we&apos;ll get back to you.
+    <section className="contact-hero">
+      <div className="container contact-wrap">
+        <div className="contact-left">
+          <span className="contact-eyebrow">Get in touch</span>
+          <h1>
+            Contact <span>Us</span>
+          </h1>
+          <p>
+            Questions about joining, upcoming rides or collaborations? Send us a message and we&apos;ll get back to
+            you.
           </p>
+
+          {photos.length > 0 && (
+            <div className="contact-photos">
+              {photos.map((p, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={i} src={p.hero_image_url} alt={`${p.title} - The Knight Ryders Honda CB350 ride`} className={i === 0 ? "big" : ""} />
+              ))}
+            </div>
+          )}
+
+          <div className="contact-chips">
+            <a href="https://wa.me/916381890182" target="_blank" rel="noopener">
+              <b>WhatsApp</b> +91 6381 890 182
+            </a>
+            <span>
+              <b>Based in</b> Chennai, India
+            </span>
+          </div>
         </div>
-        <ContactForm />
+
+        <div className="contact-right">
+          <ContactForm />
+        </div>
       </div>
     </section>
   );
