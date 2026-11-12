@@ -534,3 +534,11 @@ nav li.has-dropdown>a::after{color:var(--amber);}
 .riders-badge-legend.on-dark .riders-badge-legend-item{color:#fff;}
 .riders-badge-legend.on-dark .riders-badge-legend-range{color:rgba(255,255,255,.7);}
 @media (max-width:760px){.members-hero-row{flex-direction:column;align-items:stretch;}.members-hero-title{text-align:center;margin:0;}.members-hero-title p{margin:0 auto;}.riders-badge-legend-grid{grid-template-columns:repeat(2,auto);}}
+
+.hero-stats-box{min-width:230px;padding:16px 22px;}
+.hero-stats-nums{display:flex;gap:28px;margin-bottom:12px;}
+.hero-stats-nums b{display:block;font-size:30px;color:#f9b81a;font-family:'Montserrat',sans-serif;line-height:1.1;}
+.hero-stats-nums span{font-size:11px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+.hero-stats-top{border-top:1px solid rgba(255,255,255,.18);padding-top:10px;}
+.hero-stats-row{display:flex;justify-content:space-between;gap:18px;font-size:13px;color:#fff;padding:2px 0;}
+.hero-stats-row b{color:#f9b81a;}
