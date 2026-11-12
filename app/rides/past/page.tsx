@@ -106,11 +106,11 @@ export default async function PastRidesPage({
 
   return (
     <>
-      <section style={{ paddingBottom: 20 }}>
-        <div className="container" style={{ textAlign: "center" }}>
-          <span className="eyebrow-sm">The Journey So Far</span>
-          <h1 className="section-title">Past Rides</h1>
-          <p className="section-sub">
+      <section className="page-hero">
+        <div className="container">
+          <span className="page-hero-eyebrow">The Journey So Far</span>
+          <h1>Past <span>Rides</span></h1>
+          <p>
             {visibleRides.length} rides and counting -- every trip, every
             destination, every memory.
           </p>

@@ -110,7 +110,15 @@ export default async function RidersPage() {
   }
 
   return (
-    <section style={{ paddingBottom: 70 }}>
+    <>
+    <section className="page-hero">
+      <div className="container">
+        <span className="page-hero-eyebrow">The Brotherhood</span>
+        <h1>Our <span>Riders</span></h1>
+        <p>{riders.length} member{riders.length === 1 ? "" : "s"} strong.</p>
+      </div>
+    </section>
+    <section style={{ paddingTop: 50, paddingBottom: 70 }}>
       <div className="container">
         <div
           style={{
@@ -122,14 +130,7 @@ export default async function RidersPage() {
             marginBottom: 40,
           }}
         >
-          <div>
-            <h1 className="section-title" style={{ textAlign: "left", margin: 0 }}>
-              Riders
-            </h1>
-            <p className="section-sub" style={{ textAlign: "left", margin: "6px 0 0" }}>
-              {riders.length} member{riders.length === 1 ? "" : "s"} strong.
-            </p>
-          </div>
+          <div />
 
           <div className="riders-badge-legend">
             <div className="riders-badge-legend-title">Badge Tiers</div>
@@ -282,5 +283,6 @@ export default async function RidersPage() {
         )}
       </div>
     </section>
+    </>
   );
 }
