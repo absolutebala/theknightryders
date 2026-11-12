@@ -76,7 +76,7 @@ export default async function PastRidesPage({
       .from("ride_leaderboard")
       .select("rider_key, rider_name, member_id, handle, rides_count, total_km, profile_template, profile_photo_url")
       .not("profile_photo_url", "is", null)
-      .limit(5),
+      .limit(6),
   ]);
 
   const {
@@ -121,21 +121,34 @@ export default async function PastRidesPage({
               </div>
             )}
           </div>
-          <div className="riders-badge-legend on-dark hero-stats-box">
-            <div className="riders-badge-legend-title">Club Journey</div>
-            <div className="hero-stats-nums">
-              <div><b>{visibleRides.length}</b><span>Rides</span></div>
-              <div><b>{statesVisited.length}</b><span>States</span></div>
-            </div>
-            {statesVisited.length > 0 && (
-              <div className="hero-stats-top">
-                <div className="riders-badge-legend-title" style={{ marginBottom: 6 }}>Most Ridden</div>
-                {statesVisited.slice(0, 3).map(([key, { label, count }]) => (
-                  <div key={key} className="hero-stats-row"><span>{label}</span><b>{count}</b></div>
-                ))}
+          {leaderboard && leaderboard.length > 0 && (
+            <div className="riders-badge-legend on-dark hero-lb-box">
+              <div className="riders-badge-legend-title">Leaderboard</div>
+              <div className="hero-lb-grid">
+                {leaderboard.map((entry, i) => {
+                  const row = (
+                    <div className="hero-lb-row">
+                      <span className="hero-lb-rank">#{i + 1}</span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={entry.profile_photo_url ?? undefined} alt="" />
+                      <div className="hero-lb-info">
+                        <span className="hero-lb-name">{entry.rider_name}</span>
+                        <span className="hero-lb-stats">{entry.rides_count} rides &middot; {entry.total_km} km</span>
+                      </div>
+                    </div>
+                  );
+                  return entry.member_id ? (
+                    <a key={entry.rider_key} href={entry.handle ? `/@${entry.handle}` : `/members/${entry.member_id}`}>
+                      {row}
+                    </a>
+                  ) : (
+                    <div key={entry.rider_key}>{row}</div>
+                  );
+                })}
               </div>
-            )}
-          </div>
+              <a href="/members-directory" className="hero-lb-more">View All Riders &rarr;</a>
+            </div>
+          )}
         </div>
       </section>
 
@@ -226,63 +239,6 @@ export default async function PastRidesPage({
                 </a>
               ))}
             </div>
-
-            {leaderboard && leaderboard.length > 0 && (
-              <aside className="rides-sidebar">
-                <h2>Leaderboard</h2>
-                <div className="rides-sidebar-list">
-                  {leaderboard.map((entry, i) => {
-                    const row = (
-                      <div className="rides-sidebar-row">
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                          <span className="rides-sidebar-rank">#{i + 1}</span>
-                          <div style={{ position: "relative", flexShrink: 0 }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={entry.profile_photo_url ?? undefined}
-                              alt=""
-                              style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover" }}
-                            />
-                          </div>
-                          <div style={{ minWidth: 0 }}>
-                            <span className="rides-sidebar-name">{entry.rider_name}</span>
-                            <LeaderboardBadgeLine rideCount={entry.rides_count} />
-                          </div>
-                        </div>
-                        <div className="rides-sidebar-stats">
-                          {entry.rides_count} rides
-                          <br />
-                          {entry.total_km} km
-                        </div>
-                      </div>
-                    );
-                    return entry.member_id ? (
-                      <a
-                        key={entry.rider_key}
-                        href={entry.handle ? `/@${entry.handle}` : `/members/${entry.member_id}`}
-                      >
-                        {row}
-                      </a>
-                    ) : (
-                      <div key={entry.rider_key}>{row}</div>
-                    );
-                  })}
-                </div>
-                <a
-                  href="/members-directory"
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    marginTop: 16,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "var(--cta-blue)",
-                  }}
-                >
-                  View All Riders &rarr;
-                </a>
-              </aside>
-            )}
           </div>
         </div>
       </section>
