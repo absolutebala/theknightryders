@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminRequestTabs from "@/components/admin/AdminRequestTabs";
 import ProfileUpdatesList from "@/components/admin/ProfileUpdatesList";
+import type { ContactMessage } from "@/components/admin/ContactMessagesList";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -34,6 +35,7 @@ export default async function AdminPage() {
     { data: upcomingRideRequestsRaw },
     { data: profileUpdates },
     { data: registrationsRaw },
+    { data: contactMessagesRaw },
     { data: profilePendingCount },
   ] = await Promise.all([
     supabase
@@ -67,6 +69,7 @@ export default async function AdminPage() {
     supabase.rpc("get_all_upcoming_ride_requests"),
     supabase.rpc("get_profile_update_log"),
     supabase.rpc("get_upcoming_ride_registrations"),
+    supabase.rpc("get_contact_messages"),
     supabase.rpc("get_profile_update_pending_count"),
   ]);
 
@@ -148,6 +151,7 @@ export default async function AdminPage() {
         reactivationPending={reactivationRequests ?? []}
         pastRideRequests={pastRideRequests}
         upcomingRideRequests={upcomingRideRequests}
+        contactMessages={(contactMessagesRaw ?? []) as ContactMessage[]}
       />
 
       <ProfileUpdatesList rows={profileUpdates ?? []} pendingCount={profilePendingCount ?? 0} />

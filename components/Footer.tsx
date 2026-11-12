@@ -21,6 +21,9 @@ export default function Footer() {
                 <a href="/rides/upcoming">Upcoming Rides</a>
               </li>
               <li>
+                <a href="/contact">Contact Us</a>
+              </li>
+              <li>
                 <a href="/members">Members</a>
               </li>
             </ul>
