@@ -58,6 +58,10 @@ function LoginForm() {
     await supabase.rpc("link_member_account");
 
     if (data.user) {
+      const metaReason = data.user.user_metadata?.join_reason;
+      if (typeof metaReason === "string" && metaReason.trim()) {
+        await supabase.rpc("save_join_reason", { p_reason: metaReason });
+      }
       const { data: member } = await supabase
         .from("members")
         .select("id, handle, is_hidden")

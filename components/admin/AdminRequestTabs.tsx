@@ -12,6 +12,7 @@ type AccessRequest = {
   requested_at: string;
   reviewed_at?: string | null;
   reviewed_by?: string | null;
+  join_reason?: string | null;
 };
 
 type TemplateRequest = {
@@ -304,6 +305,9 @@ export default function AdminRequestTabs({
                       <div style={{ fontSize: 11.5, color: "var(--grey)", marginTop: 2 }}>
                         Requested {new Date(req.requested_at).toLocaleString("en-IN")}
                       </div>
+                      <div style={{ fontSize: 13, color: "var(--dark)", marginTop: 8, background: "var(--mint)", borderRadius: 8, padding: "8px 12px", maxWidth: 560, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                        <b>Why join:</b> {req.join_reason || <i style={{ color: "var(--grey)" }}>Not provided</i>}
+                      </div>
                     </div>
                     <UniversalRequestActions id={req.id} status="pending" approveFn="approve_pending_request" rejectFn="reject_pending_request" />
                   </div>
@@ -330,6 +334,9 @@ export default function AdminRequestTabs({
                     <div>
                       <div style={{ fontWeight: 700, color: "var(--navy)" }}>{req.full_name || "(no name provided)"}</div>
                       <div style={{ fontSize: 13, color: "var(--grey)" }}>{req.email}</div>
+                      <div style={{ fontSize: 13, color: "var(--dark)", marginTop: 8, background: "var(--mint)", borderRadius: 8, padding: "8px 12px", maxWidth: 560, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                        <b>Why join:</b> {req.join_reason || <i style={{ color: "var(--grey)" }}>Not provided</i>}
+                      </div>
                     </div>
                     <UniversalRequestActions id={req.id} status="rejected" approveFn="approve_pending_request" />
                   </div>

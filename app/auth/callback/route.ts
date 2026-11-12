@@ -21,6 +21,12 @@ export async function GET(request: Request) {
       // the first time they ever log in.
       await supabase.rpc("link_member_account");
 
+      // Why the person wants to join: from the Google signup form (query) or email-signup metadata
+      const joinReason = searchParams.get("reason") || data.user.user_metadata?.join_reason;
+      if (typeof joinReason === "string" && joinReason.trim()) {
+        await supabase.rpc("save_join_reason", { p_reason: joinReason });
+      }
+
       const { data: member } = await supabase
         .from("members")
         .select("id, handle, is_hidden")
