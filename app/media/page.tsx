@@ -36,7 +36,14 @@ export default async function MediaPage() {
 
   return (
     <>
-      <section style={{ paddingTop: 90, paddingBottom: 60 }}>
+      <section className="page-hero">
+        <div className="container">
+          <span className="page-hero-eyebrow">Press &amp; Playlists</span>
+          <h1>Club <span>Media</span></h1>
+          <p>Videos, coverage and the music we ride to.</p>
+        </div>
+      </section>
+      <section style={{ paddingTop: 50, paddingBottom: 60 }}>
         <div className="container">
           <h2 style={{ fontSize: 20, color: "var(--navy)", marginBottom: 20, textAlign: "center" }}>
             Listen

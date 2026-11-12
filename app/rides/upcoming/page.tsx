@@ -66,17 +66,21 @@ export default async function UpcomingRidesPage() {
   const existingPhotos = (pastPhotosResult.data ?? []).map((r) => ({ url: r.hero_image_url as string, title: r.title }));
 
   return (
-    <section style={{ paddingTop: 60, paddingBottom: 100 }}>
-      <div className="container" style={{ textAlign: "center" }}>
-        <h1 className="sr-only">Upcoming Group Bike Rides from Chennai</h1>
+    <>
+    <section className="page-hero">
+      <div className="container">
+        <span className="page-hero-eyebrow">What&apos;s Next</span>
+        <h1>Upcoming <span>Rides</span></h1>
+        <p>Everything on the club&apos;s calendar &mdash; join up before the kickstands go up.</p>
         {isAdmin && (
           <div style={{ marginTop: 18 }}>
             <CreateUpcomingRideButton existingPhotos={existingPhotos} />
           </div>
         )}
       </div>
-
-      <div className="container" style={{ marginTop: 20 }}>
+    </section>
+    <section style={{ paddingTop: 50, paddingBottom: 100 }}>
+      <div className="container">
         {rides.length === 0 ? (
           <p style={{ textAlign: "center", color: "var(--grey)" }}>
             No upcoming rides scheduled for now. Check back soon, or watch the club&apos;s channels for the next announcement.
@@ -120,5 +124,6 @@ export default async function UpcomingRidesPage() {
         )}
       </div>
     </section>
+    </>
   );
 }
