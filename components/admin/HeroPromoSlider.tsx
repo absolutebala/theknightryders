@@ -100,6 +100,12 @@ export default function HeroPromoSlider({
   const [titleDraft, setTitleDraft] = useState(promoTitle);
   const [savingTitle, setSavingTitle] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [closed, setClosed] = useState(false);
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("hero-promo-closed") === "1") setClosed(true);
+    } catch {}
+  }, []);
 
   const currentImage = images[imgIndex];
   const currentBirthday = birthdayMembers[bdayIndex];
@@ -275,8 +281,23 @@ export default function HeroPromoSlider({
     router.refresh();
   }
 
+  if (closed) return null;
+
   return (
     <div className="hero-promo-slider">
+      <button
+        type="button"
+        className="hero-promo-close"
+        aria-label="Close"
+        onClick={() => {
+          setClosed(true);
+          try {
+            sessionStorage.setItem("hero-promo-closed", "1");
+          } catch {}
+        }}
+      >
+        &times;
+      </button>
       {promoMode === "promo" && (
         <div className="hero-promo-frame">
           <div className="hero-promo-image-area">
