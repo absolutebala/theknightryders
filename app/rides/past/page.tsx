@@ -76,6 +76,8 @@ export default async function PastRidesPage({
       .from("ride_leaderboard")
       .select("rider_key, rider_name, member_id, handle, rides_count, total_km, profile_template, profile_photo_url")
       .not("profile_photo_url", "is", null)
+      .order("rides_count", { ascending: false })
+      .order("total_km", { ascending: false })
       .limit(6),
   ]);
 
