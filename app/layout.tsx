@@ -177,6 +177,11 @@ export default async function RootLayout({
         <Header authUser={headerUser} initialEditMode={initialEditMode} />
         {children}
         <Footer />
+        <Script
+          id="nivochat-widget"
+          src="https://nivochat.idataone.com/widget.js?id=47542daa-74bb-449a-b902-37d64e917d66"
+          strategy="afterInteractive"
+        />
         {needsProfileUpdate && <ProfileCompletionPrompt signInId={user?.last_sign_in_at ?? "x"} />}
       </body>
     </html>
