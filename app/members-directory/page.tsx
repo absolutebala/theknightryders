@@ -113,6 +113,11 @@ export default async function RidersPage() {
     <>
     <section className="page-hero members-hero">
       <div className="container members-hero-row">
+        <div className="members-hero-title">
+          <span className="page-hero-eyebrow">The Brotherhood</span>
+          <h1>Our <span>Riders</span></h1>
+          <p>{riders.length} member{riders.length === 1 ? "" : "s"} strong.</p>
+        </div>
           <div className="riders-badge-legend on-dark">
             <div className="riders-badge-legend-title">Badge Tiers</div>
             <div className="riders-badge-legend-grid">
@@ -135,11 +140,6 @@ export default async function RidersPage() {
               ))}
             </div>
           </div>
-        <div className="members-hero-title">
-          <span className="page-hero-eyebrow">The Brotherhood</span>
-          <h1>Our <span>Riders</span></h1>
-          <p>{riders.length} member{riders.length === 1 ? "" : "s"} strong.</p>
-        </div>
       </div>
     </section>
     <section style={{ paddingTop: 50, paddingBottom: 70 }}>

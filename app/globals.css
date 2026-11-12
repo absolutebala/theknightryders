@@ -527,10 +527,10 @@ nav li.has-dropdown>a::after{color:var(--amber);}
 
 .members-hero{text-align:left;}
 .members-hero-row{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
-.members-hero-title{text-align:right;margin-left:auto;}
-.members-hero-title p{margin:0 0 0 auto;}
+.members-hero-title{text-align:left;}
+.members-hero-title p{margin:0;}
 .riders-badge-legend.on-dark{background:rgba(255,255,255,.08);border:1px solid rgba(249,184,26,.5);backdrop-filter:blur(4px);}
 .riders-badge-legend.on-dark .riders-badge-legend-title{color:#f9b81a;}
 .riders-badge-legend.on-dark .riders-badge-legend-item{color:#fff;}
 .riders-badge-legend.on-dark .riders-badge-legend-range{color:rgba(255,255,255,.7);}
-@media (max-width:760px){.members-hero-row{flex-direction:column-reverse;align-items:stretch;}.members-hero-title{text-align:center;margin:0;}.members-hero-title p{margin:0 auto;}.riders-badge-legend-grid{grid-template-columns:repeat(2,auto);}}
+@media (max-width:760px){.members-hero-row{flex-direction:column;align-items:stretch;}.members-hero-title{text-align:center;margin:0;}.members-hero-title p{margin:0 auto;}.riders-badge-legend-grid{grid-template-columns:repeat(2,auto);}}
