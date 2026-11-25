@@ -1,3 +1,4 @@
+import { thumb } from "@/lib/img";
 // WhatsApp-status card for UPCOMING rides, drawn on a canvas in the browser.
 // Layout follows the club's poster template: logo, two-tone ride name, date,
 // approx distance / duration, slots available, ride cost, website.
@@ -28,7 +29,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = src;
+    img.src = thumb(src, 1080, 75) ?? src;
   });
 }
 

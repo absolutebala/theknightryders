@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
+import { thumb } from "@/lib/img";
 
 export type MemberPhoto = {
   id: string;
@@ -156,7 +157,7 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
           <div className="elite-slider-frame">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={current.image_url}
+              src={thumb(current.image_url, 1080)}
               alt=""
               onClick={() => setLightboxOpen(true)}
             />
@@ -249,7 +250,7 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
           )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={current.image_url}
+            src={thumb(current.image_url, 1080)}
             alt=""
             className="elite-lightbox-img"
             onClick={(e) => e.stopPropagation()}

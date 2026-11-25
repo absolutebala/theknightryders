@@ -15,6 +15,7 @@ import BadgeProgressionLadder from "./BadgeProgressionLadder";
 import NextTierProgress from "./NextTierProgress";
 import { getRideBadgeTier } from "@/lib/rideBadges";
 import { generateJourneyNarrative } from "@/lib/journeyNarrative";
+import { thumb } from "@/lib/img";
 
 type Ride = {
   id: string;
@@ -185,7 +186,7 @@ export default function EliteProfileView({
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 26, paddingBottom: 4 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png"
+              src={thumb("https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png", 256)}
               alt="The Knight Ryders"
               style={{ width: 56, height: "auto", opacity: 0.9, marginBottom: 8 }}
             />
@@ -271,7 +272,7 @@ export default function EliteProfileView({
                           <div style={{ position: "relative", display: "inline-block", margin: "0 auto 8px" }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={rider.profile_photo_url!}
+                              src={thumb(rider.profile_photo_url!, 128)}
                               alt={rider.full_name ?? "Rider"}
                               style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", display: "block" }}
                             />

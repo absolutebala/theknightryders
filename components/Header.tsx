@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { thumb } from "@/lib/img";
 
 type HeaderUser = {
   name: string;
@@ -85,7 +86,7 @@ export default function Header({
         <div className="nav-wrap">
           <a href="/" className="brand">
             <img
-              src="https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png"
+              src={thumb("https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png", 256)}
               alt="The Knight Ryders logo"
               style={{ height: 48 }}
             />
