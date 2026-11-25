@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notifyAdminOfPendingRequest } from "@/lib/notifyAdmin";
 
 import type { Metadata } from "next";
+import { thumb } from "@/lib/img";
 
 export const metadata: Metadata = {
   title: "Members Area",
@@ -153,7 +154,7 @@ export default async function MembersPage() {
         {member.profile_photo_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={member.profile_photo_url}
+            src={thumb(member.profile_photo_url, 256)}
             alt={member.full_name ?? "Profile photo"}
             style={{ width: 88, height: 88, borderRadius: "50%", objectFit: "cover" }}
           />

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
+import { thumb } from "@/lib/img";
 
 export type GalleryImage = {
   id: string;
@@ -156,7 +157,7 @@ export default function EditableGallery({
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={img.image_url}
+              src={thumb(img.image_url, 1080)}
               alt={img.caption ?? ""}
               style={singleImage ? { borderRadius: 14, width: "100%" } : undefined}
             />

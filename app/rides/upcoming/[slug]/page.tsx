@@ -7,6 +7,7 @@ import UpcomingRideParticipantsManager from "@/components/admin/UpcomingRidePart
 import UpcomingRidePhotoEditor from "@/components/admin/UpcomingRidePhotoEditor";
 import EditUpcomingRideButton from "@/components/admin/EditUpcomingRideButton";
 import CopyJoinLink from "@/components/CopyJoinLink";
+import { thumb } from "@/lib/img";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -124,7 +125,7 @@ export default async function UpcomingRideDetailPage({
         {ride.hero_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={ride.hero_image_url}
+            src={thumb(ride.hero_image_url, 1080)}
             alt={ride.title}
             style={{
               position: "absolute",

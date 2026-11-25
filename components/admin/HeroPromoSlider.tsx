@@ -9,6 +9,7 @@ import HomepagePremiumCard from "@/components/HomepagePremiumCard";
 import DownloadUpcomingRideCard from "@/components/DownloadUpcomingRideCard";
 import { type PremiumCardOptions } from "@/lib/canvasCardDownload";
 import { getRideBadgeTier } from "@/lib/rideBadges";
+import { thumb } from "@/lib/img";
 
 export type PromoImage = {
   id: string;
@@ -303,7 +304,7 @@ export default function HeroPromoSlider({
           <div className="hero-promo-image-area">
             {currentImage ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={currentImage.image_url} alt="" />
+              <img src={thumb(currentImage.image_url, 640)} alt="" />
             ) : (
               isAdmin && <div className="hero-promo-empty">Upload a promo image</div>
             )}

@@ -1,3 +1,4 @@
+import { thumb } from "@/lib/img";
 const LOGO =
   "https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png";
 
@@ -18,7 +19,7 @@ export default function Footer() {
         <div className="ft-brand">
           <a href="/" style={{ textTransform: "none" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO} alt="The Knight Ryders logo" />
+            <img src={thumb(LOGO, 256)} alt="The Knight Ryders logo" />
           </a>
           <p>
             A group bike riding community in Chennai, built for Honda CB350 riders. Ride till the last mile.

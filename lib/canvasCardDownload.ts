@@ -1,4 +1,5 @@
 import { getRideBadgeTier } from "./rideBadges";
+import { thumb } from "@/lib/img";
 
 const LOGO_URL =
   "https://hnetzvknrnvscvlnqoct.supabase.co/storage/v1/object/public/homepage/site-assets/tkr-logo-white.png";
@@ -22,7 +23,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = src;
+    img.src = thumb(src, 1080, 75) ?? src;
   });
 }
 

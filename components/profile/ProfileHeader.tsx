@@ -8,6 +8,7 @@ import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
 import RemoveMyProfileButton from "./RemoveMyProfileButton";
 import AssignRidesButton from "@/components/admin/AssignRidesButton";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
+import { thumb } from "@/lib/img";
 
 type Props = {
   memberId: string;
@@ -167,7 +168,7 @@ export default function ProfileHeader({
           {profilePhotoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={profilePhotoUrl}
+              src={thumb(profilePhotoUrl, 256)}
               alt={fullName ?? "Profile photo"}
               style={{ width: 110, height: 110, borderRadius: "50%", objectFit: "cover" }}
             />

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, jpegFilename } from "@/lib/imageCompression";
 import { deleteStorageFileFromUrl } from "@/lib/supabaseStorage";
+import { thumb } from "@/lib/img";
 
 type Props = {
   rideId: string;
@@ -106,7 +107,7 @@ export default function RideGalleryEditor({ rideId, gallery, isAdmin }: Props) {
           {gallery.map((url) => (
             <figure key={url}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" />
+              <img src={thumb(url, 384)} alt="" />
               {isAdmin && (
                 <button
                   type="button"

@@ -12,6 +12,7 @@ import RideParticipantsEditor from "@/components/admin/RideParticipantsEditor";
 import AddMeToRideButton from "@/components/AddMeToRideButton";
 import RideStatsEditor from "@/components/admin/RideStatsEditor";
 import { cleanRideTitle, findTerrainMentions, formatList } from "@/lib/journeyNarrative";
+import { thumb } from "@/lib/img";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -138,7 +139,7 @@ export default async function RideDetailPage({
         {ride.hero_image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={ride.hero_image_url}
+            src={thumb(ride.hero_image_url, 1080)}
             alt={ride.title}
             style={{
               width: "100%",
