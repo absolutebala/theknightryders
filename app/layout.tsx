@@ -175,6 +175,14 @@ export default async function RootLayout({
           `}
         </Script>
         <Header authUser={headerUser} initialEditMode={initialEditMode} />
+        {new Date() < new Date("2026-11-28T00:00:00+05:30") && (
+          <div className="outage-wrap">
+            <div className="outage-bar" role="alert">
+              <strong>Service notice:</strong> Our database is currently down, so login, sign-up and some features are
+              unavailable. Everything will be restored on <strong>27 November</strong>. Thank you for your patience!
+            </div>
+          </div>
+        )}
         {children}
         <Footer />
         <Script
