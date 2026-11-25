@@ -558,3 +558,8 @@ nav li.has-dropdown>a::after{color:var(--amber);}
 .hero-lb-more{display:block;text-align:right;margin-top:10px;font-size:12px;font-weight:700;color:#f9b81a;}
 @media(max-width:760px){.hero-lb-box{width:100%;}}
 @media(max-width:380px){.hero-lb-grid{grid-template-columns:1fr;}}
+
+/* Temporary outage notice, sits right below the fixed header */
+.outage-wrap{padding-top:80px;background:var(--headerbg);}
+.outage-bar{background:var(--amber);color:var(--navy);text-align:center;padding:10px 20px;font-size:14px;line-height:1.5;}
+@media(max-width:680px){.outage-wrap{padding-top:76px;}.outage-bar{font-size:13px;padding:9px 14px;}}
