@@ -56,7 +56,7 @@ export default function HeroBannerEditor({
           const path = `hero/${Date.now()}-${cleanName}`;
           const { error: uploadError } = await supabase.storage
             .from("homepage")
-            .upload(path, compressed, { contentType: "image/jpeg" });
+            .upload(path, compressed, { contentType: "image/jpeg", cacheControl: "31536000" });
           if (uploadError) throw uploadError;
 
           const { data: publicUrlData } = supabase.storage.from("homepage").getPublicUrl(path);

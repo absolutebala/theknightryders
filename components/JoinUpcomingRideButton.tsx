@@ -131,7 +131,7 @@ function JoinModal({
       const path = `${user.id}/payments/${Date.now()}-${clean}`;
       const { error: upErr } = await supabase.storage
         .from("avatars")
-        .upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
+        .upload(path, compressed, { upsert: true, contentType: "image/jpeg", cacheControl: "31536000" });
       if (upErr) throw upErr;
       setShotUrl(supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl);
     } catch (err) {

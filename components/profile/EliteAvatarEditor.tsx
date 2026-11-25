@@ -57,7 +57,7 @@ export default function EliteAvatarEditor({
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, compressed, { upsert: true, contentType: "image/jpeg" });
+      .upload(path, compressed, { upsert: true, contentType: "image/jpeg", cacheControl: "31536000" });
 
     if (uploadError) {
       setUploading(false);

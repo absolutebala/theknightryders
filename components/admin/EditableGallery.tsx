@@ -48,7 +48,7 @@ export default function EditableGallery({
     const path = `${sectionKey}/${Date.now()}-${jpegFilename(file.name.replace(/[^a-zA-Z0-9.\-_]/g, ""))}`;
     const { error: uploadError } = await supabase.storage
       .from("homepage")
-      .upload(path, compressed, { contentType: "image/jpeg" });
+      .upload(path, compressed, { contentType: "image/jpeg", cacheControl: "31536000" });
 
     if (uploadError) {
       setUploading(false);

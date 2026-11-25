@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { thumb } from "@/lib/img";
 
 export const metadata: Metadata = {
   title: "About the Club",
@@ -71,7 +72,7 @@ export default async function AboutPage() {
             <div className="ab-hero-photos">
               {heroPhotos.map((p, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={p.slug} src={p.hero_image_url} alt={`${p.title} - The Knight Ryders group ride`} className={i === 0 ? "big" : ""} />
+                <img key={p.slug} src={thumb(p.hero_image_url, 640)} alt={`${p.title} - The Knight Ryders group ride`} className={i === 0 ? "big" : ""} />
               ))}
             </div>
           )}
@@ -158,7 +159,7 @@ export default async function AboutPage() {
               {galleryPhotos.map((p) => (
                 <a key={p.slug} href={`/rides/${p.slug}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.hero_image_url} alt={p.title} />
+                  <img src={thumb(p.hero_image_url, 640)} alt={p.title} loading="lazy" />
                   <span>{p.title}</span>
                 </a>
               ))}

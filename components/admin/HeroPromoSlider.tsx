@@ -223,7 +223,7 @@ export default function HeroPromoSlider({
 
     const { error: uploadError } = await supabase.storage
       .from("homepage")
-      .upload(path, compressed, { contentType: "image/jpeg" });
+      .upload(path, compressed, { contentType: "image/jpeg", cacheControl: "31536000" });
     if (uploadError) {
       setUploading(false);
       setError(uploadError.message);

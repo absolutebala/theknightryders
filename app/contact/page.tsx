@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import ContactForm from "@/components/ContactForm";
+import { thumb } from "@/lib/img";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -37,7 +38,7 @@ export default async function ContactPage() {
             <div className="contact-photos">
               {photos.map((p, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={p.hero_image_url} alt={`${p.title} - The Knight Ryders Honda CB350 ride`} className={i === 0 ? "big" : ""} />
+                <img key={i} src={thumb(p.hero_image_url, 640)} alt={`${p.title} - The Knight Ryders Honda CB350 ride`} className={i === 0 ? "big" : ""} />
               ))}
             </div>
           )}

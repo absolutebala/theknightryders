@@ -6,6 +6,7 @@ import { getOrdinalRideLabel } from "@/lib/journeyNarrative";
 import { getRideBadgeTier } from "@/lib/rideBadges";
 
 import type { Metadata } from "next";
+import { thumb } from "@/lib/img";
 
 export const metadata: Metadata = {
   title: "Past Rides",
@@ -132,7 +133,7 @@ export default async function PastRidesPage({
                     <div className="hero-lb-row">
                       <span className="hero-lb-rank">#{i + 1}</span>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={entry.profile_photo_url ?? undefined} alt="" />
+                      <img src={thumb(entry.profile_photo_url, 96)} alt="" />
                       <div className="hero-lb-info">
                         <span className="hero-lb-name">{entry.rider_name}</span>
                         <span className="hero-lb-stats">{entry.rides_count} rides &middot; {entry.total_km} km</span>
@@ -218,7 +219,7 @@ export default async function PastRidesPage({
                   <figure>
                     {ride.hero_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ride.hero_image_url} alt={ride.title} />
+                      <img src={thumb(ride.hero_image_url, 640)} alt={ride.title} loading="lazy" />
                     ) : (
                       <div className="no-image">{ride.title}</div>
                     )}

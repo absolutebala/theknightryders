@@ -68,7 +68,7 @@ export default function EliteGallery({ memberId, isOwner, photos }: Props) {
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, compressed, { contentType: "image/jpeg" });
+      .upload(path, compressed, { contentType: "image/jpeg", cacheControl: "31536000" });
     if (uploadError) {
       setUploading(false);
       setError(uploadError.message);

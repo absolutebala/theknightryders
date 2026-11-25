@@ -6,6 +6,7 @@ import HeroBannerEditor from "@/components/admin/HeroBannerEditor";
 import HeroPromoSlider from "@/components/admin/HeroPromoSlider";
 import HolidayCardsManager from "@/components/admin/HolidayCardsManager";
 import HomeSeoSection from "@/components/HomeSeoSection";
+import { thumb } from "@/lib/img";
 
 async function getSection(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -202,7 +203,7 @@ export default async function HomePage({
         style={
           heroImageUrl
             ? {
-                backgroundImage: `linear-gradient(180deg, rgba(5,8,15,.35), rgba(5,8,15,.55)), url('${heroImageUrl}')`,
+                backgroundImage: `linear-gradient(180deg, rgba(5,8,15,.35), rgba(5,8,15,.55)), url('${thumb(heroImageUrl, 1920)}')`,
                 backgroundPosition: `center ${heroImagePosition}%`,
               }
             : undefined
@@ -290,7 +291,7 @@ export default async function HomePage({
             ) : (
               milestone.images[0] && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={milestone.images[0].image_url} alt="Milestone" />
+                <img src={thumb(milestone.images[0].image_url, 640)} alt="Milestone" />
               )
             )}
           </div>

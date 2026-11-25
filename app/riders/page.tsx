@@ -5,6 +5,7 @@ import RiderRemoveButton from "@/components/admin/RiderRemoveButton";
 import { RIDE_BADGE_TIERS } from "@/lib/rideBadges";
 
 import type { Metadata } from "next";
+import { thumb } from "@/lib/img";
 
 export const metadata: Metadata = {
   title: "Our Riders",
@@ -183,7 +184,7 @@ export default async function RidersPage() {
               <div style={{ position: "relative", display: "inline-block" }}>
                 {rider.profile_photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={rider.profile_photo_url} alt={rider.full_name ?? "Rider"} />
+                  <img src={thumb(rider.profile_photo_url, 256)} loading="lazy" alt={rider.full_name ?? "Rider"} />
                 ) : (
                   <div className="rider-card-noimg">
                     {(rider.full_name ?? "?").charAt(0).toUpperCase()}
