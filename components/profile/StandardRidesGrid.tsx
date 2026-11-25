@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { thumb } from "@/lib/img";
 
 type Ride = {
   id: string;
@@ -39,7 +40,7 @@ export default function StandardRidesGrid({ rides }: { rides: Ride[] }) {
                 <figure>
                   {ride.hero_image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ride.hero_image_url} alt={ride.title} />
+                    <img src={thumb(ride.hero_image_url, 640)} alt={ride.title} loading="lazy" />
                   ) : (
                     <div className="no-image">{ride.title}</div>
                   )}

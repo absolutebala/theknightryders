@@ -49,7 +49,15 @@ const oldUrlRedirects: { source: string; destination: string }[] = [
 
 const nextConfig: NextConfig = {
   images: {
+    minimumCacheTTL: 31536000,
+    formats: ["image/webp"],
+    qualities: [72, 75],
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "hnetzvknrnvscvlnqoct.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
       {
         protocol: "https",
         hostname: "www.theknightryders.com",

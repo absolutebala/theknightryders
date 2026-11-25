@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { thumb } from "@/lib/img";
 
 type Ride = {
   id: string;
@@ -43,7 +44,7 @@ export default function EliteRidesCarousel({ rides }: { rides: Ride[] }) {
                   <div className="elite-ride-thumb">
                     {ride.hero_image_url && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ride.hero_image_url} alt={ride.title} />
+                      <img src={thumb(ride.hero_image_url, 640)} alt={ride.title} loading="lazy" />
                     )}
                     {rideNumber && <div className="elite-ride-badge-hex">{rideNumber}</div>}
                   </div>

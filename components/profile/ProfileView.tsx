@@ -6,6 +6,7 @@ import RequestEliteTemplate from "@/components/profile/RequestEliteTemplate";
 import EliteProfileView from "@/components/profile/EliteProfileView";
 import RideBadgeStrip from "@/components/RideBadgeStrip";
 import StandardRidesGrid from "@/components/profile/StandardRidesGrid";
+import { thumb } from "@/lib/img";
 
 export default async function ProfileView({ memberId }: { memberId: string }) {
   const supabase = await createClient();
@@ -276,7 +277,7 @@ export default async function ProfileView({ memberId }: { memberId: string }) {
                   >
                     <div style={{ position: "relative", display: "inline-block" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={rider.profile_photo_url!} alt={rider.full_name ?? "Rider"} />
+                      <img src={thumb(rider.profile_photo_url!, 128)} alt={rider.full_name ?? "Rider"} />
                     </div>
                     <div className="rider-card-name">{rider.full_name ?? "Knight Ryder"}</div>
                     {rider.bio && <p className="rider-card-bio">{rider.bio}</p>}
